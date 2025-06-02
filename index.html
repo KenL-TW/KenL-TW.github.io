@@ -42,56 +42,30 @@
   <i class="bi bi-list mobile-nav-toggle d-xl-none"></i>
 
   <!-- ======= Header ======= -->
-  <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <header id="header">
+  <div class="d-flex flex-column">
 
-  <title>Ken Liao Portfolio</title>
+    <div class="profile">
+      <img src="assets/img/profile-img.png" alt="" class="img-fluid rounded-circle">
+      <h1 class="text-light"><a href="index.html">Ken Liao</a></h1>
+      <div class="social-links mt-3 text-center">
+        <a href="#" class="github"><i class="bx bxl-github"></i></a>
+        <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
+      </div>
+    </div>
 
-  <!-- ✅ SEO Meta Tags -->
-  <meta name="description" content="Ken Liao - 系統分析師、專案經理與技術作品集，展現跨國專案經驗與技術整合實力。">
-  <meta name="keywords" content="Ken Liao, 系統分析師, 專案經理, Portfolio, Python, AI, 軟體開發, 數位轉型">
-  <meta name="author" content="Ken Liao">
-
-  <!-- ✅ Open Graph Meta -->
-  <meta property="og:title" content="Ken Liao | 系統分析師與作品集" />
-  <meta property="og:description" content="深入了解 Ken Liao 的系統分析與數位專案作品，展現技術與商業整合實力。" />
-  <meta property="og:image" content="https://kenl-tw.github.io/assets/img/profile-img.png" />
-  <meta property="og:url" content="https://kenl-tw.github.io" />
-  <meta property="og:type" content="website" />
-
-  <!-- ✅ Twitter Card Meta -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Ken Liao | 系統分析師與作品集" />
-  <meta name="twitter:description" content="深入了解 Ken Liao 的系統分析與數位專案作品，展現技術與商業整合實力。" />
-  <meta name="twitter:image" content="https://kenl-tw.github.io/assets/img/profile-img.png" />
-
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
-
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
-
-  <!-- Template Main CSS File -->
-  <link href="assets/css/style.css" rel="stylesheet">
-
-  <!-- =======================================================
-  * Template Name: iPortfolio
-  * Template URL: https://bootstrapmade.com/iportfolio-bootstrap-portfolio-websites-template/
-  * Updated: Mar 17 2024 with Bootstrap v5.3.3
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
-</head>
+    <nav id="navbar" class="nav-menu navbar">
+      <ul>
+        <li><a href="#hero" class="nav-link scrollto active"><i class="bx bx-home"></i> <span>Home</span></a></li>
+        <li><a href="#about" class="nav-link scrollto"><i class="bx bx-user"></i> <span>About</span></a></li>
+        <li><a href="#skills" class="nav-link scrollto"><i class="bx bx-code-block"></i> <span>Skills</span></a></li>
+        <li><a href="#resume" class="nav-link scrollto"><i class="bx bx-file-blank"></i> <span>Resume</span></a></li>
+        <li><a href="#portfolio" class="nav-link scrollto"><i class="bx bx-book-content"></i> <span>Portfolio</span></a></li>
+        <li><a href="#contact" class="nav-link scrollto"><i class="bx bx-envelope"></i> <span>Contact</span></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
 
   <!-- ======= Hero Section ======= -->
   <section id="hero" class="d-flex flex-column justify-content-center align-items-center">
@@ -304,13 +278,13 @@
 
         <div class="section-title">
           <h2>Portfolio</h2>
-          <p>嗨！我是Ken，一位熱愛創意與技術的系統分析師。我對於將想法轉化為現實充滿著熱情，並且喜歡通過我的作品來分享這份熱情。</p>
+          <p>嗨！我是Ken，一位熱愛創意與技術的系統分析師。以下是我的一些重要專案與成果展示。</p>
         </div>
 
         <div class="row" data-aos="fade-up">
           <div class="col-lg-12 d-flex justify-content-center">
             <ul id="portfolio-flters">
-              <!--<li data-filter="*" class="filter-active">All</li>-->
+              <li data-filter="*" class="filter-active">All</li>
               <li data-filter=".filter-proj">專案經驗</li>
               <li data-filter=".filter-professional">證照分享</li>
               <li data-filter=".filter-case">其他經歷</li>
@@ -320,15 +294,24 @@
 
         <div class="row portfolio-container" data-aos="fade-up" data-aos-delay="100">
 
-          <div class="col-lg-4 col-md-6 portfolio-item filter-proj">
+          <div class="col-lg-6 col-md-6 portfolio-item filter-proj featured">
             <div class="portfolio-wrap">
-              <img src="assets/img/portfolio/magento.png" class="img-fluid" alt="">
-              <div class="portfolio-links">
-                <a href="assets/img/portfolio/magento.png" data-gallery="portfolioGallery" class="portfolio-lightbox" title="App 3"><i class="bx bx-plus"></i></a>
-                <a href="portfolio-details.html" title="More Details"><i class="bx bx-link"></i></a>
+              <img src="assets/img/portfolio/magento.png" class="img-fluid" alt="Magento Project">
+              <div class="portfolio-info">
+                <h4>電子商務平台建置</h4>
+                <p>使用 Magento 建置跨國電商平台，整合訂單、物流、金流系統</p>
+                <div class="portfolio-links">
+                  <a href="portfolio-details.html#magento" class="details-link">查看詳情</a>
+                </div>
               </div>
             </div>
+            <div class="portfolio-tags">
+              <span class="tag">Magento</span>
+              <span class="tag">E-commerce</span>
+              <span class="tag">System Integration</span>
+            </div>
           </div>
+
           <div class="col-lg-4 col-md-6 portfolio-item filter-proj">
             <div class="portfolio-wrap">
               <img src="assets/img/portfolio/project2-0.jpg" class="img-fluid" alt="">
