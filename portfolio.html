@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ken Liao - 個人作品集</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: rgb(249, 250, 251);
+            color: rgb(31, 41, 55);
+        }
+        .nav-link.active {
+            color: rgb(37, 99, 235);
+            font-weight: 600;
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased">
+    <!-- Header with mobile menu -->
+    <header class="bg-white shadow-md fixed top-0 left-0 w-full z-50">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="#" class="text-2xl font-bold text-gray-900">Ken Liao</a>
+                <button id="mobile-menu-button" class="lg:hidden text-gray-600">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <!-- Desktop menu -->
+                <div class="hidden lg:flex space-x-8">
+                    <a href="#" class="nav-link text-gray-600 hover:text-blue-600">首頁</a>
+                    <a href="#portfolio" class="nav-link text-gray-600 hover:text-blue-600">作品集</a>
+                    <a href="#contact" class="nav-link text-gray-600 hover:text-blue-600">聯絡我</a>
+                </div>
+            </div>
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="lg:hidden hidden">
+                <div class="py-4 space-y-4">
+                    <a href="#" class="block nav-link text-gray-600 hover:text-blue-600">首頁</a>
+                    <a href="#portfolio" class="block nav-link text-gray-600 hover:text-blue-600">作品集</a>
+                    <a href="#contact" class="block nav-link text-gray-600 hover:text-blue-600">聯絡我</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="pt-16">
+        <!-- Portfolio Section -->
+        <section id="portfolio" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold text-center mb-12 text-gray-900">作品集</h2>
+
+                <!-- Filter Buttons -->
+                <div class="flex flex-wrap justify-center gap-4 mb-12">
+                    <button class="filter-button bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition duration-300 active-filter" data-filter="all">所有作品</button>
+                    <button class="filter-button bg-gray-200 text-gray-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300" data-filter="web-design">網頁設計</button>
+                    <button class="filter-button bg-gray-200 text-gray-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300" data-filter="mobile-app">行動應用</button>
+                    <button class="filter-button bg-gray-200 text-gray-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300" data-filter="graphic-design">平面設計</button>
+                </div>
+
+                <!-- Portfolio Grid -->
+                <div id="portfolio-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    <div class="portfolio-item bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer"
+                         data-category="web-design"
+                         data-title="響應式電子商務網站"
+                         data-image-large="https://placehold.co/1200x800/a78bfa/ffffff?text=專案圖片1_大圖"
+                         data-full-description="這個專案是一個現代化的響應式電子商務網站，使用最新的前端技術構建。它具備完整的產品展示、購物車管理、用戶認證和安全的結帳流程。設計上注重用戶體驗和視覺吸引力，並在不同設備上提供無縫的瀏覽體驗。"
+                         data-tech-tags="React, Tailwind CSS, JavaScript, HTML5, CSS3"
+                         data-demo-link="#"
+                         data-github-link="#">
+                        <img src="https://placehold.co/600x400/a78bfa/ffffff?text=專案圖片1" alt="響應式電子商務網站" class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-3 text-gray-900">響應式電子商務網站</h3>
+                            <p class="text-gray-700 mb-4 text-sm">
+                                使用 React 和 Tailwind CSS 開發的現代化電子商務平台。
+                            </p>
+                            <div class="flex flex-wrap gap-2 text-xs font-medium text-blue-600">
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">React</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">Tailwind CSS</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">JavaScript</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer"
+                         data-category="mobile-app"
+                         data-title="互動式數據儀表板"
+                         data-image-large="https://placehold.co/1200x800/60a5fa/ffffff?text=專案圖片2_大圖"
+                         data-full-description="這是一個為企業用戶設計的互動式數據儀表板，旨在提供實時的業務數據分析和可視化。它利用 Vue.js 構建動態介面，並結合 D3.js 實現複雜的圖表和數據呈現。用戶可以自定義視圖，深入挖掘數據以做出更明智的決策。"
+                         data-tech-tags="Vue.js, D3.js, Chart.js, JavaScript, HTML5"
+                         data-demo-link="#"
+                         data-github-link="#">
+                        <img src="https://placehold.co/600x400/60a5fa/ffffff?text=專案圖片2" alt="互動式數據儀表板" class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-3 text-gray-900">互動式數據儀表板</h3>
+                            <p class="text-gray-700 mb-4 text-sm">
+                                採用 Vue.js 和 D3.js 構建的數據可視化儀表板。
+                            </p>
+                            <div class="flex flex-wrap gap-2 text-xs font-medium text-blue-600">
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">Vue.js</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">D3.js</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">Chart.js</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer"
+                         data-category="web-design"
+                         data-title="個人部落格平台"
+                         data-image-large="https://placehold.co/1200x800/34d399/ffffff?text=專案圖片3_大圖"
+                         data-full-description="一個輕量級的個人部落格平台，專為內容創作者設計。它完全使用純 HTML、CSS 和 JavaScript 實現，無需複雜的後端。支持 Markdown 內容渲染，並具備響應式設計，確保在任何設備上都能提供優質的閱讀體驗。"
+                         data-tech-tags="HTML5, CSS3, JavaScript, Markdown"
+                         data-demo-link="#"
+                         data-github-link="#">
+                        <img src="https://placehold.co/600x400/34d399/ffffff?text=專案圖片3" alt="個人部落格平台" class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-3 text-gray-900">個人部落格平台</h3>
+                            <p class="text-gray-700 mb-4 text-sm">
+                                純 HTML/CSS/JS 實現的輕量級個人部落格。
+                            </p>
+                            <div class="flex flex-wrap gap-2 text-xs font-medium text-blue-600">
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">HTML5</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">CSS3</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">JavaScript</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer"
+                         data-category="graphic-design"
+                         data-title="品牌識別設計專案"
+                         data-image-large="https://placehold.co/1200x800/fcd34d/ffffff?text=專案圖片4_大圖"
+                         data-full-description="為一家新創公司設計的完整品牌識別系統，包括 Logo 設計、色彩規範、字體選擇和品牌應用指南。旨在建立一個現代、專業且具辨識度的品牌形象，使其在市場中脫穎而出。"
+                         data-tech-tags="Adobe Illustrator, Adobe Photoshop, Figma"
+                         data-demo-link="#"
+                         data-github-link="#">
+                        <img src="https://placehold.co/600x400/fcd34d/ffffff?text=專案圖片4" alt="品牌識別設計專案" class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-3 text-gray-900">品牌識別設計專案</h3>
+                            <p class="text-gray-700 mb-4 text-sm">
+                                涵蓋 Logo、色彩、字體和應用指南的完整品牌設計。
+                            </p>
+                            <div class="flex flex-wrap gap-2 text-xs font-medium text-blue-600">
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">Illustrator</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">Photoshop</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">Figma</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer"
+                         data-category="mobile-app"
+                         data-title="待辦事項行動應用"
+                         data-image-large="https://placehold.co/1200x800/d8b4fe/ffffff?text=專案圖片5_大圖"
+                         data-full-description="一款簡潔高效的待辦事項行動應用，幫助用戶管理日常任務。採用 React Native 開發，提供跨平台兼容性。具備任務增刪改查、提醒功能和直觀的用戶介面，提升生產力。"
+                         data-tech-tags="React Native, JavaScript, Expo"
+                         data-demo-link="#"
+                         data-github-link="#">
+                        <img src="https://placehold.co/600x400/d8b4fe/ffffff?text=專案圖片5" alt="待辦事項行動應用" class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-3 text-gray-900">待辦事項行動應用</h3>
+                            <p class="text-gray-700 mb-4 text-sm">
+                                使用 React Native 開發的跨平台任務管理應用。
+                            </p>
+                            <div class="flex flex-wrap gap-2 text-xs font-medium text-blue-600">
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">React Native</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">JavaScript</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer"
+                         data-category="web-design"
+                         data-title="企業形象網站"
+                         data-image-large="https://placehold.co/1200x800/a5b4fc/ffffff?text=專案圖片6_大圖"
+                         data-full-description="為一家中小型企業設計和開發的專業形象網站。網站包含公司介紹、服務項目、團隊成員和聯絡方式等頁面。注重響應式設計和 SEO 優化，旨在提升企業線上形象和潛在客戶的觸及率。"
+                         data-tech-tags="HTML5, CSS3, jQuery, Bootstrap"
+                         data-demo-link="#"
+                         data-github-link="#">
+                        <img src="https://placehold.co/600x400/a5b4fc/ffffff?text=專案圖片6" alt="企業形象網站" class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-3 text-gray-900">企業形象網站</h3>
+                            <p class="text-gray-700 mb-4 text-sm">
+                                專業的企業形象網站，注重響應式設計和 SEO。
+                            </p>
+                            <div class="flex flex-wrap gap-2 text-xs font-medium text-blue-600">
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">HTML5</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">CSS3</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">jQuery</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 bg-gray-100">
+            <div class="container mx-auto px-6 max-w-3xl">
+                <h2 class="text-4xl font-bold text-center mb-12 text-gray-900">聯絡我</h2>
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="flex flex-col items-center space-y-6">
+                        <div class="flex items-center text-gray-800 text-xl">
+                            <i class="fas fa-envelope text-blue-600 mr-3"></i>
+                            <a href="mailto:kenliao.applicant@gmail.com" class="hover:underline">kenliao.applicant@gmail.com</a>
+                        </div>
+                        <div class="flex items-center text-gray-800 text-xl">
+                            <i class="fas fa-phone-alt text-blue-600 mr-3"></i>
+                            <span>0979-723-073</span>
+                        </div>
+                        <div class="flex items-center text-gray-800 text-xl">
+                            <i class="fas fa-map-marker-alt text-blue-600 mr-3"></i>
+                            <span>新北市三重區</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Structure -->
+    <div id="portfolio-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100] hidden modal-overlay">
+        <div class="bg-white rounded-lg shadow-xl p-8 m-4 w-full max-w-3xl relative modal-content transform scale-95 opacity-0 transition-all duration-300 ease-out">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl focus:outline-none">
+                &times;
+            </button>
+            <img id="modal-image" src="" alt="作品大圖" class="w-full h-auto rounded-lg mb-6 max-h-[50vh] object-contain">
+            <h3 id="modal-title" class="text-3xl font-bold mb-4 text-gray-900"></h3>
+            <p id="modal-description" class="text-gray-700 text-lg mb-6 leading-relaxed"></p>
+            <div id="modal-tech-tags" class="flex flex-wrap gap-2 mb-6"></div>
+            <div id="modal-links" class="flex flex-wrap gap-4 justify-center">
+                <a id="modal-demo-link" href="#" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition duration-300 flex items-center">
+                    <i class="fas fa-link mr-2"></i> 線上預覽
+                </a>
+                <a id="modal-github-link" href="#" target="_blank" class="bg-gray-800 text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-900 transition duration-300 flex items-center">
+                    <i class="fab fa-github mr-2"></i> GitHub
+                </a>
+                <a id="modal-behance-link" href="#" target="_blank" class="bg-red-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-red-700 transition duration-300 flex items-center hidden">
+                    <i class="fab fa-behance mr-2"></i> Behance
+                </a>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h4 class="text-xl font-semibold mb-4 text-gray-900">✨ 關於此作品，問我任何問題！</h4>
+                <textarea id="qa-input" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 mb-4 resize-y" rows="3" placeholder="例如：這個專案使用了哪些前端框架？"></textarea>
+                <button id="ask-button" class="bg-purple-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-purple-700 transition duration-300 flex items-center justify-center w-full md:w-auto mx-auto">
+                    <i class="fas fa-question-circle mr-2"></i> 提問
+                </button>
+                <div id="qa-response" class="mt-6 p-4 bg-gray-100 rounded-lg border border-gray-200 text-gray-700 hidden">
+                    <p id="qa-response-text"></p>
+                    <div id="qa-loading" class="flex items-center justify-center text-blue-600 hidden">
+                        <i class="fas fa-spinner fa-spin mr-2"></i> 載入中...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2024 Ken Liao. 版權所有.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // JavaScript 處理手機版選單切換
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = document.querySelectorAll('#mobile-menu .nav-link');
+            
+            // Toggle menu on button click
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                // Optional: Add animation classes
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('animate-fadeIn');
+                }
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+
+            // Close menu when clicking nav links
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    // Smooth scroll to section
+                    const targetId = link.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // Close menu on resize if screen becomes large
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) { // lg breakpoint
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // JavaScript 處理導航連結的活躍狀態
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 70; // 減去導航列高度
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop && pageYOffset < sectionTop + sectionHeight) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.href.includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // 點擊手機版選單連結後隱藏選單
+        mobileMenu.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // 作品集篩選器功能
+        const filterButtons = document.querySelectorAll('.filter-button');
+        const portfolioItems = document.querySelectorAll('.portfolio-item');
+        const portfolioGrid = document.getElementById('portfolio-grid');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // 移除所有按鈕的 active 樣式
+                filterButtons.forEach(btn => btn.classList.remove('active-filter', 'bg-blue-600', 'text-white'));
+                filterButtons.forEach(btn => btn.classList.add('bg-gray-200', 'text-gray-800'));
+
+                // 為當前點擊的按鈕添加 active 樣式
+                button.classList.add('active-filter', 'bg-blue-600', 'text-white');
+                button.classList.remove('bg-gray-200', 'text-gray-800');
+
+
+                const filter = button.dataset.filter;
+
+                portfolioItems.forEach(item => {
+                    const itemCategory = item.dataset.category;
+                    if (filter === 'all' || itemCategory === filter) {
+                        item.style.display = 'block'; // 顯示匹配的項目
+                        item.classList.remove('hidden'); // 確保 Tailwind 的 hidden 類別被移除
+                        item.style.animation = 'fadeIn 0.5s ease-out forwards'; // 添加淡入動畫
+                    } else {
+                        item.style.display = 'none'; // 隱藏不匹配的項目
+                        item.classList.add('hidden'); // 添加 Tailwind 的 hidden 類別
+                        item.style.animation = ''; // 移除動畫
+                    }
+                });
+            });
+        });
+
+        // 定義淡入動畫
+        const styleSheet = document.createElement("style");
+        styleSheet.type = "text/css";
+        styleSheet.innerText = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+
+        // 作品詳情彈窗功能
+        const portfolioModal = document.getElementById('portfolio-modal');
+        const closeModalButton = document.getElementById('close-modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDescription = document.getElementById('modal-description');
+        const modalTechTags = document.getElementById('modal-tech-tags');
+        const modalDemoLink = document.getElementById('modal-demo-link');
+        const modalGithubLink = document.getElementById('modal-github-link');
+        const modalBehanceLink = document.getElementById('modal-behance-link'); // 新增 Behance 連結
+
+        // Q&A Functionality
+        const askButton = document.getElementById('ask-button');
+        const qaInput = document.getElementById('qa-input');
+        const qaResponse = document.getElementById('qa-response');
+        const qaResponseText = document.getElementById('qa-response-text');
+        const qaLoading = document.getElementById('qa-loading');
+
+        let currentProjectContext = ''; // Store current project context
+
+        // 更新作品集點擊處理
+        document.querySelectorAll('.portfolio-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const modal = document.getElementById('portfolio-modal');
+                const modalContent = modal.querySelector('.modal-content');
+                
+                // 設置模態框內容
+                document.getElementById('modal-image').src = item.dataset.imageLarge;
+                document.getElementById('modal-title').textContent = item.dataset.title;
+                document.getElementById('modal-description').textContent = item.dataset.fullDescription;
+                
+                // 設置技術標籤
+                const techTagsContainer = document.getElementById('modal-tech-tags');
+                techTagsContainer.innerHTML = ''; // 清空現有標籤
+                const tags = item.dataset.techTags.split(',');
+                tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-medium';
+                    tagElement.textContent = tag.trim();
+                    techTagsContainer.appendChild(tagElement);
+                });
+                
+                // 設置連結
+                document.getElementById('modal-demo-link').href = item.dataset.demoLink || '#';
+                document.getElementById('modal-github-link').href = item.dataset.githubLink || '#';
+                
+                // Set current project context
+                currentProjectContext = {
+                    title: item.dataset.title,
+                    description: item.dataset.fullDescription,
+                    techTags: item.dataset.techTags,
+                };
+
+                // Reset Q&A section
+                qaInput.value = '';
+                qaResponse.classList.add('hidden');
+
+                // 顯示模態框
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            });
+        });
+
+        // 關閉模態框
+        document.getElementById('close-modal').addEventListener('click', closeModal);
+        document.getElementById('portfolio-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('portfolio-modal')) {
+                closeModal();
+            }
+        });
+
+        function closeModal() {
+            const modal = document.getElementById('portfolio-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 修正選單點擊
+        // Mobile Menu Functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const navLinks = document.querySelectorAll('#mobile-menu .nav-link');
+    
+    // Toggle menu on button click
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+        // Optional: Add animation classes
+        if (!mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('animate-fadeIn');
+        }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+            mobileMenu.classList.add('hidden');
+        }
+    });
+
+    // Close menu when clicking nav links
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+            // Smooth scroll to section
+            const targetId = link.getAttribute('href');
+            const targetSection = document.querySelector(targetId);
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+
+    // Close menu on resize if screen becomes large
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) { // lg breakpoint
+            mobileMenu.classList.add('hidden');
+        }
+    });
+});
+
+        // 平滑滾动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Handle ask button click
+        askButton.addEventListener('click', async () => {
+            const question = qaInput.value.trim();
+            if (!question) return;
+
+            // Show loading state
+            qaLoading.classList.remove('hidden');
+            qaResponse.classList.remove('hidden');
+            qaResponseText.textContent = '';
+
+            try {
+                // Simulate AI response (replace with actual API call if available)
+                setTimeout(() => {
+                    const response = generateResponse(question, currentProjectContext);
+                    qaResponseText.textContent = response;
+                    qaLoading.classList.add('hidden');
+                }, 1000);
+            } catch (error) {
+                qaResponseText.textContent = '抱歉，暫時無法回答您的問題。請稍後再試。';
+                qaLoading.classList.add('hidden');
+            }
+        });
+
+        // Simple response generator based on question and project context
+        function generateResponse(question, context) {
+            const lowercaseQuestion = question.toLowerCase();
+            
+            if (lowercaseQuestion.includes('使用') && lowercaseQuestion.includes('框架')) {
+                return `這個專案主要使用了以下技術：${context.techTags}`;
+            }
+            
+            if (lowercaseQuestion.includes('目的') || lowercaseQuestion.includes('用途')) {
+                return context.description;
+            }
+            
+            if (lowercaseQuestion.includes('特色') || lowercaseQuestion.includes('功能')) {
+                return `${context.title}的主要特色包含在專案描述中：${context.description}`;
+            }
+            
+            return `關於${context.title}，您可以參考上方的專案描述和技術標籤，或者詢問更具體的問題。`;
+        }
+    </script>
+</body>
+</html>
