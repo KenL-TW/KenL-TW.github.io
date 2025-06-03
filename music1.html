@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sense Music Studio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0; /* Slightly off-white for a softer feel */
+            color: #222; /* Darker text for stronger contrast */
+        }
+        /* Custom scrollbar for minimalist look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e0e0e0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333;
+        }
+        .section-container {
+            display: none; /* Hidden by default, shown by JS */
+            padding-top: 5rem; /* Ensure content is below fixed navbar */
+        }
+        .active-section {
+            display: block;
+        }
+        .nav-link.active {
+            font-weight: 700; /* Bolder for active link */
+            color: #000;
+            border-bottom: 2px solid #000; /* Underline for active link */
+        }
+        /* Custom modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.9); /* Darker overlay */
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 2.5rem;
+            border-radius: 12px; /* More rounded corners */
+            width: 95%;
+            max-width: 960px; /* Larger modal for better content display */
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s ease-out;
+        }
+        .close-button {
+            color: #555;
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2.5rem; /* Larger close button */
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Hide scrollbar for featured works section */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-f0f0f0 text-222">
+
+    <!-- Fixed Navbar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white bg-opacity-95 backdrop-blur-sm shadow-sm py-4 px-6 md:px-12 flex justify-between items-center border-b border-gray-200">
+        <div class="flex items-center space-x-6 md:space-x-12">
+            <a href="#home" class="text-2xl md:text-3xl font-extrabold text-gray-900 nav-link tracking-tight" data-section="home">SENSE MUSIC STUDIO</a>
+            <div class="hidden md:flex space-x-8 text-gray-600 font-medium">
+                <a href="#home" class="hover:text-gray-900 transition-colors nav-link py-1" data-section="home">品牌概念</a>
+                <a href="#services" class="hover:text-gray-900 transition-colors nav-link py-1" data-section="services">服務項目</a>
+                <a href="#works" class="hover:text-gray-900 transition-colors nav-link py-1" data-section="works">作品分類</a>
+                <a href="#contact" class="hover:text-gray-900 transition-colors nav-link py-1" data-section="contact">聯絡我們</a>
+            </div>
+        </div>
+        <!-- Mobile menu button -->
+        <div class="md:hidden">
+            <button id="mobile-menu-button" class="text-gray-700 hover:text-gray-900 focus:outline-none p-2 rounded-md">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-white bg-opacity-95 z-40 flex flex-col items-center justify-center space-y-8 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <button id="close-mobile-menu" class="absolute top-6 right-8 text-gray-700 hover:text-gray-900 focus:outline-none p-2 rounded-md">
+            <i class="fas fa-times text-3xl"></i>
+        </button>
+        <a href="#home" class="text-3xl font-semibold text-gray-800 hover:text-gray-900 nav-link" data-section="home">品牌概念</a>
+        <a href="#services" class="text-3xl font-semibold text-gray-800 hover:text-gray-900 nav-link" data-section="services">服務項目</a>
+        <a href="#works" class="text-3xl font-semibold text-gray-800 hover:text-gray-900 nav-link" data-section="works">作品分類</a>
+        <a href="#contact" class="text-3xl font-semibold text-gray-800 hover:text-gray-900 nav-link" data-section="contact">聯絡我們</a>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="pt-20"> <!-- Padding to account for fixed navbar -->
+
+        <!-- Home Page (index.html simulation) -->
+        <section id="home" class="section-container active-section">
+            <!-- Hero Block -->
+            <div class="relative h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center overflow-hidden rounded-b-xl shadow-2xl">
+                <!-- Placeholder for background video/image -->
+                <img src="https://placehold.co/1920x1080/0a0a0a/eeeeee?text=Dynamic+Sound+Visualizer+or+Abstract+Art" alt="Hero Background" class="absolute inset-0 w-full h-full object-cover opacity-60">
+                <div class="relative z-10 text-center text-white p-8 max-w-4xl">
+                    <h1 class="text-6xl md:text-8xl font-extrabold mb-6 leading-tight drop-shadow-xl">
+                        SENSE MUSIC STUDIO
+                    </h1>
+                    <p class="text-2xl md:text-3xl mb-10 font-light tracking-wide opacity-90">
+                        Sound Design / Scoring / Mixing
+                    </p>
+                    <div class="flex flex-col md:flex-row space-y-5 md:space-y-0 md:space-x-8 justify-center">
+                        <a href="#works" class="bg-white text-gray-900 px-10 py-4 rounded-full text-xl font-semibold hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-xl nav-link" data-section="works">
+                            探索作品 <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                        <a href="#contact" class="border-2 border-white text-white px-10 py-4 rounded-full text-xl font-semibold hover:bg-white hover:text-gray-900 transition-all duration-300 transform hover:scale-105 shadow-xl nav-link" data-section="contact">
+                            免費諮詢 <i class="fas fa-headset ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brand Introduction -->
+            <div class="py-24 px-8 md:px-16 text-center bg-white rounded-xl shadow-lg my-20 mx-auto max-w-5xl border border-gray-100">
+                <h2 class="text-4xl md:text-5xl font-bold mb-8 text-gray-900 leading-tight">
+                    感知音樂，聲音的藝術家
+                </h2>
+                <p class="text-lg md:text-xl leading-relaxed text-gray-700 mb-10 max-w-3xl mx-auto">
+                    感知音樂是專注於聲音設計與配樂的創作者團隊，致力於為影視、遊戲、廣告等多元媒體提供高品質的聲音解決方案。我們相信聲音是故事的靈魂，能觸動人心，創造獨特的感官體驗。
+                </p>
+                <a href="#" class="bg-gray-800 text-white px-10 py-4 rounded-full text-lg font-medium hover:bg-black transition-colors shadow-md transform hover:scale-105">
+                    關於我們 <i class="fas fa-info-circle ml-2"></i>
+                </a>
+            </div>
+
+            <!-- Service Items Block -->
+            <div class="py-24 px-8 md:px-16 bg-gray-100 rounded-xl my-20">
+                <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900">
+                    我們的專業服務
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-center">
+                    <a href="#services" class="group flex flex-col items-center p-10 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 nav-link" data-section="services">
+                        <div class="text-6xl text-gray-700 group-hover:text-black transition-colors mb-6">
+                            <i class="fas fa-music"></i> <!-- Music icon -->
+                        </div>
+                        <h3 class="text-2xl font-semibold text-gray-800 group-hover:text-gray-900 transition-colors mb-3">配樂</h3>
+                        <p class="text-gray-600 leading-relaxed">為您的影像創作注入情感與生命。</p>
+                    </a>
+                    <a href="#services" class="group flex flex-col items-center p-10 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 nav-link" data-section="services">
+                        <div class="text-6xl text-gray-700 group-hover:text-black transition-colors mb-6">
+                            <i class="fas fa-volume-up"></i> <!-- Sound effect icon -->
+                        </div>
+                        <h3 class="text-2xl font-semibold text-gray-800 group-hover:text-gray-900 transition-colors mb-3">音效</h3>
+                        <p class="text-gray-600 leading-relaxed">打造沉浸式聽覺體驗的細節。</p>
+                    </a>
+                    <a href="#services" class="group flex flex-col items-center p-10 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 nav-link" data-section="services">
+                        <div class="text-6xl text-gray-700 group-hover:text-black transition-colors mb-6">
+                            <i class="fas fa-sliders-h"></i> <!-- Mixing icon -->
+                        </div>
+                        <h3 class="text-2xl font-semibold text-gray-800 group-hover:text-gray-900 transition-colors mb-3">混音</h3>
+                        <p class="text-gray-600 leading-relaxed">平衡與優化，讓聲音更完美。</p>
+                    </a>
+                    <a href="#services" class="group flex flex-col items-center p-10 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 nav-link" data-section="services">
+                        <div class="text-6xl text-gray-700 group-hover:text-black transition-colors mb-6">
+                            <i class="fas fa-project-diagram"></i> <!-- Process icon -->
+                        </div>
+                        <h3 class="text-2xl font-semibold text-gray-800 group-hover:text-gray-900 transition-colors mb-3">服務流程介紹</h3>
+                        <p class="text-gray-600 leading-relaxed">了解我們的合作方式。</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Featured Works Section -->
+            <div class="py-24 px-8 md:px-16 bg-white rounded-xl my-20">
+                <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900">
+                    精選聲音作品
+                </h2>
+                <div class="flex overflow-x-auto space-x-8 pb-6 scrollbar-hide">
+                    <!-- Placeholder video thumbnails with enhanced styling -->
+                    <div class="flex-shrink-0 w-80 md:w-96 bg-gray-100 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 cursor-pointer">
+                        <img src="https://placehold.co/400x225/222222/cccccc?text=Film+Score+Teaser" alt="Film Score Teaser" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="font-bold text-xl text-gray-900 mb-2">《寂靜之森》電影配樂</h3>
+                            <p class="text-base text-gray-700">為獨立電影打造的氛圍感配樂，深入人心。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">電影配樂</span>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 w-80 md:w-96 bg-gray-100 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 cursor-pointer">
+                        <img src="https://placehold.co/400x225/222222/cccccc?text=Game+Sound+Design" alt="Game Sound Design" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="font-bold text-xl text-gray-900 mb-2">《星際漫遊》遊戲音效設計</h3>
+                            <p class="text-base text-gray-700">為科幻遊戲創造的未來感音效，提升沉浸體驗。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">遊戲音效</span>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 w-80 md:w-96 bg-gray-100 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 cursor-pointer">
+                        <img src="https://placehold.co/400x225/222222/cccccc?text=Commercial+Mixing" alt="Commercial Mixing" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="font-bold text-xl text-gray-900 mb-2">《極致生活》品牌廣告混音</h3>
+                            <p class="text-base text-gray-700">為高端品牌廣告進行專業混音，聲音更具質感。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">廣告混音</span>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 w-80 md:w-96 bg-gray-100 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 cursor-pointer">
+                        <img src="https://placehold.co/400x225/222222/cccccc?text=Animation+Soundtrack" alt="Animation Soundtrack" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="font-bold text-xl text-gray-900 mb-2">《夢想家園》動畫原聲帶</h3>
+                            <p class="text-base text-gray-700">為溫馨動畫片創作的暖心原聲帶，充滿童趣。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">動畫原聲帶</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-16">
+                    <a href="#works" class="bg-gray-800 text-white px-10 py-4 rounded-full text-lg font-medium hover:bg-black transition-colors shadow-md transform hover:scale-105 nav-link" data-section="works">
+                        查看所有作品 <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- CTA Block -->
+            <div class="py-24 px-8 md:px-16 bg-black text-white text-center rounded-xl my-20 shadow-2xl">
+                <h2 class="text-4xl md:text-5xl font-bold mb-10 leading-tight">
+                    準備好開啟您的聲音旅程了嗎？
+                </h2>
+                <a href="#contact" class="bg-white text-black px-12 py-5 rounded-full text-xl font-semibold hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-xl nav-link" data-section="contact">
+                    立即免費諮詢 <i class="fas fa-envelope ml-2"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Services Page (services.html simulation) -->
+        <section id="services" class="section-container">
+            <div class="py-24 px-8 md:px-16 bg-gray-50 rounded-xl min-h-screen shadow-lg">
+                <h1 class="text-5xl md:text-6xl font-extrabold text-center mb-20 text-gray-900">
+                    我們的專業服務項目
+                </h1>
+
+                <!-- Three Services Icon Area -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 text-center mb-20">
+                    <div class="p-10 bg-white rounded-xl shadow-lg border border-gray-100 transform hover:scale-105 transition-transform duration-300">
+                        <div class="text-7xl text-gray-700 mb-8">
+                            <i class="fas fa-headphones-alt"></i> <!-- More modern icon -->
+                        </div>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-4">Music Scoring (配樂)</h2>
+                        <p class="text-gray-700 leading-relaxed mb-8">
+                            從概念發想到最終混音，我們為電影、電視劇、廣告、遊戲等各種媒體創作原創配樂。我們的作曲家團隊將與您緊密合作，確保音樂完美契合您的視覺敘事。
+                        </p>
+                        <div class="flex flex-col space-y-4">
+                            <a href="#works" class="bg-gray-800 text-white px-8 py-3 rounded-full text-md font-medium hover:bg-black transition-colors nav-link" data-section="works">查看配樂作品</a>
+                            <a href="#contact" class="border border-gray-800 text-gray-800 px-8 py-3 rounded-full text-md font-medium hover:bg-gray-100 transition-colors nav-link" data-section="contact">報價諮詢</a>
+                        </div>
+                    </div>
+                    <div class="p-10 bg-white rounded-xl shadow-lg border border-gray-100 transform hover:scale-105 transition-transform duration-300">
+                        <div class="text-7xl text-gray-700 mb-8">
+                            <i class="fas fa-volume-down"></i> <!-- More modern icon -->
+                        </div>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-4">Sound Design (音效)</h2>
+                        <p class="text-gray-700 leading-relaxed mb-8">
+                            我們創造獨特且引人入勝的音效，從環境音、特殊效果到角色音效，為您的專案增添深度和真實感。無論是寫實還是科幻，我們都能滿足您的需求。
+                        </p>
+                        <div class="flex flex-col space-y-4">
+                            <a href="#works" class="bg-gray-800 text-white px-8 py-3 rounded-full text-md font-medium hover:bg-black transition-colors nav-link" data-section="works">查看音效作品</a>
+                            <a href="#contact" class="border border-gray-800 text-gray-800 px-8 py-3 rounded-full text-md font-medium hover:bg-gray-100 transition-colors nav-link" data-section="contact">報價諮詢</a>
+                        </div>
+                    </div>
+                    <div class="p-10 bg-white rounded-xl shadow-lg border border-gray-100 transform hover:scale-105 transition-transform duration-300">
+                        <div class="text-7xl text-gray-700 mb-8">
+                            <i class="fas fa-microphone-alt"></i> <!-- More modern icon -->
+                        </div>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-4">Mixing (混音)</h2>
+                        <p class="text-gray-700 leading-relaxed mb-8">
+                            我們的專業混音工程師將確保您的音軌達到最佳平衡、清晰度和動態範圍。無論是音樂、對白還是音效，我們都將其融合為一個凝聚且具衝擊力的最終產品。
+                        </p>
+                        <div class="flex flex-col space-y-4">
+                            <a href="#works" class="bg-gray-800 text-white px-8 py-3 rounded-full text-md font-medium hover:bg-black transition-colors nav-link" data-section="works">查看混音作品</a>
+                            <a href="#contact" class="border border-gray-800 text-gray-800 px-8 py-3 rounded-full text-md font-medium hover:bg-gray-100 transition-colors nav-link" data-section="contact">報價諮詢</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Process Introduction + Quotation Explanation -->
+                <div class="bg-white p-12 rounded-xl shadow-xl border border-gray-100">
+                    <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900">
+                        我們的合作流程與報價參考
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+                        <!-- Step 1 -->
+                        <div class="flex flex-col items-center text-center">
+                            <div class="text-7xl text-gray-600 mb-8">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">Step 1: 初步溝通與需求釐清</h3>
+                            <p class="text-gray-700 leading-relaxed">
+                                我們將與您進行深入的線上或線下會談，了解您的專案目標、風格偏好、預算與時間表。請提供參考資料（如影像片段、音樂範例）。
+                            </p>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="flex flex-col items-center text-center">
+                            <div class="text-7xl text-gray-600 mb-8">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">Step 2: 概念提案與報價</h3>
+                            <p class="text-gray-700 leading-relaxed">
+                                根據您的需求，我們將提供初步的聲音概念方向、報價方案與專案時程。報價會根據專案複雜度、時長、使用範圍等因素而定。
+                            </p>
+                            <div class="mt-8 w-full">
+                                <h4 class="font-semibold text-xl mb-4 text-gray-800">範例報價參考 (僅供參考)</h4>
+                                <table class="w-full text-base text-left text-gray-600 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                    <thead class="text-sm text-gray-800 uppercase bg-gray-100">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">項目</th>
+                                            <th scope="col" class="px-6 py-3">單位</th>
+                                            <th scope="col" class="px-6 py-3">參考價格</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="bg-white border-b border-gray-100">
+                                            <td class="px-6 py-3">配樂</td>
+                                            <td class="px-6 py-3">每分鐘</td>
+                                            <td class="px-6 py-3">NT$ 5,000 - 15,000+</td>
+                                        </tr>
+                                        <tr class="bg-gray-50 border-b border-gray-100">
+                                            <td class="px-6 py-3">音效設計</td>
+                                            <td class="px-6 py-3">每秒/每個</td>
+                                            <td class="px-6 py-3">NT$ 500 - 3,000+</td>
+                                        </tr>
+                                        <tr class="bg-white">
+                                            <td class="px-6 py-3">混音</td>
+                                            <td class="px-6 py-3">每分鐘</td>
+                                            <td class="px-6 py-3">NT$ 3,000 - 8,000+</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p class="text-sm text-gray-500 mt-4">實際報價將依專案複雜度與需求而定，歡迎免費諮詢。</p>
+                            </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="flex flex-col items-center text-center">
+                            <div class="text-7xl text-gray-600 mb-8">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">Step 3: 製作與交付</h3>
+                            <p class="text-gray-700 leading-relaxed">
+                                確認合作後，我們將開始聲音製作。過程中會定期與您溝通進度並提供預覽，確保符合您的期待。最終交付高品質的音訊檔案。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Works Page (works.html simulation) -->
+        <section id="works" class="section-container">
+            <div class="py-24 px-8 md:px-16 bg-white rounded-xl min-h-screen shadow-lg">
+                <h1 class="text-5xl md:text-6xl font-extrabold text-center mb-20 text-gray-900">
+                    我們的聲音作品
+                </h1>
+
+                <!-- Category Filter Bar -->
+                <div class="flex flex-wrap justify-center gap-4 mb-16">
+                    <button class="filter-btn bg-gray-200 text-gray-800 px-8 py-3 rounded-full hover:bg-gray-300 transition-colors font-medium active-filter" data-filter="all">所有作品</button>
+                    <button class="filter-btn bg-gray-200 text-gray-800 px-8 py-3 rounded-full hover:bg-gray-300 transition-colors font-medium" data-filter="film">電影配樂</button>
+                    <button class="filter-btn bg-gray-200 text-gray-800 px-8 py-3 rounded-full hover:bg-gray-300 transition-colors font-medium" data-filter="animation">動畫音效</button>
+                    <button class="filter-btn bg-gray-200 text-gray-800 px-8 py-3 rounded-full hover:bg-gray-300 transition-colors font-medium" data-filter="commercial">廣告音樂</button>
+                    <button class="filter-btn bg-gray-200 text-gray-800 px-8 py-3 rounded-full hover:bg-gray-300 transition-colors font-medium" data-filter="game">遊戲原聲</button>
+                    <button class="filter-btn bg-gray-200 text-gray-800 px-8 py-3 rounded-full hover:bg-gray-300 transition-colors font-medium" data-filter="other">其他專案</button>
+                </div>
+
+                <!-- Works Display Area (Grid layout for better overview) -->
+                <div id="works-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+                    <!-- Work Item 1 (Film) -->
+                    <div class="work-item bg-gray-100 rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-category="film">
+                        <img src="https://placehold.co/600x338/333333/eeeeee?text=Film+Score+Teaser+1" alt="Film Project 1" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">《城市迴響》</h3>
+                            <p class="text-gray-700 text-sm leading-relaxed">為一部獨立電影創作的配樂，營造都會中的孤寂與希望。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">電影配樂</span>
+                        </div>
+                    </div>
+                    <!-- Work Item 2 (Animation) -->
+                    <div class="work-item bg-gray-100 rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-category="animation">
+                        <img src="https://placehold.co/600x338/333333/eeeeee?text=Animation+Sound+Design+1" alt="Animation Project 1" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">《奇幻森林歷險記》</h3>
+                            <p class="text-gray-700 text-sm leading-relaxed">為兒童動畫片設計的生動音效與主題曲，充滿想像力。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">動畫音效</span>
+                        </div>
+                    </div>
+                    <!-- Work Item 3 (Commercial) -->
+                    <div class="work-item bg-gray-100 rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-category="commercial">
+                        <img src="https://placehold.co/600x338/333333/eeeeee?text=Commercial+Music+1" alt="Commercial Project 1" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">《未來之聲》品牌廣告</h3>
+                            <p class="text-gray-700 text-sm leading-relaxed">為科技產品廣告打造的現代感音樂，提升品牌形象。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">廣告音樂</span>
+                        </div>
+                    </div>
+                    <!-- Work Item 4 (Game) -->
+                    <div class="work-item bg-gray-100 rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-category="game">
+                        <img src="https://placehold.co/600x338/333333/eeeeee?text=Game+Soundtrack+1" alt="Game Soundtrack 1" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">《星際探險》遊戲原聲帶</h3>
+                            <p class="text-gray-700 text-sm leading-relaxed">為科幻冒險遊戲創作的史詩級原聲帶，營造廣闊宇宙感。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">遊戲原聲</span>
+                        </div>
+                    </div>
+                    <!-- Work Item 5 (Film) -->
+                    <div class="work-item bg-gray-100 rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-category="film">
+                        <img src="https://placehold.co/600x338/333333/eeeeee?text=Documentary+Score+1" alt="Film Project 2" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">《自然之聲》紀錄片配樂</h3>
+                            <p class="text-gray-700 text-sm leading-relaxed">為自然紀錄片設計的環境音效與背景音樂，展現生命力。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">電影配樂</span>
+                        </div>
+                    </div>
+                    <!-- Work Item 6 (Animation) -->
+                    <div class="work-item bg-gray-100 rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-category="animation">
+                        <img src="https://placehold.co/600x338/333333/eeeeee?text=Cartoon+Soundtrack+1" alt="Animation Project 2" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">《小小英雄》動畫影集</h3>
+                            <p class="text-gray-700 text-sm leading-relaxed">為學齡前動畫影集製作的活潑配樂，充滿正能量。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">動畫音效</span>
+                        </div>
+                    </div>
+                    <!-- Work Item 7 (Other) -->
+                    <div class="work-item bg-gray-100 rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-category="other">
+                        <img src="https://placehold.co/600x338/333333/eeeeee?text=Podcast+Intro+Music" alt="Podcast Project 1" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">《深度對談》Podcast 開場音樂</h3>
+                            <p class="text-gray-700 text-sm leading-relaxed">為知名 Podcast 節目創作的獨特開場與結尾音樂。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">其他專案</span>
+                        </div>
+                    </div>
+                    <!-- Work Item 8 (Commercial) -->
+                    <div class="work-item bg-gray-100 rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-category="commercial">
+                        <img src="https://placehold.co/600x338/333333/eeeeee?text=Event+Soundscape" alt="Event Project 1" class="w-full h-auto object-cover rounded-t-xl">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">《沉浸式體驗》活動音景設計</h3>
+                            <p class="text-gray-700 text-sm leading-relaxed">為大型展覽活動設計的沉浸式音景，營造獨特氛圍。</p>
+                            <span class="inline-block bg-gray-200 text-gray-700 text-xs px-4 py-1 rounded-full mt-4 font-medium">廣告音樂</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Detail Modal -->
+                <div id="workModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-button">×</span>
+                        <h2 id="modalTitle" class="text-3xl md:text-4xl font-bold mb-6 text-gray-900"></h2>
+                        <div id="modalVideo" class="aspect-video bg-black mb-6 rounded-lg overflow-hidden">
+                            <!-- Placeholder for video player.
+                                 For a real implementation, you would embed a YouTube/Vimeo iframe here:
+                                 <iframe width="100%" height="auto" src="YOUR_VIDEO_EMBED_URL" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            -->
+                            <img id="modalImage" src="" alt="Work Video Placeholder" class="w-full h-full object-contain">
+                            <p id="videoPlaceholderText" class="absolute inset-0 flex items-center justify-center text-white text-lg bg-black bg-opacity-50">
+                                影片播放器佔位符：此處將嵌入實際作品影片
+                            </p>
+                        </div>
+                        <p id="modalDescription" class="text-gray-700 leading-relaxed text-base mb-4"></p>
+                        <p id="modalCategory" class="text-gray-600 text-sm font-medium"></p>
+                        <div class="mt-6 flex flex-wrap gap-3">
+                            <span class="bg-gray-200 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">#配樂</span>
+                            <span class="bg-gray-200 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">#音效設計</span>
+                            <span class="bg-gray-200 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">#混音</span>
+                            <span class="bg-gray-200 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">#電影</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Page (contact.html simulation) -->
+        <section id="contact" class="section-container">
+            <div class="py-24 px-8 md:px-16 bg-gray-50 rounded-xl min-h-screen flex flex-col lg:flex-row gap-16 items-center justify-center shadow-lg">
+                <!-- Contact Form Section -->
+                <div class="bg-white p-12 rounded-xl shadow-xl w-full lg:w-1/2 max-w-2xl border border-gray-100">
+                    <h1 class="text-4xl md:text-5xl font-bold text-center mb-10 text-gray-900">
+                        開啟您的聲音專案
+                    </h1>
+                    <form class="space-y-8">
+                        <div>
+                            <label for="name" class="block text-base font-medium text-gray-700 mb-2">姓名 <span class="text-red-500">*</span></label>
+                            <input type="text" id="name" name="name" required class="w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 text-gray-800">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-base font-medium text-gray-700 mb-2">電子郵件 <span class="text-red-500">*</span></label>
+                            <input type="email" id="email" name="email" required class="w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 text-gray-800">
+                        </div>
+                        <div>
+                            <label for="company" class="block text-base font-medium text-gray-700 mb-2">單位 (選填)</label>
+                            <input type="text" id="company" name="company" class="w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 text-gray-800">
+                        </div>
+                        <div>
+                            <label for="type" class="block text-base font-medium text-gray-700 mb-2">需求類型 <span class="text-red-500">*</span></label>
+                            <select id="type" name="type" required class="w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 bg-white text-gray-800">
+                                <option value="">請選擇您的需求...</option>
+                                <option value="music-scoring">配樂創作</option>
+                                <option value="sound-design">音效設計</option>
+                                <option value="mixing">混音服務</option>
+                                <option value="consultation">專案諮詢</option>
+                                <option value="other">其他合作</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="message" class="block text-base font-medium text-gray-700 mb-2">專案需求說明 <span class="text-red-500">*</span></label>
+                            <textarea id="message" name="message" rows="7" required class="w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 text-gray-800"></textarea>
+                        </div>
+                        <div>
+                            <label for="file-link" class="block text-base font-medium text-gray-700 mb-2">相關參考資料 / 連結 (選填)</label>
+                            <input type="url" id="file-link" name="file-link" placeholder="例如：Google Drive 連結、參考影片連結、網站連結" class="w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 text-gray-800">
+                        </div>
+                        <button type="submit" class="w-full bg-gray-900 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-black transition-colors shadow-lg transform hover:scale-105">
+                            提交諮詢表單 <i class="fas fa-paper-plane ml-2"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Simplified Process Flow -->
+                <div class="w-full lg:w-1/2 max-w-2xl p-12 bg-white rounded-xl shadow-xl border border-gray-100">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center text-gray-900">
+                        我們的合作流程
+                    </h2>
+                    <div class="space-y-10">
+                        <div class="flex items-start space-x-6">
+                            <div class="flex-shrink-0 text-5xl text-gray-700 pt-1">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">1. 告訴我們您的想法</h3>
+                                <p class="text-gray-700 leading-relaxed">
+                                    透過上方表單簡述您的專案需求與期望，讓我們對您的專案有初步了解。越詳細越好！
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-6">
+                            <div class="flex-shrink-0 text-5xl text-gray-700 pt-1">
+                                <i class="fas fa-video"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">2. 安排線上會談</h3>
+                                <p class="text-gray-700 leading-relaxed">
+                                    我們將主動聯繫您，安排一次免費的線上會議，深入討論專案細節、風格方向與預算。
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-6">
+                            <div class="flex-shrink-0 text-5xl text-gray-700 pt-1">
+                                <i class="fas fa-map-signs"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">3. 獲得聲音藍圖與報價</h3>
+                                <p class="text-gray-700 leading-relaxed">
+                                    會談後，我們將為您提供專屬的聲音設計藍圖與詳細報價，確認後即可開啟合作。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 px-8 md:px-16 text-center rounded-t-xl mt-20 shadow-inner">
+        <div class="flex flex-col md:flex-row justify-between items-center max-w-6xl mx-auto">
+            <p class="mb-6 md:mb-0 text-gray-400 text-sm md:text-base font-light">
+                © 2025 Sense Music Studio. All rights reserved.
+            </p>
+            <div class="flex space-x-8">
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors text-3xl transform hover:scale-110">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors text-3xl transform hover:scale-110">
+                    <i class="fab fa-youtube"></i>
+                </a>
+                <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors text-3xl transform hover:scale-110">
+                    <i class="fab fa-facebook"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript for page navigation simulation
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.section-container');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const closeMobileMenuButton = document.getElementById('close-mobile-menu');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            // Function to show a specific section and update active nav link
+            const showSection = (sectionId) => {
+                sections.forEach(section => {
+                    section.classList.remove('active-section');
+                });
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.add('active-section');
+                    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top of new section
+                }
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.dataset.section === sectionId) {
+                        link.classList.add('active');
+                    }
+                });
+
+                // Close mobile menu if open
+                mobileMenu.classList.remove('translate-x-0');
+                mobileMenu.classList.add('translate-x-full');
+            };
+
+            // Event listeners for navigation links
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionId = link.dataset.section;
+                    if (sectionId) {
+                        showSection(sectionId);
+                    }
+                });
+            });
+
+            // Mobile menu toggle
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.remove('translate-x-full');
+                mobileMenu.classList.add('translate-x-0');
+            });
+
+            closeMobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.remove('translate-x-0');
+                mobileMenu.classList.add('translate-x-full');
+            });
+
+            // Initial load: show home section
+            showSection('home');
+
+            // Works page modal functionality
+            const workModal = document.getElementById('workModal');
+            const closeButton = document.querySelector('.close-button');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalImage = document.getElementById('modalImage'); // Using image for placeholder video
+            const videoPlaceholderText = document.getElementById('videoPlaceholderText');
+            const modalDescription = document.getElementById('modalDescription');
+            const modalCategory = document.getElementById('modalCategory');
+            const workItems = document.querySelectorAll('.work-item');
+
+            workItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const title = item.querySelector('h3').innerText;
+                    const description = item.querySelector('p').innerText;
+                    const category = item.querySelector('span').innerText;
+                    const imageUrl = item.querySelector('img').src;
+
+                    modalTitle.innerText = title;
+                    modalImage.src = imageUrl; // Set image for placeholder video
+                    videoPlaceholderText.style.display = 'flex'; // Show placeholder text for video
+                    modalDescription.innerText = description;
+                    modalCategory.innerText = `分類: ${category}`;
+                    workModal.style.display = 'flex'; // Show modal
+                });
+            });
+
+            closeButton.addEventListener('click', () => {
+                workModal.style.display = 'none'; // Hide modal
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === workModal) {
+                    workModal.style.display = 'none'; // Hide modal if clicked outside
+                }
+            });
+
+            // Works page filter functionality
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const worksGrid = document.getElementById('works-grid');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active-filter', 'bg-gray-800', 'text-white'));
+                    // Add active class to clicked button
+                    button.classList.add('active-filter', 'bg-gray-800', 'text-white');
+
+                    const filter = button.dataset.filter;
+
+                    worksGrid.querySelectorAll('.work-item').forEach(item => {
+                        const category = item.dataset.category;
+                        if (filter === 'all' || category === filter) {
+                            item.style.display = 'block'; // Show item
+                        } else {
+                            item.style.display = 'none'; // Hide item
+                        }
+                    });
+                });
+            });
+
+            // Set initial active filter button
+            document.querySelector('.filter-btn[data-filter="all"]').click();
+        });
+    </script>
+</body>
+</html>
