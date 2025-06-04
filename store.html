@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sense Web - 網站建置服務</title>
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom animations and patterns */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        /* Add other custom styles from the React version */
+        .bg-pattern-dots {
+            background-image: radial-gradient(#4a004a 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-gray-900 text-gray-100 p-4 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center flex-wrap">
+            <div class="text-2xl font-bold text-purple-400">Sense Web</div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-100">
+                <i data-lucide="menu"></i>
+            </button>
+            <div id="nav-links" class="hidden md:flex space-x-6 items-center w-full md:w-auto">
+                <a href="#home" class="nav-link hover:text-purple-300 transition duration-300">首頁</a>
+                <a href="#services" class="nav-link hover:text-purple-300 transition duration-300">服務項目</a>
+                <a href="#pricing" class="nav-link hover:text-purple-300 transition duration-300">價格方案</a>
+                <a href="#contact" class="nav-link hover:text-purple-300 transition duration-300">聯絡我們</a>
+                <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-md hover:shadow-purple-500/50">
+                    立即諮詢
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="relative h-screen flex items-center justify-center text-center">
+            <!-- Add hero content -->
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="py-20">
+            <!-- Add services content -->
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="py-20">
+            <!-- Add pricing content -->
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20">
+            <!-- Add contact form -->
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 p-8 mt-12 border-t border-gray-800">
+        <div class="container mx-auto text-center">
+            <div class="flex justify-center space-x-6 mb-4">
+                <a href="#" class="hover:text-purple-400 transition duration-300">Facebook</a>
+                <a href="#" class="hover:text-purple-400 transition duration-300">Instagram</a>
+                <a href="#" class="hover:text-purple-400 transition duration-300">LinkedIn</a>
+            </div>
+            <p>&copy; 2025 Sense Web. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', () => {
+            document.getElementById('nav-links').classList.toggle('hidden');
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

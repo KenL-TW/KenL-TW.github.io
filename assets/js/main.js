@@ -161,85 +161,99 @@
   }
 
   /**
-   * Porfolio isotope and filter
+   * Portfolio initialization and handlers
    */
-  window.addEventListener('load', () => {
+  const initPortfolio = () => {
+    // Initialize Isotope
     let portfolioContainer = select('.portfolio-container');
     if (portfolioContainer) {
       let portfolioIsotope = new Isotope(portfolioContainer, {
         itemSelector: '.portfolio-item',
-        layoutMode: 'masonry'
+        layoutMode: 'fitRows',
+        transitionDuration: '0.4s'
       });
 
+      // Filter handlers
       let portfolioFilters = select('#portfolio-flters li', true);
-
       on('click', '#portfolio-flters li', function(e) {
         e.preventDefault();
-        portfolioFilters.forEach(function(el) {
-          el.classList.remove('filter-active');
-        });
+        portfolioFilters.forEach(el => el.classList.remove('filter-active'));
         this.classList.add('filter-active');
 
         portfolioIsotope.arrange({
           filter: this.getAttribute('data-filter')
         });
+        portfolioIsotope.on('arrangeComplete', () => AOS.refresh());
       }, true);
     }
 
-  });
+    // Initialize lightbox
+    const portfolioLightbox = GLightbox({
+      selector: '.portfolio-lightbox',
+      touchNavigation: true,
+      loop: true,
+      autoplayVideos: true
+    });
 
-  /**
-   * Initiate portfolio lightbox 
-   */
-  const portfolioLightbox = GLightbox({
-    selector: '.portfolio-lightbox'
-  });
-
-  /**
-   * Portfolio details slider
-   */
-  new Swiper('.portfolio-details-slider', {
-    speed: 400,
-    loop: true,
-    autoplay: {
-      delay: 5000,
-      disableOnInteraction: false
-    },
-    pagination: {
-      el: '.swiper-pagination',
-      type: 'bullets',
-      clickable: true
+    // Portfolio details handlers
+    const portfolioDetails = select('.portfolio-details');
+    if (portfolioDetails) {
+      new Swiper('.portfolio-details-slider', {
+        speed: 400,
+        loop: true,
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false
+        },
+        pagination: {
+          el: '.swiper-pagination',
+          type: 'bullets',
+          clickable: true
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev'
+        }
+      });
     }
-  });
 
-  /**
-   * Testimonials slider
-   */
-  new Swiper('.testimonials-slider', {
-    speed: 600,
-    loop: true,
-    autoplay: {
-      delay: 5000,
-      disableOnInteraction: false
-    },
-    slidesPerView: 'auto',
-    pagination: {
-      el: '.swiper-pagination',
-      type: 'bullets',
-      clickable: true
-    },
-    breakpoints: {
-      320: {
-        slidesPerView: 1,
-        spaceBetween: 20
-      },
+    // Initialize modals
+    initPortfolioModals();
+  };
 
-      1200: {
-        slidesPerView: 3,
-        spaceBetween: 20
+  function initPortfolioModals() {
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+    const modal = document.getElementById('portfolio-modal');
+    const closeButton = modal.querySelector('.close-modal');
+
+    portfolioItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const data = item.dataset;
+        
+        // Set modal content
+        document.getElementById('modal-title').textContent = data.title;
+        document.getElementById('modal-description').textContent = data.description;
+        document.getElementById('modal-image').src = item.querySelector('img').src;
+        
+        // Show modal
+        modal.style.display = 'flex';
+      });
+    });
+    
+    // Close modal
+    closeButton.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+    
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
       }
-    }
-  });
+    });
+  }
+
+  // Initialize portfolio when DOM is loaded
+  window.addEventListener('load', initPortfolio);
 
   /**
    * Animation on scroll

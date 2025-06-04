@@ -482,3 +482,311 @@ section {
     text-align: center;
     padding: 2rem;
 }
+
+/*--------------------------------------------------------------
+# Portfolio Section
+--------------------------------------------------------------*/
+/* Portfolio Grid Layout */
+.portfolio-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.portfolio-item {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.portfolio-item:hover {
+  transform: translateY(-5px);
+}
+
+.portfolio-wrap img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+}
+
+.portfolio-info {
+  padding: 1.5rem;
+  background: #fff;
+}
+
+.portfolio-info h4 {
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.portfolio-info p {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Simplified Modal Styles */
+.portfolio-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  max-width: 800px;
+  width: 90%;
+  padding: 2rem;
+  border-radius: 8px;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #374151;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/*--------------------------------------------------------------
+# Certifications Section
+--------------------------------------------------------------*/
+.certifications .certification-box {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  transition: transform 0.3s ease;
+}
+
+.certifications .certification-box:hover {
+  transform: translateY(-5px);
+}
+
+.certifications .certification-img {
+  position: relative;
+  overflow: hidden;
+  height: 240px;
+}
+
+.certifications .certification-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.certifications .certification-box:hover .certification-img img {
+  transform: scale(1.1);
+}
+
+.certifications .certification-info {
+  padding: 20px;
+}
+
+.certifications .certification-info h4 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #45505b;
+}
+
+.certifications .certification-info p {
+  font-size: 14px;
+  color: #728394;
+  margin-bottom: 15px;
+}
+
+.certifications .certification-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #6c757d;
+}
+
+.certifications .certification-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.certifications .certification-meta i {
+  font-size: 14px;
+}
+
+/* Modern Contact Form Styles */
+.contact-form {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+.contact-form .form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.contact-form .form-control {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  min-height: 44px;
+  transition: all 0.3s ease;
+}
+
+.contact-form .form-control:focus {
+  border-color: #149ddd;
+  box-shadow: 0 0 0 2px rgba(20, 157, 221, 0.1);
+}
+
+.contact-form textarea.form-control {
+  min-height: 120px;
+}
+
+.contact-form label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.contact-form button[type="submit"] {
+  background: #149ddd;
+  border: 0;
+  padding: 12px 34px;
+  color: #fff;
+  border-radius: 4px;
+  transition: 0.4s;
+}
+
+.contact-form button[type="submit"]:hover {
+  background: #37b3ed;
+}
+
+/* Loading and Message States */
+.contact-form .loading,
+.contact-form .error-message,
+.contact-form .sent-message {
+  display: none;
+  padding: 12px 16px;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.contact-form .loading {
+  background: rgba(255, 255, 255, 0.9);
+  color: #666;
+}
+
+.contact-form .loading:before {
+  content: "";
+  display: inline-block;
+  border: 3px solid #149ddd;
+  border-top-color: transparent;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+  vertical-align: middle;
+  animation: spin 1s linear infinite;
+}
+
+.contact-form .error-message {
+  background: #ffd1d1;
+  color: #d63031;
+}
+
+.contact-form .sent-message {
+  background: #d4edda;
+  color: #28a745;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Contact Info Cards */
+.info {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+.info div {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.info div:hover {
+  transform: translateY(-5px);
+}
+
+.info i {
+  font-size: 24px;
+  color: #149ddd;
+  margin-bottom: 1rem;
+}
+
+.info h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.info p {
+  color: #666;
+  margin: 0;
+}
+
+/* Footer Styles */
+#footer {
+  padding: 15px;
+  color: #f4f6fd;
+  font-size: 14px;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 997;
+  background: #040b14;
+}
+
+#footer .copyright {
+  text-align: center;
+  padding-top: 5px;
+}
+
+@media (max-width: 768px) {
+  #footer {
+    position: static;
+    width: auto;
+    padding-right: 20px 15px;
+  }
+}
