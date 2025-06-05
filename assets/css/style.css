@@ -790,3 +790,50 @@ section {
     padding-right: 20px 15px;
   }
 }
+
+/* Mobile Navigation adjustments */
+@media (max-width: 1199px) {
+  #header {
+    left: -300px;
+    transition: all 0.5s;
+  }
+
+  #main {
+    margin-left: 0;
+  }
+
+  .mobile-nav-active #header {
+    left: 0;
+  }
+
+  .mobile-nav-active #main {
+    margin-left: 300px;
+    overflow: hidden; /* Prevent horizontal scroll */
+  }
+
+  /* Ensure content doesn't overlap with menu when open */
+  .mobile-nav-active {
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Add backdrop when menu is open */
+  .mobile-nav-active::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+    transition: all 0.5s;
+  }
+}
+
+/* Adjust main content padding for mobile */
+@media (max-width: 768px) {
+  #main {
+    padding: 0 15px;
+  }
+}
