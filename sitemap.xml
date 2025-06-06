@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- 首頁 -->
+  <url>
+    <loc>https://kenl-tw.github.io/</loc>
+    <lastmod>2025-06-10</lastmod>
+    <priority>1.00</priority>
+  </url>
+  <!-- 如果未來有其他頁面，可再新增以下範例：
+  <url>
+    <loc>https://kenl-tw.github.io/about.html</loc>
+    <lastmod>2025-06-10</lastmod>
+    <priority>0.80</priority>
+  </url>
+  -->
+</urlset>
