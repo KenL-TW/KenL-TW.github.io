@@ -272,4 +272,38 @@
    */
   new PureCounter();
 
+  // Add GA4 event tracking
+  document.addEventListener('DOMContentLoaded', function() {
+    // Track contact form submissions
+    const contactForm = document.querySelector('.contact-form');
+    if (contactForm) {
+      contactForm.addEventListener('submit', function() {
+        gtag('event', 'form_submission', {
+          'event_category': 'Contact',
+          'event_label': 'Contact Form'
+        });
+      });
+    }
+
+    // Track portfolio item clicks
+    document.querySelectorAll('.portfolio-item').forEach(item => {
+      item.addEventListener('click', function() {
+        gtag('event', 'view_item', {
+          'event_category': 'Portfolio',
+          'event_label': this.querySelector('h4').textContent
+        });
+      });
+    });
+
+    // Track certification views
+    document.querySelectorAll('.certification-box').forEach(cert => {
+      cert.addEventListener('click', function() {
+        gtag('event', 'view_item', {
+          'event_category': 'Certifications',
+          'event_label': this.querySelector('h4').textContent
+        });
+      });
+    });
+  });
+
 })()
