@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO 精靈 (Vue.js)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <!-- Vue.js CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script type="module">
+        const { createApp, ref, reactive, computed } = Vue;
+
+        // Header Component
+        const Header = {
+            template: `
+                <header class="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4 shadow-md rounded-b-xl">
+                    <div class="container mx-auto flex justify-between items-center">
+                        <div class="flex items-center">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-8 w-8 mr-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9 19V6l12-3v13M9 19c0 1.105-1.79 2-4 2s-4-.895-4-2 1.79-2 4-2 4 .895 4 2zm12-3c0 1.105-1.79 2-4 2s-4-.895-4-2 1.79-2 4-2 4 .895 4 2zM9 6c0 1.105-1.79 2-4 2S1 7.105 1 6s1.79-2 4-2 4 .895 4 2z"
+                                />
+                            </svg>
+                            <h1 class="text-3xl font-extrabold tracking-tight">SEO 精靈</h1>
+                        </div>
+                        <nav>
+                            <ul class="flex space-x-6">
+                                <li>
+                                    <a href="#" class="hover:text-blue-200 transition duration-300">
+                                        首頁
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="hover:text-blue-200 transition duration-300">
+                                        SEO 分析
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="hover:text-blue-200 transition duration-300">
+                                        報告
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="hover:text-blue-200 transition duration-300">
+                                        設定
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <div>
+                            <button class="bg-white text-blue-600 px-4 py-2 rounded-full font-semibold hover:bg-blue-100 transition duration-300 shadow-md">
+                                登入 / 註冊
+                            </button>
+                        </div>
+                    </div>
+                </header>
+            `
+        };
+
+        // Input Panel Component
+        const InputPanel = {
+            props: ['url', 'keywords', 'language', 'region', 'analysisScope', 'isAnalyzing'],
+            emits: ['update:url', 'update:keywords', 'update:language', 'update:region', 'update:analysisScope', 'startAnalysis'],
+            template: `
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-900">輸入區</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="websiteUrl" class="block text-sm font-medium text-gray-700 mb-1">
+                                網站URL
+                            </label>
+                            <input
+                                type="url"
+                                id="websiteUrl"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="例如：https://www.example.com"
+                                :value="url"
+                                @input="$emit('update:url', $event.target.value)"
+                                :disabled="isAnalyzing"
+                            />
+                        </div>
+                        <div>
+                            <label for="targetKeywords" class="block text-sm font-medium text-gray-700 mb-1">
+                                目標關鍵字 (選填)
+                            </label>
+                            <input
+                                type="text"
+                                id="targetKeywords"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="例如：SEO 工具, 網站優化"
+                                :value="keywords"
+                                @input="$emit('update:keywords', $event.target.value)"
+                                :disabled="isAnalyzing"
+                            />
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="language" class="block text-sm font-medium text-gray-700 mb-1">
+                                    語言 (選填)
+                                </label>
+                                <select
+                                    id="language"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white"
+                                    :value="language"
+                                    @change="$emit('update:language', $event.target.value)"
+                                    :disabled="isAnalyzing"
+                                >
+                                    <option value="zh-TW">繁體中文</option>
+                                    <option value="en">英文</option>
+                                    <option value="ja">日文</option>
+                                    <option value="ko">韓文</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="region" class="block text-sm font-medium text-gray-700 mb-1">
+                                    地區 (選填)
+                                </label>
+                                <select
+                                    id="region"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white"
+                                    :value="region"
+                                    @change="$emit('update:region', $event.target.value)"
+                                    :disabled="isAnalyzing"
+                                >
+                                    <option value="TW">台灣</option>
+                                    <option value="US">美國</option>
+                                    <option value="JP">日本</option>
+                                    <option value="KR">韓國</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">檢測範圍</label>
+                            <div class="flex flex-col space-y-2">
+                                <label class="inline-flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        name="technical"
+                                        :checked="analysisScope.technical"
+                                        @change="handleScopeChange"
+                                        class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500 transition duration-200"
+                                        :disabled="isAnalyzing"
+                                    />
+                                    <span class="ml-2 text-gray-700">技術SEO</span>
+                                </label>
+                                <p class="text-xs text-gray-500 ml-7 mb-2">
+                                    分析網站的技術層面，如網站架構、Meta標籤、速度等。
+                                </p>
+                                <label class="inline-flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        name="content"
+                                        :checked="analysisScope.content"
+                                        @change="handleScopeChange"
+                                        class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500 transition duration-200"
+                                        :disabled="isAnalyzing"
+                                    />
+                                    <span class="ml-2 text-gray-700">內容SEO</span>
+                                </label>
+                                <p class="text-xs text-gray-500 ml-7 mb-2">
+                                    評估網站內容的品質、關鍵字使用、E-E-A-T指標等。
+                                </p>
+                                <label class="inline-flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        name="offPage"
+                                        :checked="analysisScope.offPage"
+                                        @change="handleScopeChange"
+                                        class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500 transition duration-200"
+                                        :disabled="isAnalyzing"
+                                    />
+                                    <span class="ml-2 text-gray-700">站外SEO</span>
+                                </label>
+                                <p class="text-xs text-gray-500 ml-7">
+                                    檢測網站的外部因素，如反向連結、社群媒體表現和品牌提及。
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            @click="$emit('startAnalysis')"
+                            class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-blue-700 transition duration-300 shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="isAnalyzing"
+                        >
+                            {{ isAnalyzing ? '分析中...' : '開始分析' }}
+                        </button>
+                    </div>
+                </div>
+            `,
+            methods: {
+                handleScopeChange(event) {
+                    const newScope = { ...this.analysisScope, [event.target.name]: event.target.checked };
+                    this.$emit('update:analysisScope', newScope);
+                }
+            }
+        };
+
+        // Progress Bar Component
+        const ProgressBar = {
+            props: ['progress'],
+            template: `
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-800">分析進度</h3>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div
+                            class="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500 ease-out"
+                            :style="{ width: progress + '%' }"
+                        ></div>
+                    </div>
+                    <p class="text-right text-sm text-gray-600 mt-1">{{ progress }}% 完成</p>
+                </div>
+            `
+        };
+
+        // Collapsible Module Component
+        const CollapsibleModule = {
+            props: ['title'],
+            setup() {
+                const isOpen = ref(true);
+                return {
+                    isOpen,
+                    toggleOpen: () => isOpen.value = !isOpen.value
+                };
+            },
+            template: `
+                <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                    <button
+                        class="flex justify-between items-center w-full p-4 bg-gray-50 hover:bg-gray-100 transition duration-200 text-left font-semibold text-gray-800"
+                        @click="toggleOpen"
+                    >
+                        <span>{{ title }}</span>
+                        <svg
+                            class="w-5 h-5 transform transition-transform duration-200"
+                            :class="{ 'rotate-180': isOpen }"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div v-if="isOpen" class="p-4 border-t border-gray-200 bg-white">
+                        <slot></slot>
+                    </div>
+                </div>
+            `
+        };
+
+        // Optimization Suggestion Component
+        const OptimizationSuggestion = {
+            props: ['label', 'status', 'value', 'suggestion', 'priority'],
+            template: `
+                <div class="mb-4 p-4 border border-gray-100 rounded-lg bg-white shadow-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-semibold text-gray-900">{{ label }}</h4>
+                        <span
+                            class="px-3 py-1 rounded-full text-xs font-medium"
+                            :class="getStatusColor(status)"
+                        >
+                            {{ status }}
+                        </span>
+                    </div>
+                    <p v-if="value" class="text-sm text-gray-600 mb-2">數值: {{ value }}</p>
+                    <p v-if="suggestion" class="text-sm text-gray-700">
+                        <span class="font-medium">建議:</span> {{ suggestion }}
+                    </p>
+                    <div v-if="priority" class="mt-2 text-right">
+                        <span
+                            class="px-2 py-1 rounded-full text-xs font-semibold"
+                            :class="getPriorityColor(priority)"
+                        >
+                            優先級: {{ priority }}
+                        </span>
+                    </div>
+                </div>
+            `,
+            methods: {
+                getStatusColor(status) {
+                    switch (status) {
+                        case '良好': return 'text-green-600 bg-green-100';
+                        case '不足':
+                        case '缺失':
+                        case '偏慢':
+                        case '待加強':
+                        case '偏低': return 'text-red-600 bg-red-100';
+                        case '部分通過':
+                        case '中等': return 'text-yellow-600 bg-yellow-100';
+                        default: return 'text-gray-600 bg-gray-100';
+                    }
+                },
+                getPriorityColor(priority) {
+                    switch (priority) {
+                        case '高': return 'bg-red-500 text-white';
+                        case '中': return 'bg-yellow-500 text-white';
+                        case '低': return 'bg-green-500 text-white';
+                        default: return 'bg-gray-400 text-white';
+                    }
+                }
+            }
+        };
+
+        // Meta Tag Generator Component (LLM-powered)
+        const MetaTagGenerator = {
+            props: ['url', 'keywords', 'showMessage'],
+            setup(props) {
+                const isGenerating = ref(false);
+                const generatedTitle = ref('');
+                const generatedDescription = ref('');
+
+                const generateMetaTags = async () => {
+                    if (!props.url) {
+                        props.showMessage('請輸入網站URL才能生成Meta標籤建議。', 'error');
+                        return;
+                    }
+
+                    isGenerating.value = true;
+                    generatedTitle.value = '';
+                    generatedDescription.value = '';
+
+                    try {
+                        let chatHistory = [];
+                        const prompt = `請為網站URL: ${props.url} 和目標關鍵字: ${props.keywords || '未指定'} 生成一個最佳的 Meta Title (不超過60字) 和 Meta Description (不超過160字)。請以 JSON 格式返回，包含 "metaTitle" 和 "metaDescription" 兩個鍵。`;
+                        
+                        chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                        const payload = {
+                            contents: chatHistory,
+                            generationConfig: {
+                                responseMimeType: "application/json",
+                                responseSchema: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        "metaTitle": { "type": "STRING" },
+                                        "metaDescription": { "type": "STRING" }
+                                    },
+                                    "propertyOrdering": ["metaTitle", "metaDescription"]
+                                }
+                            }
+                        };
+                        
+                        const apiKey = ""; // Canvas will provide this at runtime
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                        
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        
+                        const result = await response.json();
+
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            const jsonText = result.candidates[0].content.parts[0].text;
+                            const parsedJson = JSON.parse(jsonText);
+                            generatedTitle.value = parsedJson.metaTitle || '無法生成標題';
+                            generatedDescription.value = parsedJson.metaDescription || '無法生成描述';
+                            props.showMessage('Meta 標籤建議已生成！', 'success');
+                        } else {
+                            props.showMessage('無法生成 Meta 標籤建議，請稍後再試。', 'error');
+                            console.error('Gemini API response structure unexpected:', result);
+                        }
+                    } catch (error) {
+                        props.showMessage('生成 Meta 標籤時發生錯誤。', 'error');
+                        console.error('Error generating meta tags:', error);
+                    } finally {
+                        isGenerating.value = false;
+                    }
+                };
+
+                const copyToClipboard = (text, type) => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        props.showMessage(`${type} 已複製到剪貼簿！`, 'success');
+                    } catch (err) {
+                        props.showMessage(`無法複製 ${type}。`, 'error');
+                        console.error('Failed to copy text: ', err);
+                    }
+                    document.body.removeChild(textarea);
+                };
+
+                return {
+                    isGenerating,
+                    generatedTitle,
+                    generatedDescription,
+                    generateMetaTags,
+                    copyToClipboard
+                };
+            },
+            template: `
+                <div class="mt-6 p-4 border border-blue-200 rounded-lg bg-blue-50 shadow-sm">
+                    <h4 class="font-semibold text-blue-800 mb-3 flex items-center">
+                        <span class="text-xl mr-2">✨</span>Meta 標籤智慧生成器 (由 Gemini AI 驅動)
+                    </h4>
+                    <p class="text-sm text-gray-700 mb-3">
+                        根據您的網站URL和目標關鍵字，自動生成優化的Meta Title和Meta Description建議。
+                    </p>
+                    <button
+                        @click="generateMetaTags"
+                        class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-600 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        :disabled="isGenerating || !url"
+                    >
+                        <template v-if="isGenerating">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            生成中...
+                        </template>
+                        <template v-else>
+                            ✨ 生成 Meta 標籤建議
+                        </template>
+                    </button>
+
+                    <div v-if="generatedTitle || generatedDescription" class="mt-4 space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                建議 Meta Title:
+                            </label>
+                            <div class="flex items-center bg-white border border-gray-300 rounded-lg p-2">
+                                <p class="flex-grow text-gray-800 text-sm break-all">{{ generatedTitle }}</p>
+                                <button
+                                    @click="copyToClipboard(generatedTitle, 'Meta Title')"
+                                    class="ml-2 p-1 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition duration-200"
+                                    title="複製標題"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                                        <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2H6zM5 9.5a1.5 1.5 0 113 0v3a1.5 1.5 0 11-3 0v-3z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">字數: {{ generatedTitle.length }} (建議不超過60字)</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                建議 Meta Description:
+                            </label>
+                            <div class="flex items-center bg-white border border-gray-300 rounded-lg p-2">
+                                <p class="flex-grow text-gray-800 text-sm break-all">{{ generatedDescription }}</p>
+                                <button
+                                    @click="copyToClipboard(generatedDescription, 'Meta Description')"
+                                    class="ml-2 p-1 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition duration-200"
+                                    title="複製描述"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                                        <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2H6zM5 9.5a1.5 1.5 0 113 0v3a1.5 1.5 0 11-3 0v-3z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">字數: {{ generatedDescription.length }} (建議不超過160字)</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+
+        // Results Dashboard Component
+        const ResultsDashboard = {
+            props: ['results', 'analysisScope', 'url', 'keywords', 'showMessage'],
+            components: {
+                CollapsibleModule,
+                OptimizationSuggestion,
+                MetaTagGenerator // Register MetaTagGenerator
+            },
+            template: `
+                <div class="space-y-6">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900">檢測結果</h3>
+
+                    <CollapsibleModule v-if="analysisScope.technical" title="技術SEO分析">
+                        <OptimizationSuggestion
+                            label="Meta Title 與 Description 檢查"
+                            :status="results.technical.metaDescription.status"
+                            :value="'Title: &quot;' + results.technical.metaTitle.value + '&quot; / Description: &quot;' + results.technical.metaDescription.value + '&quot;'"
+                            :suggestion="results.technical.metaDescription.suggestion"
+                            :priority="results.technical.metaDescription.priority"
+                        />
+                        <MetaTagGenerator :url="url" :keywords="keywords" :show-message="showMessage" />
+                        <OptimizationSuggestion
+                            label="Canonical 標籤狀態"
+                            :status="results.technical.canonicalTag.status"
+                            :suggestion="results.technical.canonicalTag.suggestion"
+                            :priority="results.technical.canonicalTag.priority"
+                        />
+                        <OptimizationSuggestion
+                            label="結構化資料 (Schema) 驗證結果"
+                            :status="results.technical.schemaValidation.status"
+                            :suggestion="results.technical.schemaValidation.suggestion"
+                            :priority="results.technical.schemaValidation.priority"
+                        />
+                        <OptimizationSuggestion
+                            label="網站速度與核心體驗指標 (Core Web Vitals)"
+                            :status="results.technical.coreWebVitals.status"
+                            :value="'LCP: ' + results.technical.coreWebVitals.lcp + ', FID: ' + results.technical.coreWebVitals.fid + ', CLS: ' + results.technical.coreWebVitals.cls"
+                            :suggestion="results.technical.coreWebVitals.suggestion"
+                            :priority="results.technical.coreWebVitals.priority"
+                        />
+                        <OptimizationSuggestion
+                            label="URL 結構與 H 標籤使用狀況"
+                            :status="results.technical.urlStructure.status"
+                            :suggestion="results.technical.urlStructure.suggestion"
+                            :priority="results.technical.urlStructure.priority"
+                        />
+                        <OptimizationSuggestion
+                            label="索引狀態 (是否被Google收錄)"
+                            :status="results.technical.indexingStatus.status"
+                            :suggestion="results.technical.indexingStatus.suggestion"
+                            :priority="results.technical.indexingStatus.priority"
+                        />
+                    </CollapsibleModule>
+
+                    <CollapsibleModule v-if="analysisScope.content" title="內容SEO分析">
+                        <OptimizationSuggestion
+                            label="內容關鍵字分布與密度"
+                            :status="results.content.keywordDistribution.status"
+                            :value="\`密度: \${results.content.keywordDistribution.density}\`"
+                            :suggestion="results.content.keywordDistribution.suggestion"
+                            :priority="results.content.keywordDistribution.priority"
+                        />
+                        <OptimizationSuggestion
+                            label="E-E-A-T 評估指標"
+                            :status="results.content.eeat.status"
+                            :suggestion="results.content.eeat.suggestion"
+                            :priority="results.content.eeat.priority"
+                        />
+                        <OptimizationSuggestion
+                            label="內部連結數量與品質"
+                            :status="results.content.internalLinking.status"
+                            :suggestion="results.content.internalLinking.suggestion"
+                            :priority="results.content.internalLinking.priority"
+                        />
+                        <OptimizationSuggestion
+                            label="內容長度與排版分析"
+                            :status="results.content.contentLength.status"
+                            :suggestion="results.content.contentLength.suggestion"
+                            :priority="results.content.contentLength.priority"
+                        />
+                    </CollapsibleModule>
+
+                    <CollapsibleModule v-if="analysisScope.offPage" title="站外SEO分析">
+                        <OptimizationSuggestion
+                            label="反向連結數量與質量"
+                            :status="results.offPage.backlinkQuantity.status"
+                            :value="\`數量: \${results.offPage.backlinkQuantity.count}\`"
+                            :suggestion="results.offPage.backlinkQuantity.suggestion"
+                            :priority="results.offPage.backlinkQuantity.priority"
+                        />
+                        <OptimizationSuggestion
+                            label="社群分享狀況"
+                            :status="results.offPage.socialShares.status"
+                            :suggestion="results.offPage.socialShares.suggestion"
+                            :priority="results.offPage.socialShares.priority"
+                        />
+                        <OptimizationSuggestion
+                            label="品牌曝光度指標"
+                            :status="results.offPage.brandExposure.status"
+                            :suggestion="results.offPage.brandExposure.suggestion"
+                            :priority="results.offPage.brandExposure.priority"
+                        />
+                    </CollapsibleModule>
+
+                    <CollapsibleModule title="視覺化數據呈現">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
+                                <h4 class="font-semibold text-gray-800 mb-2">關鍵字排名趨勢圖 (模擬)</h4>
+                                <div class="h-32 bg-gray-300 rounded-md flex items-center justify-center text-gray-500">
+                                    [Image of Keyword Ranking Trend Chart]
+                                </div>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
+                                <h4 class="font-semibold text-gray-800 mb-2">流量來源圓餅圖 (模擬)</h4>
+                                <div class="h-32 bg-gray-300 rounded-md flex items-center justify-center text-gray-500">
+                                    [Image of Traffic Source Pie Chart]
+                                </div>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-inner col-span-full">
+                                <h4 class="font-semibold text-gray-800 mb-2">速度分數與建議條 (模擬)</h4>
+                                <div class="h-32 bg-gray-300 rounded-md flex items-center justify-center text-gray-500">
+                                    [Image of Speed Score Bar]
+                                </div>
+                            </div>
+                        </div>
+                    </CollapsibleModule>
+                </div>
+            `
+        };
+
+        // Export Report Component
+        const ExportReport = {
+            props: ['results', 'showMessage'],
+            template: `
+                <div class="mt-8 p-6 bg-gray-50 rounded-xl shadow-inner border border-gray-200">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900">報告匯出與分享</h3>
+                    <div class="flex flex-wrap gap-4 justify-center">
+                        <button
+                            @click="handleExport('PDF')"
+                            class="flex items-center bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition duration-300 shadow-md transform hover:scale-105"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 mr-2"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                            匯出 PDF
+                        </button>
+                        <button
+                            @click="handleExport('CSV')"
+                            class="flex items-center bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-md transform hover:scale-105"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 mr-2"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                            匯出 CSV
+                        </button>
+                        <button
+                            @click="handleShare"
+                            class="flex items-center bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition duration-300 shadow-md transform hover:scale-105"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 mr-2"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path d="M15 8a3 3 0 10-2.977-2.12l-1.285 1.284a3.001 3.001 0 00-4.243 0L6 10.01V14a2 2 0 102 0v-4.001l.975-.975a3 3 0 104.243 4.243l1.285-1.285A3 3 0 0015 8z" />
+                            </svg>
+                            分享報告
+                        </button>
+                    </div>
+                </div>
+            `,
+            methods: {
+                handleExport(format) {
+                    this.showMessage(`報告已匯出為 ${format} 格式 (模擬)。`, 'success');
+                    console.log(`Exporting report as ${format}:`, this.results);
+                },
+                handleShare() {
+                    this.showMessage('分享連結已生成 (模擬)。', 'success');
+                    console.log('Sharing report link.');
+                }
+            }
+        };
+
+        // Integration Section Component
+        const IntegrationSection = {
+            props: ['ga4Connected', 'gscConnected', 'showMessage'],
+            emits: ['update:ga4Connected', 'update:gscConnected'],
+            template: `
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-900">數據源整合</h2>
+                    <p class="text-gray-700 mb-4">
+                        連接您的 Google Analytics 4 (GA4) 和 Google Search Console (GSC) 帳戶，以獲取更深入的網站數據，提升分析精準度。
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                            <div class="flex items-center">
+                                <img src="https://placehold.co/32x32/FF6F00/FFFFFF?text=GA4" alt="GA4 Logo" class="w-8 h-8 mr-3" />
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Google Analytics 4</h3>
+                                    <p class="text-sm text-gray-600">網站流量與用戶行為數據</p>
+                                </div>
+                            </div>
+                            <button
+                                @click="handleConnectGA4"
+                                class="px-4 py-2 rounded-full font-semibold transition duration-300"
+                                :class="{ 'bg-red-500 text-white hover:bg-red-600': ga4Connected, 'bg-blue-600 text-white hover:bg-blue-700': !ga4Connected }"
+                            >
+                                {{ ga4Connected ? '中斷連接' : '連接帳戶' }}
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                            <div class="flex items-center">
+                                <img src="https://placehold.co/32x32/4285F4/FFFFFF?text=GSC" alt="GSC Logo" class="w-8 h-8 mr-3" />
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Google Search Console</h3>
+                                    <p class="text-sm text-gray-600">搜尋表現與索引狀態數據</p>
+                                </div>
+                            </div>
+                            <button
+                                @click="handleConnectGSC"
+                                class="px-4 py-2 rounded-full font-semibold transition duration-300"
+                                :class="{ 'bg-red-500 text-white hover:bg-red-600': gscConnected, 'bg-blue-600 text-white hover:bg-blue-700': !gscConnected }"
+                            >
+                                {{ gscConnected ? '中斷連接' : '連接帳戶' }}
+                            </button>
+                        </div>
+
+                        <div class="mt-4 text-sm text-gray-600">
+                            <p>
+                                <span class="font-semibold">整合效益：</span>
+                                連接後，您將能在報告中查看來自 GA4 的流量數據和來自 GSC 的關鍵字排名、索引狀態等資訊，提供更全面的SEO洞察。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            methods: {
+                handleConnectGA4() {
+                    this.$emit('update:ga4Connected', !this.ga4Connected);
+                    this.showMessage(this.ga4Connected ? '已中斷 Google Analytics 4 連接。' : '已連接 Google Analytics 4 (模擬)。', 'info');
+                },
+                handleConnectGSC() {
+                    this.$emit('update:gscConnected', !this.gscConnected);
+                    this.showMessage(this.gscConnected ? '已中斷 Google Search Console 連接。' : '已連接 Google Search Console (模擬)。', 'info');
+                }
+            }
+        };
+
+        // Footer Component
+        const Footer = {
+            template: `
+                <footer class="bg-gray-900 text-gray-300 p-6 mt-8 rounded-t-xl shadow-inner">
+                    <div class="container mx-auto text-center text-sm">
+                        <div class="mb-4">
+                            <a href="#" class="hover:text-white transition duration-300 mx-2">
+                                聯絡資訊
+                            </a>
+                            <span class="mx-2">|</span>
+                            <a href="#" class="hover:text-white transition duration-300 mx-2">
+                                使用條款
+                            </a>
+                            <span class="mx-2">|</span>
+                            <a href="#" class="hover:text-white transition duration-300 mx-2">
+                                隱私政策
+                            </a>
+                        </div>
+                        <div class="mb-4">
+                            <p>&copy; 2025 SEO 精靈. All rights reserved.</p>
+                        </div>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="hover:text-white transition duration-300">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-6 w-6"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24h11.493v-9.294H9.692v-3.622h3.126V7.375c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.115c.732 0 1.325-.593 1.325-1.325V1.325C24 .593 23.407 0 22.675 0z" />
+                                </svg>
+                            </a>
+                            <a href="#" class="hover:text-white transition duration-300">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-6 w-6"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path d="M7.8 2H16.2A5.8 5.8 0 0 1 22 7.8v8.4A5.8 5.8 0 0 1 16.2 22H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm-.2 2A3.8 3.8 0 0 0 4 7.6v8.8A3.8 3.8 0 0 0 7.6 20h8.8a3.8 3.8 0 0 0 3.8-3.8V7.6A3.8 3.8 0 0 0 16.4 4H7.6zm9.65 1.5a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z" />
+                                </svg>
+                            </a>
+                            <a href="#" class="hover:text-white transition duration-300">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-6 w-6"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.467 0-6.262 2.795-6.262 6.262 0 .486.056.958.164 1.404-5.214-.261-9.87-2.755-12.989-6.592-.534.918-.846 1.983-.846 3.132 0 2.164 1.173 4.067 2.943 5.182-.689-.022-1.334-.211-1.902-.529v.079c0 3.023 2.14 5.547 4.978 6.1-.485.132-.999.198-1.522.198-.374 0-.737-.035-1.09-.104.792 2.479 3.072 4.288 5.792 4.337-2.122 1.661-4.795 2.655-7.73 2.655-.503 0-.998-.03-1.48-.087 2.891 1.868 6.354 2.955 10.062 2.955 12.076 0 18.679-10.006 18.679-18.68 0-.285-.006-.568-.018-.854.962-.695 1.797-1.562 2.457-2.549z" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </footer>
+            `
+        };
+
+        // Main App component for Vue
+        const App = {
+            components: {
+                Header,
+                InputPanel,
+                ProgressBar,
+                ResultsDashboard,
+                ExportReport,
+                IntegrationSection
+            },
+            setup() {
+                const url = ref('');
+                const keywords = ref('');
+                const language = ref('zh-TW');
+                const region = ref('TW');
+                const analysisScope = reactive({
+                    technical: true,
+                    content: true,
+                    offPage: true,
+                });
+                const isAnalyzing = ref(false);
+                const progress = ref(0);
+                const analysisResults = ref(null);
+                const message = ref('');
+                const messageType = ref('');
+
+                const ga4Connected = ref(false);
+                const gscConnected = ref(false);
+
+                const showMessage = (msg, type) => {
+                    message.value = msg;
+                    messageType.value = type;
+                    setTimeout(() => {
+                        message.value = '';
+                        messageType.value = '';
+                    }, 3000);
+                };
+
+                const startAnalysis = () => {
+                    if (!url.value) {
+                        showMessage('請輸入網站URL才能開始分析。', 'error');
+                        return;
+                    }
+
+                    isAnalyzing.value = true;
+                    progress.value = 0;
+                    analysisResults.value = null;
+                    showMessage('分析開始...', 'info');
+
+                    let currentProgress = 0;
+                    const interval = setInterval(() => {
+                        currentProgress += 10;
+                        progress.value = currentProgress;
+                        if (currentProgress >= 100) {
+                            clearInterval(interval);
+                            isAnalyzing.value = false;
+                            analysisResults.value = generateMockResults();
+                            showMessage('分析完成！', 'success');
+                        }
+                    }, 300);
+                };
+
+                const generateMockResults = () => {
+                    return {
+                        technical: {
+                            metaTitle: { status: '良好', value: '您的網站標題 - 關鍵字', suggestion: '字數適中，包含關鍵字。', priority: '低' },
+                            metaDescription: { status: '不足', value: '這是一個簡短的描述。', suggestion: 'Meta Description字數不足，建議補充至120字以上。', priority: '高' },
+                            canonicalTag: { status: '缺失', suggestion: '缺少Canonical標籤，可能導致重複內容問題。', priority: '高' },
+                            schemaValidation: { status: '部分通過', suggestion: '部分結構化資料存在錯誤，建議檢查。', priority: '中' },
+                            coreWebVitals: { status: '偏慢', suggestion: '頁面載入速度偏慢，建議壓縮圖片並延遲載入非必要JS。', priority: '中', lcp: '3.5s', fid: '150ms', cls: '0.25' },
+                            urlStructure: { status: '良好', suggestion: 'URL結構清晰，易於理解。', priority: '低' },
+                            hTagUsage: { status: '良好', suggestion: 'H標籤使用得當，層次分明。', priority: '低' },
+                            indexingStatus: { status: '已收錄', suggestion: '您的網站已被Google收錄。', priority: '低' },
+                        },
+                        content: {
+                            keywordDistribution: { status: '良好', suggestion: '關鍵字分布自然，密度適中。', priority: '低', density: '2.5%' },
+                            eeat: { status: '待加強', suggestion: 'E-E-A-T指標有待提升，建議增加專業內容與作者權威性。', priority: '中' },
+                            internalLinking: { status: '良好', suggestion: '內部連結數量充足且品質良好。', priority: '低' },
+                            contentLength: { status: '良好', suggestion: '內容長度適中，排版清晰。', priority: '低' },
+                        },
+                        offPage: {
+                            backlinkQuantity: { status: '待加強', suggestion: '反向連結數量偏少，建議進行連結建設。', priority: '中', count: '50' },
+                            backlinkQuality: { status: '良好', suggestion: '反向連結質量良好，來源網站權威性高。', priority: '低' },
+                            socialShares: { status: '偏低', suggestion: '社群分享狀況偏低，建議加強社群媒體推廣。', priority: '中' },
+                            brandExposure: { status: '中等', suggestion: '品牌曝光度中等，可透過內容行銷提升。', priority: '低' },
+                        },
+                    };
+                };
+
+                return {
+                    url,
+                    keywords,
+                    language,
+                    region,
+                    analysisScope,
+                    isAnalyzing,
+                    progress,
+                    analysisResults,
+                    message,
+                    messageType,
+                    ga4Connected,
+                    gscConnected,
+                    showMessage,
+                    startAnalysis
+                };
+            },
+            template: `
+                <div class="min-h-screen bg-gray-50 font-sans text-gray-800 flex flex-col">
+                    <Header />
+
+                    <main class="flex-grow container mx-auto px-4 py-8">
+                        <div
+                            v-if="message"
+                            :class="\`p-3 mb-4 rounded-lg text-white \${messageType === 'success' ? 'bg-green-500' : ''} \${messageType === 'error' ? 'bg-red-500' : ''} \${messageType === 'info' ? 'bg-blue-500' : ''}\`"
+                        >
+                            {{ message }}
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <InputPanel
+                                :url="url"
+                                @update:url="url = $event"
+                                :keywords="keywords"
+                                @update:keywords="keywords = $event"
+                                :language="language"
+                                @update:language="language = $event"
+                                :region="region"
+                                @update:region="region = $event"
+                                :analysisScope="analysisScope"
+                                @update:analysisScope="Object.assign(analysisScope, $event)"
+                                @startAnalysis="startAnalysis"
+                                :isAnalyzing="isAnalyzing"
+                            />
+
+                            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+                                <h2 class="text-2xl font-bold mb-6 text-gray-900">分析狀態與結果</h2>
+                                <ProgressBar v-if="isAnalyzing" :progress="progress" />
+                                <ResultsDashboard
+                                    v-if="analysisResults"
+                                    :results="analysisResults"
+                                    :analysisScope="analysisScope"
+                                    :url="url"
+                                    :keywords="keywords"
+                                    :show-message="showMessage"
+                                />
+                                <ExportReport v-if="analysisResults" :results="analysisResults" :show-message="showMessage" />
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <IntegrationSection
+                                :ga4Connected="ga4Connected"
+                                @update:ga4Connected="ga4Connected = $event"
+                                :gscConnected="gscConnected"
+                                @update:gscConnected="gscConnected = $event"
+                                :show-message="showMessage"
+                            />
+                        </div>
+                    </main>
+
+                    <Footer />
+                </div>
+            `
+        };
+
+        createApp(App).mount('#app');
+    </script>
+</body>
+</html>
