@@ -306,4 +306,66 @@
     });
   });
 
+  // Certificate Modal Functions
+  function showCertificateModal() {
+    const modal = document.getElementById('certificateModal');
+    modal.style.display = "block";
+    
+    // Track modal open in GA
+    gtag('event', 'view_certificate', {
+      'event_category': 'Engagement',
+      'event_label': 'Table Tennis Certificate'
+    });
+  }
+
+  function closeCertificateModal() {
+    const modal = document.getElementById('certificateModal');
+    modal.style.display = "none";
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    const modal = document.getElementById('certificateModal');
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+
+  // Navigation
+  function initNavigation() {
+    // Your navigation initialization code here
+  }
+
+  // Tabs
+  function initTabs() {
+    // Your tabs initialization code here
+  }
+
+  // Forms
+  function initForms() {
+    // Your forms initialization code here
+  }
+
+  // Accordion
+  function initAccordion() {
+    // Your accordion initialization code here
+  }
+
+  /**
+   * Page init
+   */
+  document.addEventListener('DOMContentLoaded', function() {
+    // Navigation
+    initNavigation();
+    
+    // Tabs
+    initTabs();
+    
+    // Forms
+    initForms();
+    
+    // Accordion
+    initAccordion();
+  });
+
 })()

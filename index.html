@@ -112,6 +112,7 @@
                   <li><i class="bi bi-chevron-right"></i> <strong>Birthday:</strong> <span>27 Sep 1996</span></li>
                   <li><i class="bi bi-chevron-right"></i> <strong>Website:</strong> <span><a>https://medium.com/@kenAaa</a></span></li>
                   <li><i class="bi bi-chevron-right"></i> <strong>City:</strong> <span>New Taipei</span></li>
+                  <li><i class="bi bi-chevron-right"></i> <strong>Fun Fact:</strong> <span class="certificate-link" onclick="showCertificateModal()">合格的國家桌球C級教練</span></li>
                 </ul>
               </div>
               <div class="col-lg-6">
@@ -611,5 +612,25 @@
 
   <!-- Move jQuery to the end of body -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Certificate Modal Script -->
+<script>
+  function showCertificateModal() {
+    document.getElementById('certificateModal').style.display = 'block';
+  }
+
+  function closeCertificateModal() {
+    document.getElementById('certificateModal').style.display = 'none';
+  }
+</script>
+
+<!-- Add Modal HTML -->
+<div id="certificateModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeCertificateModal()">&times;</span>
+    <img src="assets/img/certifications/table-tennis.jpg" alt="桌球教練證書" class="img-fluid">
+  </div>
+</div>
+
 </body>
 </html>

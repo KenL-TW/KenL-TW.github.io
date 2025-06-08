@@ -7,6 +7,25 @@
 */
 
 /*--------------------------------------------------------------
+# Core Styles
+--------------------------------------------------------------*/
+:root {
+  --primary-color: #149ddd;
+  --primary-hover: #37b3ed;
+  --dark: #040b14;
+  --text-dark: #272829;
+  --text-light: #fff;
+  --border-color: #ddd;
+  --transition: all 0.3s ease;
+}
+
+body {
+  font-family: "Open Sans", sans-serif;
+  color: var(--text-dark);
+  background-color: #f5f8fd;
+}
+
+/*--------------------------------------------------------------
 # General
 --------------------------------------------------------------*/
 body {
@@ -489,7 +508,7 @@ section {
 /* Portfolio Grid Layout */
 .portfolio-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
   padding: 2rem 0;
 }
@@ -504,6 +523,7 @@ section {
 
 .portfolio-item:hover {
   transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .portfolio-wrap img {
@@ -656,6 +676,8 @@ section {
 .contact-form .form-control:focus {
   border-color: #149ddd;
   box-shadow: 0 0 0 2px rgba(20, 157, 221, 0.1);
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 .contact-form textarea.form-control {
@@ -694,21 +716,9 @@ section {
 }
 
 .contact-form .loading {
-  background: rgba(255, 255, 255, 0.9);
-  color: #666;
-}
-
-.contact-form .loading:before {
-  content: "";
-  display: inline-block;
-  border: 3px solid #149ddd;
-  border-top-color: transparent;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
-  vertical-align: middle;
-  animation: spin 1s linear infinite;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 .contact-form .error-message {
@@ -836,4 +846,50 @@ section {
   #main {
     padding: 0 15px;
   }
+}
+
+.certificate-link {
+  cursor: pointer;
+  color: #149ddd;
+  text-decoration: underline;
+}
+
+.certificate-link:hover {
+  color: #37b3ed;
+}
+
+/* Certificate Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.close-btn {
+  position: absolute;
+  right: 15px;
+  top: 5px;
+  color: #fff;
+  font-size: 30px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #ccc;
 }
