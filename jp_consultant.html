@@ -180,7 +180,7 @@
             株式会社中信システムズ（CTSS）は、<strong><a href="https://info.gbiz.go.jp/hojin/ichiran?hojinBango=3020001148668" target="_blank" class="text-blue-600 hover:text-blue-800">法人番号 3020001148668</a></strong>・日本政府 gBizINFO 登記済みの
             <span lang="ja">合法 IT コンサルティング企業</span> です。  
             私たちは <strong>跨境人才媒合</strong> と <strong>Java／C# 後端開發 & Salesforce 導入支援</strong> をワンストップで提供し、
-            台湾エンジニアの日本キャリア実現と企業の DX 推進を加速させます。:contentReference[oaicite:0]{index=0}
+            台湾エンジニアの日本キャリア実現と企業の DX 推進を加速させます。
             </p>
 
             <!-- Hashtags -->
@@ -327,11 +327,11 @@
                             <div class="absolute md:hidden bottom-0 left-1/2 transform -translate-x-1/2 h-8 w-0.5 bg-gray-300 -z-10"></div>
                         </div>
 
-                        <!-- Step 3: 日方 HR 面試 -->
+                        <!-- Step 3: 日方 技術經理-->
                         <div class="flex flex-col items-center text-center mb-12 md:mb-0 md:w-1/5 relative">
                             <div class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg mb-4">3</div>
                             <h4 class="text-gray-900 text-lg font-semibold mb-2">日方 HR 面試</h4>
-                            <p class="text-gray-700 text-sm">日本側HR面接</p>
+                            <p class="text-gray-700 text-sm">日本部長面接</p>
                             <div class="absolute md:hidden top-0 left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-300 -z-10"></div>
                             <div class="absolute md:hidden bottom-0 left-1/2 transform -translate-x-1/2 h-8 w-0.5 bg-gray-300 -z-10"></div>
                         </div>
@@ -564,44 +564,128 @@
                     請留下您的聯絡資訊，我們將儘速與您聯繫。
                 </p>
 
-                <form class="bg-gray-800 p-8 md:p-12 rounded-lg shadow-xl text-left">
-                    <div class="mb-6">
-                        <label for="name" class="block text-gray-300 text-sm font-medium mb-2">姓名 <span class="text-red-400">*</span></label>
-                        <input type="text" id="name" name="name" required class="w-full px-4 py-3 rounded-md bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                    <div class="mb-6">
-                        <label for="email" class="block text-gray-300 text-sm font-medium mb-2">電子郵件 <span class="text-red-400">*</span></label>
-                        <input type="email" id="email" name="email" required class="w-full px-4 py-3 rounded-md bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                    <div class="mb-6">
-                        <label for="company" class="block text-gray-300 text-sm font-medium mb-2">公司名稱</label>
-                        <input type="text" id="company" name="company" class="w-full px-4 py-3 rounded-md bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                    <div class="mb-6">
-                        <label for="phone" class="block text-gray-300 text-sm font-medium mb-2">聯絡電話</label>
-                        <input type="tel" id="phone" name="phone" class="w-full px-4 py-3 rounded-md bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                    <div class="mb-6">
-                        <label for="type" class="block text-gray-300 text-sm font-medium mb-2">需求類型</label>
-                        <select id="type" name="type" class="w-full px-4 py-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">請選擇</option>
-                            <option value="brand-strategy">品牌策略</option>
-                            <option value="executive-search">企業獵頭</option>
-                            <option value="leadership-training">領導力培訓</option>
-                            <option value="other">其他</option>
-                        </select>
-                    </div>
-                    <div class="mb-8">
-                        <label for="message" class="block text-gray-300 text-sm font-medium mb-2">需求說明 <span class="text-red-400">*</span></label>
-                        <textarea id="message" name="message" rows="5" required placeholder="請描述您的需求或簡介" class="w-full px-4 py-3 rounded-md bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:border-blue-500 focus:ring-blue-500"></textarea>
-                    </div>
+                <form action="https://formspree.io/f/xblyjogo" method="POST" class="bg-gray-800 p-8 md:p-12 rounded-lg shadow-xl text-left">
+    <div class="row grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Name Field -->
+        <div class="form-group position-relative">
+            <input type="text" 
+                   name="name" 
+                   class="w-full px-4 py-3 rounded-md bg-gray-700 text-white placeholder-transparent border border-gray-600 focus:border-blue-500 focus:ring-blue-500 peer"
+                   id="name" 
+                   required>
+            <label for="name" 
+                   class="absolute left-4 -top-2.5 text-sm text-gray-300 bg-gray-800 px-1 transition-all 
+                          peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 
+                          peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm 
+                          peer-focus:text-blue-500">
+                Your Name <span class="text-red-400">*</span>
+            </label>
+        </div>
 
-                    <button type="submit" class="w-full md:w-auto bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-8 py-4 rounded-md text-lg shadow-lg transition duration-300">
-                        提交需求
-                    </button>
-                    <p id="submission-message" class="text-green-400 text-sm mt-4 hidden">感謝您的詢問，我們將在 24 小時內與您聯繫！</p>
-                    <p class="text-gray-400 text-xs mt-4">我們將嚴格保護您的個人資訊，不作任何商業轉售。</p>
-                </form>
+        <!-- Email Field -->
+        <div class="form-group position-relative">
+            <input type="email" 
+                   name="email" 
+                   class="w-full px-4 py-3 rounded-md bg-gray-700 text-white placeholder-transparent border border-gray-600 focus:border-blue-500 focus:ring-blue-500 peer"
+                   id="email" 
+                   required>
+            <label for="email" 
+                   class="absolute left-4 -top-2.5 text-sm text-gray-300 bg-gray-800 px-1 transition-all 
+                          peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 
+                          peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-sm 
+                          peer-focus:text-blue-500">
+                Your Email <span class="text-red-400">*</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Subject Field -->
+    <div class="form-group position-relative mt-6">
+        <select name="subject" 
+                class="w-full px-4 py-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-blue-500"
+                id="subject" 
+                required>
+            <option value="">Select Subject</option>
+            <option value="job-application">求職諮詢 / 求人応募</option>
+            <option value="business">業務合作 / ビジネス提携</option>
+            <option value="other">其他問題 / その他</option>
+        </select>
+        <label for="subject" 
+               class="absolute left-4 -top-2.5 text-sm text-gray-300 bg-gray-800 px-1">
+            Subject <span class="text-red-400">*</span>
+        </label>
+    </div>
+
+    <!-- Message Field -->
+    <div class="form-group position-relative mt-6">
+        <textarea name="message" 
+                  rows="6" 
+                  class="w-full px-4 py-3 rounded-md bg-gray-700 text-white placeholder-transparent border border-gray-600 focus:border-blue-500 focus:ring-blue-500 peer"
+                  required></textarea>
+        <label for="message" 
+               class="absolute left-4 -top-2.5 text-sm text-gray-300 bg-gray-800 px-1 transition-all">
+            Message <span class="text-red-400">*</span>
+        </label>
+    </div>
+
+    <!-- Status Messages -->
+    <div class="my-6">
+        <div class="loading hidden text-blue-400">Sending message...</div>
+        <div class="error-message hidden text-red-400">Something went wrong. Please try again.</div>
+        <div class="sent-message hidden text-green-400">Your message has been sent successfully!</div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-center">
+        <button type="submit" 
+                class="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-8 py-4 rounded-md text-lg shadow-lg transition duration-300 inline-flex items-center">
+            Send Message 
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+        </button>
+    </div>
+</form>
+
+<!-- Add this JavaScript for form handling -->
+<script>
+    const form = document.querySelector('form');
+    const loadingMessage = document.querySelector('.loading');
+    const errorMessage = document.querySelector('.error-message');
+    const sentMessage = document.querySelector('.sent-message');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Show loading message
+        loadingMessage.classList.remove('hidden');
+        errorMessage.classList.add('hidden');
+        sentMessage.classList.add('hidden');
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // Show success message
+                form.reset();
+                loadingMessage.classList.add('hidden');
+                sentMessage.classList.remove('hidden');
+            } else {
+                throw new Error('Network response was not ok.');
+            }
+        } catch (error) {
+            // Show error message
+            loadingMessage.classList.add('hidden');
+            errorMessage.classList.remove('hidden');
+        }
+    });
+</script>
             </div>
         </section>
     </main>
