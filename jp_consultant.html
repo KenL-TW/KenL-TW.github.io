@@ -3,6 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VXKMN286TH"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-VXKMN286TH');
+    </script>
+    
     <title>Consulting - 日本軟體工程與人才媒合專家</title>
     <!-- 引入 Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -710,6 +720,92 @@
         if (form) {
           form.addEventListener("submit", handleSubmit);
         }
+
+        // Navigation link clicks
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            link.addEventListener('click', function() {
+                gtag('event', 'navigation_click', {
+                    'event_category': 'Navigation',
+                    'event_label': this.textContent.trim()
+                });
+            });
+        });
+
+        // Service card interactions
+        document.querySelectorAll('.bg-white.rounded-lg').forEach(card => {
+            card.addEventListener('click', function() {
+                gtag('event', 'service_view', {
+                    'event_category': 'Services',
+                    'event_label': this.querySelector('h3').textContent
+                });
+            });
+        });
+
+        // FAQ interactions
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                gtag('event', 'faq_view', {
+                    'event_category': 'FAQ',
+                    'event_label': this.querySelector('span').textContent
+                });
+            });
+        });
+
+        // Contact form tracking
+        const contactForm = document.querySelector('#contact form');
+        if (contactForm) {
+            // Form submission
+            contactForm.addEventListener('submit', function() {
+                gtag('event', 'form_submit', {
+                    'event_category': 'Contact',
+                    'event_label': 'Consulting Form'
+                });
+            });
+
+            // Form field interactions
+            contactForm.querySelectorAll('input, textarea, select').forEach(field => {
+                field.addEventListener('focus', function() {
+                    gtag('event', 'form_field_focus', {
+                        'event_category': 'Contact',
+                        'event_label': this.name
+                    });
+                });
+            });
+        }
+
+        // CTA button clicks
+        document.querySelectorAll('.bg-yellow-400').forEach(button => {
+            button.addEventListener('click', function() {
+                gtag('event', 'cta_click', {
+                    'event_category': 'CTA',
+                    'event_label': this.textContent.trim()
+                });
+            });
+        });
+
+        // Testimonial views
+        const observeTestimonials = () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        gtag('event', 'testimonial_view', {
+                            'event_category': 'Testimonials',
+                            'event_label': entry.target.querySelector('h4').textContent
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.snap-center').forEach(testimonial => {
+                observer.observe(testimonial);
+            });
+        };
+
+        // Initialize tracking
+        document.addEventListener('DOMContentLoaded', () => {
+            observeTestimonials();
+        });
     </script>
 </body>
 </html>
