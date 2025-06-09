@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>健康便當訂閱制 - 新鮮、健康、直送到府</title>
-    <meta name="description" content="探索我們為您量身打造的健康便當訂閱方案，採用新鮮食材、冷鏈配送，讓您輕鬆享受均衡營養。立即訂閱，開啟健康新生活！">
-    <meta name="keywords" content="健康便當, 訂閱制, 健康餐, 冷鏈配送, 新鮮食材, 營養均衡, 便當外送, 健康飲食">
+    <!-- Enhanced SEO Meta Tags -->
+    <title>健康便當訂閱制 | 新鮮食材・營養均衡・冷鏈配送</title>
+    <meta name="description" content="專業營養師設計的健康便當訂閱服務，使用在地新鮮食材，透過全程冷鏈配送，為您打造均衡美味的每一餐。立即體驗！">
+    <meta name="keywords" content="健康便當,便當訂閱,營養均衡,冷鏈配送,企業團膳,減重餐盒,健康飲食">
+    <meta name="author" content="健康便當">
+    <meta property="og:title" content="健康便當訂閱制 | 新鮮食材・營養均衡・冷鏈配送">
+    <meta property="og:description" content="專業營養師設計的健康便當訂閱服務，使用在地新鮮食材，透過全程冷鏈配送。">
+    <meta property="og:image" content="/path-to-your-og-image.jpg">
+    <meta property="og:url" content="https://your-domain.com">
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://your-domain.com/foodstore.html">
 
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,6 +21,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- 優化 CSS 載入 -->
+    <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/css/critical.css" as="style">
+
+    <!-- 延遲非關鍵 JavaScript 載入 -->
+    <script defer src="/js/non-critical.js"></script>
 
     <style>
         /* Custom CSS for body and container to ensure consistency and responsiveness */
@@ -117,8 +132,30 @@
             display: block;
         }
     </style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "健康便當訂閱制",
+  "image": [
+    "path-to-your-image1.jpg",
+    "path-to-your-image2.jpg"
+  ],
+  "description": "專業營養師設計的健康便當訂閱服務",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "健康路123號",
+    "addressLocality": "台北市",
+    "postalCode": "100",
+    "addressCountry": "TW"
+  },
+  "priceRange": "$$",
+  "servesCuisine": "健康餐點",
+  "telephone": "+886-2-1234-5678"
+}
+</script>
 </head>
-<body>
+<body class="font-inter bg-gray-50">
     <!-- Header Section: Navigation Bar -->
     <header class="bg-white shadow-md sticky top-0 z-50 p-4">
         <nav class="container mx-auto flex justify-between items-center">
@@ -155,7 +192,7 @@
         </div>
     </header>
 
-    <main id="app-content">
+    <main role="main" id="main-content">
         <!-- Home Page - Combined Hero, Features, Video Demo, Testimonial, Pricing, FAQ, Newsletter, About -->
         <div id="home-page" class="page-section active">
             <!-- Hero Section: Main Call to Action -->
@@ -179,6 +216,36 @@
                     </div>
                 </div>
             </section>
+            
+            <!-- About Section: Company Information and Team -->
+            <section id="about" class="py-16 bg-white rounded-lg m-4 shadow-inner">
+                <div class="container mx-auto px-4 text-center">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-12">關於我們</h2>
+                    <p class="text-lg text-gray-700 mb-10">我們致力於推廣健康飲食，透過便利的訂閱服務，讓每個人都能輕鬆享受營養均衡的美味便當。</p>
+                    <div class="max-w-3xl mx-auto text-gray-700 text-lg leading-relaxed">
+                        <p class="mb-4">我們相信健康不應該是負擔。因此，我們集結了營養師、專業廚師與物流團隊，從食材源頭到餐桌，層層把關，只為提供您最安心、美味、便捷的健康餐點。</p>
+                        <p class="mb-8">我們的使命是透過科技與服務，讓健康飲食成為您生活的一部分，不再需要為三餐煩惱。</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 mt-8">我們的團隊</h3>
+                        <div class="flex justify-center space-x-8 flex-wrap">
+                            <!-- Team Member 1 -->
+                            <div class="team-member text-center mb-6">
+                                <img src="https://placehold.co/120x120/A7F3D0/065F46?text=創辦人" alt="創辦人頭像" class="w-32 h-32 rounded-full mx-auto mb-3 object-cover shadow-lg border-2 border-emerald-500">
+                                <p class="font-semibold text-xl text-gray-900">陳大明</p>
+                                <p class="text-emerald-600">創辦人 & CEO</p>
+                            </div>
+                            <!-- Team Member 2 -->
+                            <div class="team-member text-center mb-6">
+                                <img src="https://placehold.co/120x120/DCFCE7/065F46?text=營養師" alt="營養師頭像" class="w-32 h-32 rounded-full mx-auto mb-3 object-cover shadow-lg border-2 border-emerald-500">
+                                <p class="font-semibold text-xl text-gray-900">林曉華</p>
+                                <p class="text-emerald-600">資深營養師</p>
+                            </div>
+                            <!-- Team Member 3 -->
+                            <div class="team-member text-center mb-6">
+                                <img src="https://placehold.co/120x120/ECFDF5/065F46?text=主廚" alt="主廚頭像" class="w-32 h-32 rounded-full mx-auto mb-3 object-cover shadow-lg border-2 border-emerald-500">
+                                <p class="font-semibold text-xl text-gray-900">張志遠</p>
+                                <p class="text-emerald-600">主廚</p>
+                            </div>
+                        </div>
 
             <!-- Features Section: Key Selling Points -->
             <section id="features" class="py-16 bg-gray-50 text-center rounded-lg m-4 shadow-inner">
@@ -358,35 +425,7 @@
                 </div>
             </section>
 
-            <!-- About Section: Company Information and Team -->
-            <section id="about" class="py-16 bg-white rounded-lg m-4 shadow-inner">
-                <div class="container mx-auto px-4 text-center">
-                    <h2 class="text-4xl font-bold text-gray-800 mb-12">關於我們</h2>
-                    <p class="text-lg text-gray-700 mb-10">我們致力於推廣健康飲食，透過便利的訂閱服務，讓每個人都能輕鬆享受營養均衡的美味便當。</p>
-                    <div class="max-w-3xl mx-auto text-gray-700 text-lg leading-relaxed">
-                        <p class="mb-4">我們相信健康不應該是負擔。因此，我們集結了營養師、專業廚師與物流團隊，從食材源頭到餐桌，層層把關，只為提供您最安心、美味、便捷的健康餐點。</p>
-                        <p class="mb-8">我們的使命是透過科技與服務，讓健康飲食成為您生活的一部分，不再需要為三餐煩惱。</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-6 mt-8">我們的團隊</h3>
-                        <div class="flex justify-center space-x-8 flex-wrap">
-                            <!-- Team Member 1 -->
-                            <div class="team-member text-center mb-6">
-                                <img src="https://placehold.co/120x120/A7F3D0/065F46?text=創辦人" alt="創辦人頭像" class="w-32 h-32 rounded-full mx-auto mb-3 object-cover shadow-lg border-2 border-emerald-500">
-                                <p class="font-semibold text-xl text-gray-900">陳大明</p>
-                                <p class="text-emerald-600">創辦人 & CEO</p>
-                            </div>
-                            <!-- Team Member 2 -->
-                            <div class="team-member text-center mb-6">
-                                <img src="https://placehold.co/120x120/DCFCE7/065F46?text=營養師" alt="營養師頭像" class="w-32 h-32 rounded-full mx-auto mb-3 object-cover shadow-lg border-2 border-emerald-500">
-                                <p class="font-semibold text-xl text-gray-900">林曉華</p>
-                                <p class="text-emerald-600">資深營養師</p>
-                            </div>
-                            <!-- Team Member 3 -->
-                            <div class="team-member text-center mb-6">
-                                <img src="https://placehold.co/120x120/ECFDF5/065F46?text=主廚" alt="主廚頭像" class="w-32 h-32 rounded-full mx-auto mb-3 object-cover shadow-lg border-2 border-emerald-500">
-                                <p class="font-semibold text-xl text-gray-900">張志遠</p>
-                                <p class="text-emerald-600">主廚</p>
-                            </div>
-                        </div>
+            
                         <!-- Social Media Links -->
                         <div class="mt-10">
                             <h3 class="text-2xl font-bold text-gray-800 mb-4">追蹤我們</h3>
@@ -587,7 +626,7 @@
                         確認預訂
                     </button>
                 </form>
-                <p id="reservation-message" class="mt-4 text-sm text-gray-700"></p>
+                <p id="reservation-message" class="mt-4 text-sm"></p>
             </div>
         </div>
 
@@ -629,7 +668,7 @@
     </main>
 
     <!-- Footer Section -->
-    <footer class="bg-gray-900 text-gray-400 py-10 rounded-t-lg shadow-lg">
+    <footer role="contentinfo" class="bg-gray-900 text-gray-400 py-10 rounded-t-lg shadow-lg">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
             <div class="mb-6 md:mb-0">
                 <a href="#home" class="text-2xl font-bold text-white">🍱 健康便當</a>
@@ -1106,6 +1145,7 @@
 
         /**
          * Generates a random alphanumeric captcha string.
+
          * @param {number} length - The desired length of the captcha.
          * @returns {string} The generated captcha string.
          */
