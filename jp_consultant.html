@@ -1012,6 +1012,148 @@ document.querySelectorAll('.partner-link').forEach(link => {
         });
     });
 });
+
+// Custom tracking helper
+function trackEvent(eventName, parameters = {}) {
+    gtag('event', eventName, {
+        ...parameters,
+        page_title: document.title,
+        page_location: window.location.href,
+        timestamp: new Date().toISOString()
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. 頁面瀏覽深度追蹤
+    let maxScroll = 0;
+    let startTime = Date.now();
+    
+    window.addEventListener('scroll', debounce(() => {
+        const scrollPercent = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100;
+        if (scrollPercent > maxScroll) {
+            maxScroll = scrollPercent;
+            trackEvent('scroll_depth', {
+                depth_percentage: Math.round(maxScroll),
+                scroll_time: Math.round((Date.now() - startTime) / 1000)
+            });
+        }
+    }, 500));
+
+    // 2. 導航點擊追蹤
+    document.querySelectorAll('nav a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            trackEvent('navigation_click', {
+                link_text: link.textContent,
+                link_url: link.href,
+                section_name: link.getAttribute('href').replace('#', '')
+            });
+        });
+    });
+
+    // 3. 表單互動追蹤
+    const contactForm = document.querySelector('#contact form');
+    if (contactForm) {
+        // 表單開始填寫
+        contactForm.querySelectorAll('input, textarea, select').forEach(field => {
+            field.addEventListener('focus', () => {
+                trackEvent('form_field_focus', {
+                    field_name: field.name,
+                    field_type: field.type
+                });
+            });
+        });
+
+        // 表單提交追蹤
+        contactForm.addEventListener('submit', () => {
+            trackEvent('form_submit', {
+                form_id: 'contact_form',
+                subject: document.querySelector('#subject').value
+            });
+        });
+    }
+
+    // 4. FAQ 互動追蹤
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', () => {
+            trackEvent('faq_interaction', {
+                question: header.querySelector('span').textContent,
+                action: header.nextElementSibling.classList.contains('hidden') ? 'open' : 'close'
+            });
+        });
+    });
+
+    // 5. 職缺互動追蹤
+    document.querySelectorAll('.job-category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            trackEvent('job_category_view', {
+                category: btn.dataset.category,
+                position: btn.textContent.trim()
+            });
+        });
+    });
+
+    // 6. 社群媒體點擊追蹤
+    document.querySelectorAll('footer a[href*="linkedin"], footer a[href*="facebook"], footer a[href*="instagram"]').forEach(link => {
+        link.addEventListener('click', () => {
+            trackEvent('social_click', {
+                platform: link.href.includes('linkedin') ? 'LinkedIn' : 
+                         link.href.includes('facebook') ? 'Facebook' : 'Instagram',
+                url: link.href
+            });
+        });
+    });
+
+    // 7. 停留時間追蹤
+    let startViewTime = Date.now();
+    window.addEventListener('beforeunload', () => {
+        trackEvent('page_view_duration', {
+            duration_seconds: Math.round((Date.now() - startViewTime) / 1000)
+        });
+    });
+
+    // 8. 文件下載追蹤
+    document.querySelectorAll('a[href$=".pdf"], a[href$=".doc"], a[href$=".docx"]').forEach(link => {
+        link.addEventListener('click', () => {
+            trackEvent('file_download', {
+                file_name: link.href.split('/').pop(),
+                file_type: link.href.split('.').pop()
+            });
+        });
+    });
+
+    // 9. 語言切換追蹤
+    const langToggleBtn = document.getElementById('lang-toggle');
+    if (langToggleBtn) {
+        langToggleBtn.addEventListener('click', () => {
+            trackEvent('language_switch', {
+                from_language: document.documentElement.lang,
+                to_language: document.documentElement.lang === 'zh-Hant' ? 'ja' : 'zh-Hant'
+            });
+        });
+    }
+
+    // 10. 錯誤追蹤
+    window.addEventListener('error', (e) => {
+        trackEvent('js_error', {
+            error_message: e.message,
+            error_line: e.lineno,
+            error_source: e.filename
+        });
+    });
+
+    // Debounce helper function
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+});
     </script>
 </body>
 </html>

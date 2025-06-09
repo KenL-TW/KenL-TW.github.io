@@ -1,146 +1,156 @@
-// Navigation Events
-document.querySelectorAll('.nav-menu .nav-link').forEach(link => {
-  link.addEventListener('click', function() {
-    gtag('event', 'menu_click', {
-      'event_category': 'Navigation',
-      'event_label': this.querySelector('span').textContent,
-      'menu_item': this.getAttribute('href')
+// 通用事件追蹤函數
+function trackEvent(eventName, parameters = {}) {
+    gtag('event', eventName, {
+        ...parameters,
+        page_title: document.title,
+        page_location: window.location.href,
+        timestamp: new Date().toISOString()
     });
-  });
-});
-
-// Portfolio Item Clicks
-document.querySelectorAll('.portfolio-item').forEach(item => {
-  item.addEventListener('click', function() {
-    const projectTitle = this.querySelector('.portfolio-info h4').textContent;
-    const projectCategory = this.dataset.category;
-    
-    // Send click event to GA4
-    gtag('event', 'portfolio_item_click', {
-      'event_category': 'Portfolio Interaction',
-      'event_label': projectTitle,
-      'project_category': projectCategory,
-      'project_url': this.querySelector('a')?.href || 'No URL'
-    });
-  });
-});
-
-// Portfolio Items Visibility Tracking
-const observePortfolioItems = () => {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const item = entry.target;
-        const projectTitle = item.querySelector('.portfolio-info h4').textContent;
-        
-        // Send impression event to GA4
-        gtag('event', 'portfolio_item_view', {
-          'event_category': 'Portfolio Visibility',
-          'event_label': projectTitle,
-          'project_category': item.dataset.category
-        });
-        
-        // Unobserve after first view
-        observer.unobserve(item);
-      }
-    });
-  }, {
-    threshold: 0.5 // Item must be 50% visible
-  });
-
-  // Observe all portfolio items
-  document.querySelectorAll('.portfolio-item').forEach(item => {
-    observer.observe(item);
-  });
-};
-
-// Initialize tracking when DOM is loaded
-document.addEventListener('DOMContentLoaded', observePortfolioItems);
-
-// Certification Card Views
-document.querySelectorAll('.certification-box').forEach(cert => {
-  cert.addEventListener('click', function() {
-    gtag('event', 'certification_view', {
-      'event_category': 'Certifications',
-      'event_label': this.querySelector('h4').textContent,
-      'certification_date': this.querySelector('.certification-meta span:first-child').textContent
-    });
-  });
-});
-
-// Contact Form Interactions
-const contactForm = document.querySelector('.contact-form');
-if (contactForm) {
-  // Form submission
-  contactForm.addEventListener('submit', function() {
-    gtag('event', 'form_submit', {
-      'event_category': 'Contact',
-      'event_label': 'Contact Form'
-    });
-  });
-
-  // Form field focus
-  contactForm.querySelectorAll('input, textarea').forEach(field => {
-    field.addEventListener('focus', function() {
-      gtag('event', 'form_field_focus', {
-        'event_category': 'Contact',
-        'event_label': this.name
-      });
-    });
-  });
 }
 
-// Social Links Clicks
-document.querySelectorAll('.social-links a').forEach(link => {
-  link.addEventListener('click', function() {
-    gtag('event', 'social_click', {
-      'event_category': 'Social',
-      'event_label': this.className,
-      'outbound_link': this.href
-    });
-  });
-});
-
-// Resume Section Interactions
-document.querySelectorAll('.resume-item').forEach(item => {
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        gtag('event', 'resume_section_view', {
-          'event_category': 'Resume',
-          'event_label': item.querySelector('h4').textContent
-        });
-        observer.unobserve(entry.target);
-      }
-    });
-  });
-  observer.observe(item);
-});
-
-// Skills Progress Bar Views
-document.querySelectorAll('.progress').forEach(skill => {
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        gtag('event', 'skill_view', {
-          'event_category': 'Skills',
-          'event_label': skill.querySelector('.skill').textContent,
-          'skill_level': skill.querySelector('.val').textContent
-        });
-        observer.unobserve(entry.target);
-      }
-    });
-  });
-  observer.observe(skill);
-});
-
-// Download Resume Button (if exists)
-const downloadBtn = document.querySelector('.download-resume');
-if (downloadBtn) {
-  downloadBtn.addEventListener('click', function() {
-    gtag('event', 'resume_download', {
-      'event_category': 'Downloads',
-      'event_label': 'Resume PDF'
-    });
-  });
+// Debounce helper
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
+
+// 主要追蹤初始化
+function initializeTracking() {
+    // 初始化變數
+    let maxScroll = 0;
+    let startTime = Date.now();
+
+    // 1. 頁面滾動追蹤
+    const handleScroll = debounce(() => {
+        const scrollPercent = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100;
+        if (scrollPercent > maxScroll) {
+            maxScroll = scrollPercent;
+            trackEvent('scroll_depth', {
+                depth_percentage: Math.round(maxScroll),
+                scroll_time: Math.round((Date.now() - startTime) / 1000)
+            });
+        }
+    }, 500);
+
+    window.addEventListener('scroll', handleScroll);
+
+    // 2. 導航點擊追蹤
+    document.querySelectorAll('.nav-menu .nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            trackEvent('navigation_click', {
+                section_name: link.getAttribute('href').replace('#', ''),
+                link_text: link.querySelector('span')?.textContent || link.textContent
+            });
+        });
+    });
+
+    // 3. 作品集互動追蹤
+    const portfolioObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const item = entry.target;
+                const projectTitle = item.querySelector('.portfolio-info h4')?.textContent;
+                if (projectTitle) {
+                    trackEvent('portfolio_view', {
+                        project_name: projectTitle,
+                        project_category: item.dataset.category
+                    });
+                }
+                portfolioObserver.unobserve(item);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.portfolio-item').forEach(item => {
+        portfolioObserver.observe(item);
+        
+        item.addEventListener('click', () => {
+            const projectTitle = item.querySelector('.portfolio-info h4')?.textContent;
+            if (projectTitle) {
+                trackEvent('portfolio_click', {
+                    project_name: projectTitle,
+                    project_category: item.dataset.category
+                });
+            }
+        });
+    });
+
+    // 4. 技能進度條追蹤
+    const skillObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const skill = entry.target;
+                const skillName = skill.querySelector('.skill')?.textContent;
+                const skillValue = skill.querySelector('.val')?.textContent;
+                if (skillName && skillValue) {
+                    trackEvent('skill_view', {
+                        skill_name: skillName.split('<')[0].trim(),
+                        skill_value: skillValue
+                    });
+                }
+                skillObserver.unobserve(skill);
+            }
+        });
+    });
+
+    document.querySelectorAll('.progress').forEach(skill => {
+        skillObserver.observe(skill);
+    });
+
+    // 5. 表單互動追蹤
+    const contactForm = document.querySelector('.contact-form');
+    if (contactForm) {
+        const formFields = contactForm.querySelectorAll('input, textarea');
+        formFields.forEach(field => {
+            field.addEventListener('focus', () => {
+                trackEvent('form_field_focus', {
+                    field_name: field.name,
+                    field_type: field.type
+                });
+            });
+        });
+
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            trackEvent('form_submit', {
+                form_name: 'contact_form'
+            });
+        });
+    }
+
+    // 6. 社群連結追蹤
+    document.querySelectorAll('.social-links a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            trackEvent('social_click', {
+                platform: Array.from(link.classList)[0] || 'unknown',
+                url: link.href
+            });
+        });
+    });
+
+    // 7. 錯誤追蹤
+    window.addEventListener('error', (e) => {
+        trackEvent('js_error', {
+            error_message: e.message,
+            error_line: e.lineno,
+            error_source: e.filename
+        });
+    });
+
+    // 8. 頁面離開追蹤
+    window.addEventListener('beforeunload', () => {
+        trackEvent('page_exit', {
+            time_spent: Math.round((Date.now() - startTime) / 1000)
+        });
+    });
+}
+
+// 當 DOM 載入完成後初始化所有追蹤
+document.addEventListener('DOMContentLoaded', initializeTracking);
