@@ -368,4 +368,71 @@
     initAccordion();
   });
 
+  const app = createApp({
+    setup() {
+        const isNavbarShrunk = ref(false)
+        const isMobileMenuOpen = ref(false)
+
+        const handleScroll = () => {
+            if (window.scrollY > 50) {
+                isNavbarShrunk.value = true
+            } else {
+                isNavbarShrunk.value = false
+            }
+        }
+
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                isMobileMenuOpen.value = false
+            }
+            initializeCanvas()
+        }
+
+        onMounted(() => {
+            window.addEventListener('scroll', handleScroll)
+            window.addEventListener('resize', handleResize)
+            initializeCanvas()
+        })
+
+        onUnmounted(() => {
+            window.removeEventListener('scroll', handleScroll)
+            window.removeEventListener('resize', handleResize)
+        })
+
+        return {
+            isNavbarShrunk,
+            isMobileMenuOpen,
+        }
+    }
+})
+
+app.mount('#app')
+
+// Error handling
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+    console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error))
+    return false
+}
+
+// Add Vue error handler
+app.config.errorHandler = (err, vm, info) => {
+    console.error('Vue Error:', err)
+    console.error('Info:', info)
+}
+
+function initializeCanvas() {
+    const canvas = document.querySelector('canvas')
+    if (!canvas) return
+    
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    
+    // Set canvas size
+    canvas.width = canvas.offsetWidth * window.devicePixelRatio
+    canvas.height = canvas.offsetHeight * window.devicePixelRatio
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    
+    // Your existing canvas drawing code...
+}
+
 })()
