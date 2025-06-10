@@ -331,13 +331,19 @@
                 // 匯出資料函式
                 const exportData = () => {
                     try {
-                        const dataStr = JSON.stringify(contentPlans.value, null, 2);
+                        // 如果目前沒有內容，使用範本內容
+                        const dataToExport = contentPlans.value.length > 0 
+                            ? contentPlans.value 
+                            : store.getTemplates();
+                            
+                        const dataStr = JSON.stringify(dataToExport, null, 2);
                         const blob = new Blob([dataStr], { type: 'application/json' });
                         const url = URL.createObjectURL(blob);
                         
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = `content-plans-${new Date().toISOString().split('T')[0]}.json`;
+                        const timestamp = new Date().toISOString().split('T')[0];
+                        a.download = `content-plans-${timestamp}.json`;
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
