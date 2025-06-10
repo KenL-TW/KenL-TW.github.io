@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="株式会社中信システムズ - 專業的日本工程師職涯招募，協助台灣工程師赴日工作">
-    <meta name="keywords" content="日本工作,工程師,獵頭顧問,台灣工程師,海外工作">
-    <title>CTSS - 台灣工程師日本職涯專家</title>
+    <title>CTSS - 台日人才媒合專家</title>
+    <!-- 更新 canonical URL -->
+    <link rel="canonical" href="https://ctssjpit.com/jp_consultant.html">
+    <!-- 更新 Open Graph tags -->
+    <meta property="og:url" content="https://ctssjpit.com/jp_consultant.html">
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-VXKMN286TH"></script>
@@ -1106,6 +1108,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 7. 停留時間追蹤
     let startViewTime = Date.now();
     window.addEventListener('beforeunload', () => {
+       
         trackEvent('page_view_duration', {
             duration_seconds: Math.round((Date.now() - startViewTime) / 1000)
         });
