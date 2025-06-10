@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>靜態內容規劃器</title>
+    <!-- 引入 Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Vue.js 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入 Lucide Icons for aesthetic icons -->
+    <script src="https://unpkg.com/lucide@0.379.0/dist/lucide.umd.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* 使用 Inter 字體 */
+            background-color: #f8fafc; /* 淺灰色背景 */
+        }
+        /* 自定義滾動條樣式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen p-4 md:p-8 bg-gray-50 flex items-center justify-center">
+        <div class="max-w-4xl w-full bg-white shadow-xl rounded-lg p-6 md:p-8">
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">靜態內容規劃器</h1>
+
+            <!-- 新增/編輯內容卡片表單區 -->
+            <div class="bg-gray-100 p-6 rounded-lg mb-8 shadow-inner">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ editingIndex !== null ? '編輯內容計劃' : '新增內容計劃' }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 mb-1">主題標題</label>
+                        <input type="text" id="title" v-model="newPlan.title"
+                               class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700 mb-1">分類</label>
+                        <input type="text" id="category" v-model="newPlan.category"
+                               class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="keywords" class="block text-sm font-medium text-gray-700 mb-1">關鍵字 (以逗號分隔)</label>
+                        <input type="text" id="keywords" v-model="newPlan.keywordsInput"
+                               class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">撰寫狀態</label>
+                        <select id="status" v-model="newPlan.status"
+                                class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="構思中">構思中</option>
+                            <option value="撰寫中">撰寫中</option>
+                            <option value="已完成">已完成</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="platform" class="block text-sm font-medium text-gray-700 mb-1">發佈平台</label>
+                        <input type="text" id="platform" v-model="newPlan.platform"
+                               class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="publishDate" class="block text-sm font-medium text-gray-700 mb-1">發佈日期</label>
+                        <input type="date" id="publishDate" v-model="newPlan.publishDate"
+                               class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label for="summary" class="block text-sm font-medium text-gray-700 mb-1">摘要</label>
+                    <textarea id="summary" v-model="newPlan.summary" rows="4"
+                              class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 resize-y"></textarea>
+                </div>
+                <div class="flex gap-4">
+                    <button @click="submitContentPlan"
+                            :class="[editingIndex !== null ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700', 'flex-grow text-white py-2 px-4 rounded-md shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:scale-105']">
+                        {{ editingIndex !== null ? '更新內容計劃' : '新增內容計劃' }}
+                    </button>
+                    <button v-if="editingIndex !== null" @click="cancelEdit"
+                            class="flex-grow bg-gray-400 text-white py-2 px-4 rounded-md shadow-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:scale-105">
+                        取消編輯
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs 分頁區 -->
+            <div class="mb-6 border-b border-gray-200">
+                <nav class="-mb-px flex space-x-4 md:space-x-8" aria-label="Tabs">
+                    <button v-for="tab in tabs" :key="tab.value" @click="activeTab = tab.value"
+                            :class="[activeTab === tab.value ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm md:text-base rounded-t-lg transition duration-200 ease-in-out']">
+                        {{ tab.name }} ({{ getContentCount(tab.value) }})
+                    </button>
+                </nav>
+            </div>
+
+            <!-- 文章展示卡片列表區 -->
+            <div v-if="filteredContentPlans.length === 0" class="text-center text-gray-500 py-10">
+                <p>目前沒有符合條件的內容計劃。</p>
+            </div>
+            <div class="grid grid-cols-1 gap-6">
+                <div v-for="(plan, index) in filteredContentPlans" :key="index"
+                     class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 hover:shadow-md transition duration-200 ease-in-out flex flex-col md:flex-row">
+                    <!-- 左側主要內容 -->
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">{{ plan.title }}</h3>
+                        <p class="text-sm text-gray-600 mb-3">
+                            <span class="inline-flex items-center"><i data-lucide="tag" class="w-4 h-4 mr-1 text-gray-500"></i>分類: {{ plan.category }}</span>
+                            <span v-if="plan.keywords && plan.keywords.length > 0" class="ml-4 inline-flex items-center"><i data-lucide="key" class="w-4 h-4 mr-1 text-gray-500"></i>關鍵字: {{ plan.keywords.join(', ') }}</span>
+                        </p>
+                        <p class="text-gray-700 text-base leading-relaxed mb-4">{{ plan.summary }}</p>
+                    </div>
+                    <!-- 右側側邊資訊 -->
+                    <div class="md:ml-6 md:w-48 flex-shrink-0 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-gray-200">
+                        <div class="pl-0 md:pl-6">
+                            <p class="text-sm text-gray-700 mb-2 flex items-center"><i data-lucide="workflow" class="w-4 h-4 mr-2 text-gray-500"></i>狀態: <span :class="getStatusBadgeClass(plan.status)">{{ plan.status }}</span></p>
+                            <p class="text-sm text-gray-700 mb-2 flex items-center"><i data-lucide="monitor" class="w-4 h-4 mr-2 text-gray-500"></i>平台: {{ plan.platform }}</p>
+                            <p class="text-sm text-gray-700 mb-2 flex items-center"><i data-lucide="calendar" class="w-4 h-4 mr-2 text-gray-500"></i>發佈日期: {{ plan.publishDate }}</p>
+                            <div class="flex gap-2 mt-3">
+                                <button @click="editContentPlan(index)"
+                                        class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                                    <i data-lucide="edit" class="w-4 h-4 mr-1"></i>編輯
+                                </button>
+                                <button @click="deleteContentPlan(index)"
+                                        class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
+                                    <i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>刪除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { ContentStore } from './assets/js/content-store.js';
+        import { NotificationSystem } from './assets/js/notification.js';
+        import { FormValidator } from './assets/js/form-validator.js';
+
+        const { createApp, ref, computed, onMounted, watch } = Vue;
+        
+        createApp({
+            setup() {
+                const store = new ContentStore();
+                const notifications = new NotificationSystem();
+                
+                const contentPlans = ref([]);
+                const activeTab = ref('所有文章');
+                const editingIndex = ref(null);
+                
+                // 用於新增/編輯內容計劃的表單資料
+                const newPlan = ref({
+                    title: '',
+                    category: '',
+                    keywordsInput: '', // 用於關鍵字輸入，後續會轉換成陣列
+                    status: '構思中', // 預設狀態
+                    platform: '',
+                    publishDate: '',
+                    summary: ''
+                });
+
+                // 分頁配置
+                const tabs = ref([
+                    { name: '所有文章', value: '所有文章' },
+                    { name: '構思中', value: '構思中' },
+                    { name: '撰寫中', value: '撰寫中' },
+                    { name: '已完成', value: '已完成' }
+                ]);
+
+                // 計算屬性：根據 activeTab 過濾內容計劃
+                const filteredContentPlans = computed(() => {
+                    if (activeTab.value === '所有文章') {
+                        return contentPlans.value;
+                    }
+                    return contentPlans.value.filter(plan => plan.status === activeTab.value);
+                });
+
+                // 函式：獲取每個分頁的內容數量
+                const getContentCount = (status) => {
+                    if (status === '所有文章') {
+                        return contentPlans.value.length;
+                    }
+                    return contentPlans.value.filter(plan => plan.status === status).length;
+                };
+
+                // 改進的提交函數
+                const submitContentPlan = async () => {
+                    const validation = FormValidator.validate(newPlan.value);
+                    
+                    if (!validation.isValid) {
+                        validation.errors.forEach(error => 
+                            notifications.show(error, 'error')
+                        );
+                        return;
+                    }
+
+                    try {
+                        if (editingIndex.value !== null) {
+                            contentPlans.value[editingIndex.value] = {...newPlan.value};
+                            notifications.show('內容更新成功！', 'success');
+                        } else {
+                            contentPlans.value.push({...newPlan.value});
+                            notifications.show('內容新增成功！', 'success');
+                        }
+                        
+                        await store.save(contentPlans.value);
+                        resetForm();
+                    } catch (error) {
+                        notifications.show('操作失敗，請稍後再試', 'error');
+                        console.error(error);
+                    }
+                };
+
+                // 函式：載入內容計劃到表單進行編輯
+                const editContentPlan = (index) => {
+                    editingIndex.value = index; // 設定編輯索引
+                    const planToEdit = contentPlans.value[index];
+
+                    // 將內容計劃的資料載入到表單中
+                    newPlan.value = {
+                        ...planToEdit,
+                        keywordsInput: planToEdit.keywords ? planToEdit.keywords.join(', ') : '' // 轉換陣列為字串
+                    };
+                    // 滾動到表單頂部，方便使用者編輯
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+
+                // 函式：取消編輯並清空表單
+                const cancelEdit = () => {
+                    resetForm();
+                    alert('已取消編輯。');
+                };
+
+                // 函式：清空表單並重置編輯狀態
+                const resetForm = () => {
+                    newPlan.value = {
+                        title: '',
+                        category: '',
+                        keywordsInput: '',
+                        status: '構思中',
+                        platform: '',
+                        publishDate: '',
+                        summary: ''
+                    };
+                    editingIndex.value = null; // 重置為新增模式
+                };
+
+                // 函式：從 localStorage 載入內容計劃
+                const loadContentPlans = () => {
+                    const savedPlans = localStorage.getItem('contentPlans');
+                    if (savedPlans) {
+                        try {
+                            contentPlans.value = JSON.parse(savedPlans);
+                        } catch (e) {
+                            console.error("解析 localStorage 資料失敗:", e);
+                            contentPlans.value = defaultContentPlans; // 解析失敗則使用預設資料
+                        }
+                    } else {
+                        contentPlans.value = defaultContentPlans; // 沒有儲存資料則使用預設資料
+                    }
+                     // 確保 Lucide 圖標在載入時也渲染
+                    nextTick(() => {
+                        window.lucide.createIcons(); // 修正：使用 window.lucide
+                    });
+                };
+
+                // 函式：將內容計劃儲存到 localStorage
+                const saveContentPlans = () => {
+                    localStorage.setItem('contentPlans', JSON.stringify(contentPlans.value));
+                };
+
+                // 函式：刪除內容計劃
+                const deleteContentPlan = (indexToDelete) => {
+                    // 使用模擬的 confirm
+                    showConfirm('確定要刪除這項內容計劃嗎？', () => {
+                        contentPlans.value.splice(indexToDelete, 1); // 直接刪除該索引的項目
+                        saveContentPlans(); // 儲存更新後的內容計劃
+                        resetForm(); // 確保如果刪除的是正在編輯的項目，表單會被清空
+                        alert('內容計劃已刪除！');
+                        // 重新渲染 Lucide 圖標
+                        nextTick(() => {
+                            window.lucide.createIcons(); // 修正：使用 window.lucide
+                        });
+                    });
+                };
+
+                // 函式：根據狀態返回 Tailwind CSS class
+                const getStatusBadgeClass = (status) => {
+                    switch (status) {
+                        case '構思中':
+                            return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800';
+                        case '撰寫中':
+                            return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
+                        case '已完成':
+                            return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
+                        default:
+                            return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800';
+                    }
+                };
+
+                // 在元件掛載時載入資料
+                onMounted(() => {
+                    loadContentPlans();
+                    // 初始渲染 Lucide 圖標
+                    window.lucide.createIcons(); // 修正：使用 window.lucide
+                });
+
+                // 監聽 contentPlans 變化，自動儲存（雖然已經在 add/update/delete 中調用，但作為額外保障）
+                watch(contentPlans, () => {
+                    saveContentPlans();
+                }, { deep: true });
+
+                return {
+                    contentPlans,
+                    activeTab,
+                    newPlan,
+                    editingIndex,
+                    submitContentPlan,
+                    // ... other returns ...
+                };
+            }
+        }).mount('#app');
+
+        // 為了模擬 alert() 的行為，避免在 Canvas 環境中彈出原生 alert
+        function alert(message) {
+            const appDiv = document.getElementById('app');
+            let messageBox = document.getElementById('custom-alert-box');
+
+            if (!messageBox) {
+                messageBox = document.createElement('div');
+                messageBox.id = 'custom-alert-box';
+                messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50';
+                messageBox.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-sm mx-auto">
+                        <p class="text-lg font-semibold text-gray-800 mb-4">${message}</p>
+                        <button id="custom-alert-ok-button" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300">確定</button>
+                    </div>
+                `;
+                appDiv.appendChild(messageBox);
+
+                document.getElementById('custom-alert-ok-button').onclick = () => {
+                    messageBox.remove();
+                };
+            } else {
+                // 如果已經存在，更新內容並顯示
+                messageBox.querySelector('p').textContent = message;
+                messageBox.style.display = 'flex';
+            }
+        }
+
+        // 為了模擬 confirm() 的行為，避免在 Canvas 環境中彈出原生 confirm
+        function showConfirm(message, onConfirm) {
+            const appDiv = document.getElementById('app');
+            let confirmBox = document.getElementById('custom-confirm-box');
+
+            if (!confirmBox) {
+                confirmBox = document.createElement('div');
+                confirmBox.id = 'custom-confirm-box';
+                confirmBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50';
+                confirmBox.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-sm mx-auto">
+                        <p class="text-lg font-semibold text-gray-800 mb-4">${message}</p>
+                        <div class="flex justify-center gap-4">
+                            <button id="custom-confirm-ok-button" class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-300">確定</button>
+                            <button id="custom-confirm-cancel-button" class="bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500 transition duration-300">取消</button>
+                        </div>
+                    </div>
+                `;
+                appDiv.appendChild(confirmBox);
+
+                document.getElementById('custom-confirm-ok-button').onclick = () => {
+                    confirmBox.remove();
+                    if (onConfirm) onConfirm();
+                };
+                document.getElementById('custom-confirm-cancel-button').onclick = () => {
+                    confirmBox.remove();
+                };
+            } else {
+                confirmBox.querySelector('p').textContent = message;
+                confirmBox.style.display = 'flex';
+                // 重新綁定事件，確保 onConfirm 函式正確
+                document.getElementById('custom-confirm-ok-button').onclick = () => {
+                    confirmBox.remove();
+                    if (onConfirm) onConfirm();
+                };
+                document.getElementById('custom-confirm-cancel-button').onclick = () => {
+                    confirmBox.remove();
+                };
+            }
+        }
+    </script>
+</body>
+</html>
