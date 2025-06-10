@@ -90,22 +90,60 @@
             background: rgba(0, 0, 0, 0.05);
             transform: translateY(-2px);
         }
+
+        /* Z-index hierarchy */
+        :root {
+            --z-mobile-menu: 50;
+            --z-navbar: 40;
+            --z-content: 10;
+        }
+
+        /* Ensure proper stacking */
+        .mobile-menu {
+            z-index: var(--z-mobile-menu);
+        }
+
+        .navbar {
+            z-index: var(--z-navbar);
+        }
+
+        .main-content {
+            z-index: var(--z-content);
+        }
+
+        /* Prevent text overlap */
+        .text-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Improved mobile menu transitions */
+        #mobile-menu {
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #mobile-menu.active {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body class="overflow-x-hidden">
     <!-- 導覽列 -->
-    <nav class="fixed top-0 left-0 w-full z-50 bg-white/80 navbar-blur shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <!-- 左側：網站 LOGO -->
-            <a href="#" class="flex items-center space-x-3">
+    <nav class="fixed top-0 left-0 w-full z-40 bg-white/80 navbar-blur shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center relative">
+            <!-- Logo -->
+            <a href="#" class="flex items-center space-x-3 z-30">
                 <img src="assets/img/JP Consultant/zhongxin-log.png" 
                      alt="CTSS Logo" 
                      class="h-10 w-auto">
                 <span class="text-gray-900 font-bold text-1xl md:text-2xl">CTSS</span>
             </a>
 
-            <!-- 中間（桌機版）：水平排列的選單連結 -->
-            <div class="hidden md:flex space-x-8 text-lg font-medium">
+            <!-- 桌機版選單 -->
+            <div class="hidden md:flex space-x-8 text-lg font-medium z-30">
                 <a href="#about" class="text-gray-700 hover:text-blue-500 transition duration-300">關於我們</a>
                 <a href="#services" class="text-gray-700 hover:text-blue-500 transition duration-300">服務項目</a>
                 <a href="#process" class="text-gray-700 hover:text-blue-500 transition duration-300">媒合流程</a>
@@ -122,42 +160,48 @@
                 </a>
             </div>
 
-            <!-- 手機版：漢堡選單按鈕 -->
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-gray-700 hover:text-blue-500 focus:outline-none">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
+            <!-- 漢堡選單按鈕 -->
+            <button id="mobile-menu-button" 
+                    class="md:hidden text-gray-700 hover:text-yellow-500 focus:outline-none z-30">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
         </div>
 
         <!-- 手機版：展開的直列選單 -->
-        <div id="mobile-menu" class="hidden md:hidden fixed inset-0 bg-white z-40 flex flex-col items-center justify-center space-y-6 text-xl">
-            <button id="close-mobile-menu" class="absolute top-6 right-6 text-gray-700 hover:text-blue-500 focus:outline-none">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <div id="mobile-menu" class="hidden md:hidden fixed inset-0 bg-gray-900/95 backdrop-blur-sm z-50">
+            <!-- 關閉按鈕 -->
+            <button id="close-mobile-menu" 
+                    class="absolute top-6 right-6 text-white hover:text-yellow-400 focus:outline-none z-50">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
-            <a href="#about" class="block w-full text-center py-4 text-gray-700 hover:text-blue-500 transition duration-300 border-b border-gray-200">關於我們</a>
-            <a href="#services" class="block w-full text-center py-4 text-gray-700 hover:text-blue-500 transition duration-300 border-b border-gray-200">服務項目</a>
-            <a href="#process" class="block w-full text-center py-4 text-gray-700 hover:text-blue-500 transition duration-300 border-b border-gray-200">媒合流程</a>
-            <a href="#recruit" class="block w-full text-center py-4 text-gray-700 hover:text-blue-500 transition duration-300 border-b border-gray-200">招募職缺</a>
-            <a href="#achievements" class="block w-full text-center py-4 text-gray-700 hover:text-blue-500 transition duration-300 border-b border-gray-200">公司實績</a>
-            <a href="#faq" class="block w-full text-center py-4 text-gray-700 hover:text-blue-500 transition duration-300 border-b border-gray-200">常見問題</a>
-            <a href="#contact" class="block w-full text-center py-4 text-gray-700 hover:text-blue-500 transition duration-300">聯絡我們</a>
-            <a href="#recruit" class="block mt-8 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-8 py-4 rounded-md text-lg shadow-md transition duration-300">
-                立即查看職缺
-            </a>
+            
+            <!-- 選單內容 -->
+            <div class="h-full flex flex-col items-center justify-center space-y-6 text-xl">
+                <a href="#about" class="text-white hover:text-yellow-400 transition duration-300">關於我們</a>
+                <a href="#services" class="text-white hover:text-yellow-400 transition duration-300">服務項目</a>
+                <a href="#process" class="text-white hover:text-yellow-400 transition duration-300">媒合流程</a>
+                <a href="#recruit" class="text-white hover:text-yellow-400 transition duration-300">招募職缺</a>
+                <a href="#achievements" class="text-white hover:text-yellow-400 transition duration-300">公司實績</a>
+                <a href="#faq" class="text-white hover:text-yellow-400 transition duration-300">常見問題</a>
+                <a href="#contact" class="text-white hover:text-yellow-400 transition duration-300">聯絡我們</a>
+                
+                <a href="#recruit" class="mt-8 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold px-8 py-4 rounded-md text-lg shadow-md transition duration-300">
+                    立即查看職缺
+                </a>
+            </div>
         </div>
     </nav>
 
     <!-- 主要內容區域 -->
     <main>
         <!-- 2. Hero 區塊（首屏介紹） -->
-        <section class="relative h-screen bg-cover bg-center" style="background-image: url('https://placehold.co/1920x1080/0A2540/FFFFFF?text=Japan+Cityscape');">
-            <div class="absolute inset-0 bg-black opacity-60"></div>
-            <div class="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
+        <section class="relative z-10 h-screen bg-cover bg-center" style="background-image: url('https://placehold.co/1920x1080/0A2540/FFFFFF?text=Japan+Cityscape');">
+            <div class="absolute inset-0 bg-black/60 z-20"></div>
+            <div class="relative z-30 flex flex-col items-center justify-center h-full text-center px-6">
                 <h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 animate-fade-in-up">
                     跨越國境，成就台灣工程師的日本職涯
                 </h1>
