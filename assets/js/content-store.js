@@ -16,10 +16,10 @@ export class ContentStore {
     async load() {
         try {
             const data = localStorage.getItem(this.storageKey);
-            return data ? JSON.parse(data) : null;
+            return data ? JSON.parse(data) : [];
         } catch (error) {
             console.error('Error loading data:', error);
-            return null;
+            return [];
         }
     }
 }

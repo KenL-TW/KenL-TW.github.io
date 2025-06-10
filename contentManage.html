@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+    <!-- 先載入 Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 再載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 最後載入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.379.0/dist/lucide.umd.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>靜態內容規劃器</title>
-    <!-- 引入 Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Vue.js 3 CDN -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 引入 Lucide Icons for aesthetic icons -->
-    <script src="https://unpkg.com/lucide@0.379.0/dist/lucide.umd.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif; /* 使用 Inter 字體 */
@@ -154,11 +154,13 @@
             setup() {
                 const store = new ContentStore();
                 const notifications = new NotificationSystem();
-                
+                const { nextTick } = Vue;  // 添加 nextTick
+
                 const contentPlans = ref([]);
                 const activeTab = ref('所有文章');
                 const editingIndex = ref(null);
-                
+                const defaultContentPlans = [];  // 添加默認內容
+
                 // 用於新增/編輯內容計劃的表單資料
                 const newPlan = ref({
                     title: '',
@@ -310,10 +312,10 @@
                 };
 
                 // 在元件掛載時載入資料
-                onMounted(() => {
-                    loadContentPlans();
-                    // 初始渲染 Lucide 圖標
-                    window.lucide.createIcons(); // 修正：使用 window.lucide
+                onMounted(async () => {
+                    const loadedData = await store.load();
+                    contentPlans.value = loadedData.length > 0 ? loadedData : [];
+                    window.lucide.createIcons();
                 });
 
                 // 監聽 contentPlans 變化，自動儲存（雖然已經在 add/update/delete 中調用，但作為額外保障）
@@ -324,10 +326,16 @@
                 return {
                     contentPlans,
                     activeTab,
+                    tabs,  // 添加缺失的返回值
                     newPlan,
                     editingIndex,
+                    filteredContentPlans,
                     submitContentPlan,
-                    // ... other returns ...
+                    editContentPlan,
+                    cancelEdit,
+                    deleteContentPlan,
+                    getStatusBadgeClass,
+                    getContentCount
                 };
             }
         }).mount('#app');
