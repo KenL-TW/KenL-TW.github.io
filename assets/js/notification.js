@@ -10,7 +10,28 @@ export class NotificationSystem {
     }
 
     show(message, type = 'info') {
-        alert(message); // 簡單實現，可以後續優化
+        const appDiv = document.getElementById('app');
+        const notification = document.createElement('div');
+        
+        const bgColors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            info: 'bg-blue-500',
+            warning: 'bg-yellow-500'
+        };
+        
+        notification.className = `fixed top-4 right-4 ${bgColors[type]} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-50`;
+        notification.textContent = message;
+        
+        appDiv.appendChild(notification);
+        
+        // 自動消失
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
     }
 
     getTypeClass(type) {
