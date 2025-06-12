@@ -214,24 +214,65 @@
 
       <!-- 狀態選項設定 面板 -->
       <div v-if="showSettings" class="mb-6">
-        <h4 class="text-lg font-medium text-gray-700 mb-2">狀態選項設定</h4>
-        <div class="space-y-2">
-          <div v-for="(opt, i) in statusOptions" :key="opt.id" class="flex items-center gap-2">
-            <input type="text" v-model="opt.name"
-                   class="flex-grow p-2 border rounded-md">
-            <button @click="removeOption('status', i)" class="text-red-500 hover:text-red-700">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
+        <!-- 狀態選項 -->
+        <div class="mb-8">
+          <h4 class="text-lg font-medium text-gray-700 mb-2">狀態選項設定</h4>
+          <div class="space-y-2">
+            <div v-for="(opt, i) in statusOptions" :key="opt.id" class="flex items-center gap-2">
+              <input type="text" v-model="opt.name"
+                     class="flex-grow p-2 border rounded-md">
+              <button @click="removeStatus(i)" class="text-red-500 hover:text-red-700">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <button @click="addStatus"
+                    class="w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 hover:text-gray-700 transition">
+              + 新增狀態選項
             </button>
           </div>
-          <button @click="addOption('status')"
-                  class="w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 hover:text-gray-700 transition">
-            + 新增狀態選項
-          </button>
         </div>
+
+        <!-- 種類選項 -->
+        <div class="mb-8">
+          <h4 class="text-lg font-medium text-gray-700 mb-2">種類選項設定</h4>
+          <div class="space-y-2">
+            <div v-for="(opt, i) in categoryOptions" :key="opt.id" class="flex items-center gap-2">
+              <input type="text" v-model="opt.name"
+                     class="flex-grow p-2 border rounded-md">
+              <button @click="removeCategory(i)" class="text-red-500 hover:text-red-700">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <button @click="addCategory"
+                    class="w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 hover:text-gray-700 transition">
+              + 新增種類選項
+            </button>
+          </div>
+        </div>
+
+        <!-- 發布平台選項 -->
+        <div class="mb-8">
+          <h4 class="text-lg font-medium text-gray-700 mb-2">發布平台設定</h4>
+          <div class="space-y-2">
+            <div v-for="(opt, i) in platformOptions" :key="opt.id" class="flex items-center gap-2">
+              <input type="text" v-model="opt.name"
+                     class="flex-grow p-2 border rounded-md">
+              <button @click="removePlatform(i)" class="text-red-500 hover:text-red-700">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <button @click="addPlatform"
+                    class="w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 hover:text-gray-700 transition">
+              + 新增平台選項
+            </button>
+          </div>
+        </div>
+
+        <!-- 儲存按鈕 -->
         <div class="mt-4">
           <button @click="saveSettings"
                   class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-            儲存設定
+            儲存所有設定
           </button>
         </div>
       </div>
