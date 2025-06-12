@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <!-- Vue.js -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -10,14 +10,12 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>靜態內容規劃器</title>
+  <title>文章內容規劃器</title>
   <meta name="description" content="專業的內容規劃工具">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="dns-prefetch" href="https://api.example.com">
 
   <style>
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       background-color: #f8fafc;
     }
     /* 自定義滾動條 */
@@ -49,6 +47,22 @@
       text-align: center;
     }
   </style>
+  <script>
+  tailwind.config = {
+      darkMode: 'class',
+      theme: {
+          extend: {
+              colors: {
+                  dark: {
+                      DEFAULT: '#1a1a1a',
+                      100: '#2d2d2d',
+                      200: '#404040'
+                  }
+              }
+          }
+      }
+  }
+  </script>
 </head>
 <body>
   <div id="app" class="min-h-screen p-4 md:p-8 bg-gray-50 flex items-center justify-center">
@@ -56,18 +70,6 @@
       <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">
         靜態內容規劃器
       </h1>
-
-      <!-- 匯出 / 匯入 -->
-      <div class="flex justify-center gap-4 mb-6">
-        <button @click="exportData"
-                class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
-          <i data-lucide="download" class="w-4 h-4 mr-2"></i>匯出資料
-        </button>
-        <label class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer transition">
-          <i data-lucide="upload" class="w-4 h-4 mr-2"></i>匯入資料
-          <input type="file" accept=".json" @change="importData" class="hidden">
-        </label>
-      </div>
 
       <!-- 新增 / 編輯 表單 -->
       <div class="bg-gray-100 p-6 rounded-lg mb-8 shadow-inner">
@@ -354,6 +356,91 @@
     }
   }
 
+  class UXManager {
+    constructor() {
+        this.darkModeKey = 'darkMode';
+        this.initDarkMode();
+        this.initShortcuts();
+    }
+
+    initDarkMode() {
+        const isDark = localStorage.getItem(this.darkModeKey) === 'true';
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        }
+    }
+
+    toggleDarkMode() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem(this.darkModeKey, isDark);
+        return isDark;
+    }
+
+    initShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && shortcuts[e.key]) {
+                e.preventDefault();
+                shortcuts[e.key]();
+            }
+        });
+    }
+}
+
+class SecurityManager {
+    constructor() {
+        this.encryptionKey = 'your-secret-key';
+    }
+
+    async backup() {
+        return {
+            data: contentPlans.value,
+            settings: {
+                status: statusOptions.value,
+                category: categoryOptions.value,
+                platform: platformOptions.value
+            },
+            timestamp: new Date().toISOString()
+        };
+    }
+
+    async encrypt(data) {
+        try {
+            // Simple encryption for demo
+            return {
+                data: btoa(JSON.stringify(data)),
+                iv: new Date().getTime()
+            };
+        } catch (error) {
+            console.error('Encryption failed:', error);
+            throw error;
+        }
+    }
+
+    async decrypt(data, iv) {
+        try {
+            // Simple decryption for demo
+            return JSON.parse(atob(data));
+        } catch (error) {
+            console.error('Decryption failed:', error);
+            throw error;
+        }
+    }
+
+    async restore(data) {
+        if (!this.validateBackup(data)) {
+            throw new Error('Invalid backup data');
+        }
+        return data;
+    }
+
+    validateBackup(data) {
+        return data &&
+               Array.isArray(data.data) &&
+               data.settings &&
+               data.timestamp;
+    }
+}
+
     const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
     createApp({
@@ -543,35 +630,75 @@
           event.target.value = '';
         };
 
-        // 添加資料備份與還原
-        const backup = {
-          export: async () => {
-            const data = {
-              content: contentPlans.value,
-              settings: {
-                status: statusOptions.value,
-                category: categoryOptions.value,
-                platform: platformOptions.value
-              },
-              timestamp: new Date().toISOString()
-            };
-            // 匯出為 zip 檔案
-          },
-          
-          import: async (file) => {
-            // 解壓縮並驗證資料格式
-            // 還原設定與內容
-          }
+        // 添加深色模式支持
+        const uxManager = new UXManager();
+        const securityManager = new SecurityManager();
+
+        // 深色模式狀態
+        const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
+
+        // 切換深色模式
+        const toggleDarkMode = () => {
+            isDarkMode.value = uxManager.toggleDarkMode();
         };
 
-        // 添加資料加密
-        const security = {
-          encrypt: async (data) => {
-            // 加密敏感資料
-          },
-          validate: (input) => {
-            // 驗證輸入資料
-          }
+        // 安全備份
+        const secureExport = async () => {
+            try {
+                const backupData = await securityManager.backup();
+                const encrypted = await securityManager.encrypt(backupData);
+                
+                const blob = new Blob([JSON.stringify(encrypted)], { 
+                    type: 'application/json' 
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `secure-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+                
+                notifications.show('安全備份已完成！', 'success');
+            } catch (e) {
+                console.error(e);
+                notifications.show('備份失敗，請稍後再試', 'error');
+            }
+        };
+
+        // 安全還原
+        const secureImport = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const encryptedData = JSON.parse(e.target.result);
+                    const decrypted = await securityManager.decrypt(
+                        encryptedData.data,
+                        encryptedData.iv
+                    );
+                    
+                    const restored = await securityManager.restore(decrypted);
+                    
+                    contentPlans.value = restored.data;
+                    statusOptions.value = restored.settings.status;
+                    categoryOptions.value = restored.settings.category;
+                    platformOptions.value = restored.settings.platform;
+                    
+                    await store.save(contentPlans.value);
+                    await settingsStore.save('statusOptions', statusOptions.value);
+                    
+                    notifications.show('資料已安全還原！', 'success');
+                } catch (error) {
+                    console.error(error);
+                    notifications.show('還原失敗，請確認檔案格式是否正確', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
         };
 
         // 設定面板：增刪
