@@ -46,6 +46,40 @@
       max-width: 300px;
       text-align: center;
     }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .modal-table th,
+    .modal-table td {
+      border: 1px solid #e2e8f0;
+      padding: 0.75rem;
+    }
   </style>
   <script>
   tailwind.config = {
@@ -169,7 +203,20 @@
             {{ tab.name }} ({{ getContentCount(tab.value) }})
           </button>
         </nav>
-        <div class="flex justify-end mt-2">
+        <div class="flex justify-between items-center mt-2">
+          <div class="flex gap-2">
+            <button @click="exportData"
+                    class="text-sm px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700">
+              匯出資料
+            </button>
+            <label class="text-sm px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer">
+              匯入資料
+              <input type="file" 
+                     @change="importData" 
+                     accept=".json" 
+                     class="hidden">
+            </label>
+          </div>
           <button @click="showSettings = !showSettings"
                   class="text-sm text-gray-600 hover:text-gray-800">
             {{ showSettings ? '關閉設定' : '編輯狀態選項' }}
@@ -306,6 +353,76 @@
       <div v-if="showTutorial" class="tutorial-overlay">
         <div class="tutorial-step" v-for="step in tutorialSteps">
           {{ step.description }}
+        </div>
+      </div>
+
+      <!-- 匯入預覽模態框 -->
+      <div v-if="showImportPreview" class="modal-overlay">
+        <div class="modal-content">
+          <h2 class="text-2xl font-bold mb-4">預覽匯入內容</h2>
+          
+          <div class="overflow-x-auto">
+            <table class="modal-table">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="text-left">標題</th>
+                  <th class="text-left">分類</th>
+                  <th class="text-left">狀態</th>
+                  <th class="text-left">平台</th>
+                  <th class="text-left">發佈日期</th>
+                  <th class="text-left">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(plan, index) in importPreviewData" :key="index">
+                  <td>
+                    <input v-model="plan.title" class="w-full p-1 border rounded">
+                  </td>
+                  <td>
+                    <select v-model="plan.category" class="w-full p-1 border rounded">
+                      <option v-for="opt in categoryOptions" :key="opt.id" :value="opt.name">
+                        {{ opt.name }}
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <select v-model="plan.status" class="w-full p-1 border rounded">
+                      <option v-for="opt in statusOptions" :key="opt.id" :value="opt.name">
+                        {{ opt.name }}
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <select v-model="plan.platform" class="w-full p-1 border rounded">
+                      <option v-for="opt in platformOptions" :key="opt.id" :value="opt.name">
+                        {{ opt.name }}
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="date" v-model="plan.publishDate" class="w-full p-1 border rounded">
+                  </td>
+                  <td>
+                    <button @click="removePreviewItem(index)" 
+                            class="text-red-600 hover:text-red-800">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-4 flex justify-end gap-4">
+            <button @click="confirmImport" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              確認匯入
+            </button>
+            <button @click="cancelImport" 
+                    class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+              取消
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -516,6 +633,10 @@ class SecurityManager {
         const editingIndex = ref(null);
         const contentPlans = ref([]);
 
+        // 新增狀態
+        const showImportPreview = ref(false);
+        const importPreviewData = ref([]);
+
         // 3. 初始化選項
         const statusOptions = ref(settingsStore.get('statusOptions') || [
           { id: 1, name: '構思中' },
@@ -659,6 +780,255 @@ class SecurityManager {
           }
         };
 
+        const exportData = () => {
+          try {
+            const exportData = {
+              content: contentPlans.value,
+              settings: {
+                status: statusOptions.value,
+                category: categoryOptions.value,
+                platform: platformOptions.value
+              },
+              timestamp: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+              type: 'application/json'
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `content-plans-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+
+            notifications.show('資料已匯出！', 'success');
+          } catch (error) {
+            console.error('匯出失敗:', error);
+            notifications.show('匯出失敗', 'error');
+          }
+        };
+
+        const importData = async (event) => {
+          try {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              try {
+                const importedData = JSON.parse(e.target.result);
+                
+                // 驗證資料格式
+                if (!importedData.content || !importedData.settings) {
+                  throw new Error('無效的檔案格式');
+                }
+
+                // 深複製匯入的內容以避免引用問題
+                importPreviewData.value = JSON.parse(JSON.stringify(importedData.content));
+                
+                // 暫時保存設定選項，但等到確認匯入時才更新
+                const tempSettings = {
+                  status: importedData.settings.status,
+                  category: importedData.settings.category,
+                  platform: importedData.settings.platform
+                };
+
+                // 合併現有選項和匯入的選項，確保選單中包含所有可能的值
+                statusOptions.value = mergeOptions(statusOptions.value, tempSettings.status);
+                categoryOptions.value = mergeOptions(categoryOptions.value, tempSettings.category);
+                platformOptions.value = mergeOptions(platformOptions.value, tempSettings.platform);
+
+                // 顯示預覽模態框
+                showImportPreview.value = true;
+
+                // 在下一個 tick 更新圖標
+                nextTick(() => {
+                  window.lucide.createIcons();
+                });
+
+              } catch (error) {
+                console.error('匯入失敗:', error);
+                notifications.show('匯入失敗：無效的檔案格式', 'error');
+              }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // 重設 input
+          } catch (error) {
+            console.error('匯入失敗:', error);
+            notifications.show('匯入失敗', 'error');
+          }
+        };
+
+        // 添加一個合併選項的輔助函數
+        const mergeOptions = (existing, imported) => {
+          const merged = [...existing];
+          const existingNames = new Set(existing.map(opt => opt.name));
+          
+          imported.forEach(opt => {
+            if (!existingNames.has(opt.name)) {
+              merged.push({
+                id: Math.max(...merged.map(o => o.id), 0) + 1,
+                name: opt.name
+              });
+            }
+          });
+          
+          return merged;
+        };
+
+        const confirmImport = async () => {
+          try {
+            // 驗證預覽資料
+            const validationPromises = importPreviewData.value.map(plan => {
+              const { isValid, errors } = FormValidator.validate(plan);
+              if (!isValid) {
+                throw new Error(`資料驗證失敗：${errors.join(', ')}`);
+              }
+              return true;
+            });
+
+            await Promise.all(validationPromises);
+
+            // 更新內容
+            contentPlans.value = importPreviewData.value;
+
+            // 更新本地儲存
+            await store.save(contentPlans.value);
+            await settingsStore.save('statusOptions', statusOptions.value);
+            await settingsStore.save('categoryOptions', categoryOptions.value);
+            await settingsStore.save('platformOptions', platformOptions.value);
+
+            // 更新分頁
+            tabs.value = [
+              { name: '所有文章', value: '所有文章' },
+              ...statusOptions.value.map(opt => ({
+                name: opt.name,
+                value: opt.name
+              }))
+            ];
+
+            // 關閉模態框
+            showImportPreview.value = false;
+            importPreviewData.value = [];
+            
+            notifications.show('資料已成功匯入！', 'success');
+          } catch (error) {
+            console.error('匯入失敗:', error);
+            notifications.show(error.message || '匯入失敗', 'error');
+          }
+        };
+
+        const cancelImport = () => {
+          showImportPreview.value = false;
+          importPreviewData.value = [];
+        };
+
+        // 添加的函數
+        const removePreviewItem = (index) => {
+          importPreviewData.value.splice(index, 1);
+        };
+
+        const submitContentPlan = async () => {
+          try {
+            // 驗證表單
+            const { isValid, errors } = FormValidator.validate(newPlan.value);
+            if (!isValid) {
+              notifications.show(errors.join('、'), 'error');
+              return;
+            }
+
+            // 處理關鍵字
+            const keywords = newPlan.value.keywordsInput
+              .split(',')
+              .map(k => k.trim())
+              .filter(k => k);
+
+            // 準備要儲存的資料
+            const planToSave = {
+              ...newPlan.value,
+              keywords,
+              keywordsInput: undefined // 移除暫存用的 keywordsInput
+            };
+
+            if (editingIndex.value !== null) {
+              // 更新現有計畫
+              contentPlans.value[editingIndex.value] = planToSave;
+            } else {
+              // 新增計畫
+              contentPlans.value.push(planToSave);
+            }
+
+            // 儲存到本地儲存
+            await store.save(contentPlans.value);
+
+            // 重置表單
+            newPlan.value = {
+              title: '',
+              category: categoryOptions.value[0]?.name || '',
+              keywordsInput: '',
+              status: statusOptions.value[0]?.name || '',
+              platform: platformOptions.value[0]?.name || '',
+              publishDate: '',
+              summary: ''
+            };
+            editingIndex.value = null;
+
+            notifications.show(
+              editingIndex.value !== null ? '更新成功！' : '新增成功！',
+              'success'
+            );
+          } catch (error) {
+            console.error('儲存失敗:', error);
+            notifications.show('儲存失敗', 'error');
+          }
+        };
+
+        const cancelEdit = () => {
+          editingIndex.value = null;
+          newPlan.value = {
+            title: '',
+            category: categoryOptions.value[0]?.name || '',
+            keywordsInput: '',
+            status: statusOptions.value[0]?.name || '',
+            platform: platformOptions.value[0]?.name || '',
+            publishDate: '',
+            summary: ''
+          };
+        };
+
+        // 添加狀態徽章樣式函數
+        const getStatusBadgeClass = (status) => {
+          const classes = {
+            '構思中': 'bg-yellow-100 text-yellow-800',
+            '撰寫中': 'bg-blue-100 text-blue-800',
+            '已完成': 'bg-green-100 text-green-800'
+          };
+          return `px-2 py-0.5 rounded-full text-xs font-medium ${classes[status] || 'bg-gray-100 text-gray-800'}`;
+        };
+
+        // 添加編輯文章的函數
+        const editContentPlan = (index) => {
+          const plan = contentPlans.value[index];
+          editingIndex.value = index;
+          newPlan.value = {
+            ...plan,
+            keywordsInput: plan.keywords?.join(', ') || ''
+          };
+        };
+
+        // 添加刪除文章的函數
+        const deleteContentPlan = (index) => {
+          if (confirm('確定要刪除這篇文章嗎？')) {
+            contentPlans.value.splice(index, 1);
+            store.save(contentPlans.value);
+            notifications.show('文章已刪除', 'success');
+          }
+        };
+
         // 8. 返回需要的響應式數據和方法
         return {
           // 狀態
@@ -668,6 +1038,8 @@ class SecurityManager {
           editingIndex,
           contentPlans,
           newPlan,
+          showImportPreview,
+          importPreviewData,
           
           // 選項
           statusOptions,
@@ -689,8 +1061,17 @@ class SecurityManager {
           toggleDarkMode: () => isDarkMode.value = uxManager.toggleDarkMode(),
           saveSettings,
           getOptionTypeName,
-          
-          // 其他需要的方法...
+          exportData,
+          importData,
+          removePreviewItem,
+          confirmImport,
+          cancelImport,
+          submitContentPlan,
+          cancelEdit,
+          // 新增的方法
+          getStatusBadgeClass,
+          editContentPlan,
+          deleteContentPlan
         };
       }
     }).mount('#app');
@@ -709,6 +1090,8 @@ class SecurityManager {
 
     // 添加快捷鍵支援
     const shortcuts = {
+      'e': exportData,  // Ctrl+E 匯出
+      'i': () => document.querySelector('input[type="file"]').click(),  // Ctrl+I 匯入
       'ctrl+n': () => createNew(),
       'ctrl+s': () => save(),
       'ctrl+f': () => focusSearch()
