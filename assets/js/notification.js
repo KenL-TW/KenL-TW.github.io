@@ -10,42 +10,27 @@ export class NotificationSystem {
     }
 
     show(message, type = 'info') {
-        const appDiv = document.getElementById('app');
         const notification = document.createElement('div');
+        const bgColor = this.getTypeClass(type);
         
-        const bgColors = {
-            success: 'bg-green-500',
-            error: 'bg-red-500',
-            info: 'bg-blue-500',
-            warning: 'bg-yellow-500'
-        };
-        
-        notification.className = `fixed top-4 right-4 ${bgColors[type]} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-50`;
+        notification.className = `${bgColor} px-4 py-2 rounded-lg shadow-lg text-white transform transition-all duration-300`;
         notification.textContent = message;
         
-        appDiv.appendChild(notification);
+        this.container.appendChild(notification);
         
-        // 自動消失
         setTimeout(() => {
             notification.style.opacity = '0';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
+            setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
 
     getTypeClass(type) {
         const classes = {
-            success: 'bg-green-500 text-white',
-            error: 'bg-red-500 text-white',
-            info: 'bg-blue-500 text-white',
-            warning: 'bg-yellow-500 text-white'
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            info: 'bg-blue-500',
+            warning: 'bg-yellow-500'
         };
         return classes[type] || classes.info;
-    }
-
-    getIcon(type) {
-        // Add your icon SVGs here
-        return '';
     }
 }
