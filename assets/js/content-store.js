@@ -1,3 +1,5 @@
+import { ref } from 'vue';
+
 export class ContentStore {
     constructor() {
         this.storageKey = 'contentPlans';
@@ -56,3 +58,97 @@ export class ContentStore {
         return this.defaultTemplates;
     }
 }
+
+// 在 setup 函數中添加
+const showSettings = ref(false);
+const statusOptions = ref([
+    { name: '構思中' },
+    { name: '撰寫中' },
+    { name: '已完成' }
+]);
+const categoryOptions = ref([
+    { name: '求職指南' },
+    { name: '面試準備' },
+    { name: '工作經驗' },
+    { name: '生活資訊' }
+]);
+const platformOptions = ref([
+    { name: 'Blog' },
+    { name: 'LinkedIn' },
+    { name: 'Facebook' },
+    { name: 'Instagram' }
+]);
+
+// 新增選項方法
+const addStatus = () => statusOptions.value.push({ name: '' });
+const addCategory = () => categoryOptions.value.push({ name: '' });
+const addPlatform = () => platformOptions.value.push({ name: '' });
+
+// 移除選項方法
+const removeStatus = (index) => statusOptions.value.splice(index, 1);
+const removeCategory = (index) => categoryOptions.value.splice(index, 1);
+const removePlatform = (index) => platformOptions.value.splice(index, 1);
+
+// 儲存設定
+const saveSettings = () => {
+    // 過濾空值
+    statusOptions.value = statusOptions.value.filter(item => item.name.trim());
+    categoryOptions.value = categoryOptions.value.filter(item => item.name.trim());
+    platformOptions.value = platformOptions.value.filter(item => item.name.trim());
+    
+    // 儲存到 localStorage
+    localStorage.setItem('statusOptions', JSON.stringify(statusOptions.value));
+    localStorage.setItem('categoryOptions', JSON.stringify(categoryOptions.value));
+    localStorage.setItem('platformOptions', JSON.stringify(platformOptions.value));
+    
+    showSettings.value = false;
+    notifications.show('設定已儲存', 'success');
+};
+
+// 在 return 中添加
+return {
+    // ...existing returns...
+    showSettings,
+    statusOptions,
+    categoryOptions,
+    platformOptions,
+    addStatus,
+    addCategory,
+    addPlatform,
+    removeStatus,
+    removeCategory,
+    removePlatform,
+    saveSettings
+};
+
+<!-- 修改狀態選擇器 -->
+<select id="status" v-model="newPlan.status"
+        class="w-full p-2 border border-gray-300 rounded-md">
+    <option v-for="option in statusOptions" 
+            :key="option.name" 
+            :value="option.name">
+        {{ option.name }}
+    </option>
+</select>
+
+<!-- 修改分類為下拉選單 -->
+<select id="category" v-model="newPlan.category"
+        class="w-full p-2 border border-gray-300 rounded-md">
+    <option value="">請選擇分類</option>
+    <option v-for="option in categoryOptions" 
+            :key="option.name" 
+            :value="option.name">
+        {{ option.name }}
+    </option>
+</select>
+
+<!-- 修改平台為下拉選單 -->
+<select id="platform" v-model="newPlan.platform"
+        class="w-full p-2 border border-gray-300 rounded-md">
+    <option value="">請選擇平台</option>
+    <option v-for="option in platformOptions" 
+            :key="option.name" 
+            :value="option.name">
+        {{ option.name }}
+    </option>
+</select>
