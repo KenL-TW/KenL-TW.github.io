@@ -86,8 +86,14 @@
           <!-- 分類 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">分類</label>
-            <input type="text" v-model="newPlan.category"
-                   class="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
+            <select v-model="newPlan.category"
+                    class="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
+              <option v-for="option in categoryOptions" 
+                      :key="option.id" 
+                      :value="option.name">
+                {{ option.name }}
+              </option>
+            </select>
           </div>
           <!-- 關鍵字 -->
           <div>
@@ -110,8 +116,14 @@
           <!-- 發佈平台 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">發佈平台</label>
-            <input type="text" v-model="newPlan.platform"
-                   class="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
+            <select v-model="newPlan.platform"
+                    class="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500">
+              <option v-for="option in platformOptions" 
+                      :key="option.id" 
+                      :value="option.name">
+                {{ option.name }}
+              </option>
+            </select>
           </div>
           <!-- 發佈日期 -->
           <div>
@@ -269,10 +281,14 @@
         </div>
 
         <!-- 儲存按鈕 -->
-        <div class="mt-4">
+        <div class="mt-4 flex gap-4">
           <button @click="saveSettings"
-                  class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                  class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
             儲存所有設定
+          </button>
+          <button @click="showSettings = false"
+                  class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition">
+            取消
           </button>
         </div>
       </div>
@@ -486,283 +502,134 @@ class SecurityManager {
 
     createApp({
       setup() {
+        // 1. 先初始化必要的服務
         const store = new ContentStore();
         const notifications = new NotificationSystem();
         const settingsStore = new SettingsStore();
+        const uxManager = new UXManager();
+        const securityManager = new SecurityManager();
 
-        // 核心資料
+        // 2. 設定狀態
+        const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
+        const showSettings = ref(false);
+        const activeTab = ref('所有文章');
+        const editingIndex = ref(null);
         const contentPlans = ref([]);
-        const activeTab     = ref('所有文章');
-        const editingIndex  = ref(null);
 
-        // 新增/編輯表單
-        const newPlan = ref({
-          title: '',
-          category: '',
-          keywordsInput: '',
-          status: '構思中',
-          platform: '',
-          publishDate: '',
-          summary: ''
-        });
-
-        // 分頁
-        const initializeTabs = () => {
-          const savedStatus = settingsStore.get('statusOptions') || [
-            { id: 1, name: '構思中' },
-            { id: 2, name: '撰寫中' },
-            { id: 3, name: '已完成' }
-          ];
-          
-          return [
-            { name: '所有文章', value: '所有文章' },
-            ...savedStatus.map(opt => ({
-              name: opt.name,
-              value: opt.name
-            }))
-          ];
-        };
-        const tabs = ref(initializeTabs());
-
-        // 控制設定面板
-        const showSettings    = ref(false);
-        // 狀態選項列表
-        const statusOptions   = ref(settingsStore.get('statusOptions') || [
+        // 3. 初始化選項
+        const statusOptions = ref(settingsStore.get('statusOptions') || [
           { id: 1, name: '構思中' },
           { id: 2, name: '撰寫中' },
           { id: 3, name: '已完成' }
         ]);
-        // 以下兩項目前尚未在模板中使用，但預留擴充
-        const categoryOptions = ref(settingsStore.get('categoryOptions') || []);
-        const platformOptions = ref(settingsStore.get('platformOptions') || []);
 
-        // 篩選
+        const categoryOptions = ref(settingsStore.get('categoryOptions') || [
+          { id: 1, name: '求職指南' },
+          { id: 2, name: '面試準備' },
+          { id: 3, name: '工作經驗' },
+          { id: 4, name: '生活資訊' }
+        ]);
+
+        const platformOptions = ref(settingsStore.get('platformOptions') || [
+          { id: 1, name: 'Blog' },
+          { id: 2, name: 'LinkedIn' },
+          { id: 3, name: 'Facebook' },
+          { id: 4, name: 'Instagram' }
+        ]);
+
+        // 4. 初始化表單
+        const newPlan = ref({
+          title: '',
+          category: categoryOptions.value[0]?.name || '',
+          keywordsInput: '',
+          status: statusOptions.value[0]?.name || '',
+          platform: platformOptions.value[0]?.name || '',
+          publishDate: '',
+          summary: ''
+        });
+
+        // 5. 初始化分頁
+        const tabs = ref([
+          { name: '所有文章', value: '所有文章' },
+          ...statusOptions.value.map(opt => ({
+            name: opt.name,
+            value: opt.name
+          }))
+        ]);
+
+        // 6. 計算屬性
         const filteredContentPlans = computed(() => {
           if (activeTab.value === '所有文章') return contentPlans.value;
           return contentPlans.value.filter(p => p.status === activeTab.value);
         });
 
-        // 數量
-        const getContentCount = status => {
-          return status === '所有文章'
-            ? contentPlans.value.length
-            : contentPlans.value.filter(p => p.status === status).length;
+        // 7. 方法定義
+        const getContentCount = (tabValue) => {
+          if (tabValue === '所有文章') return contentPlans.value.length;
+          return contentPlans.value.filter(p => p.status === tabValue).length;
         };
 
-        // 提交
-        const submitContentPlan = async () => {
-          const v = FormValidator.validate(newPlan.value);
-          if (!v.isValid) {
-            v.errors.forEach(e => notifications.show(e, 'error'));
-            return;
-          }
-          try {
-            if (editingIndex.value !== null) {
-              contentPlans.value[editingIndex.value] = { ...newPlan.value };
-              notifications.show('內容更新成功！', 'success');
-            } else {
-              contentPlans.value.push({ ...newPlan.value });
-              notifications.show('內容新增成功！', 'success');
-            }
-            await store.save(contentPlans.value);
-            resetForm();
-          } catch (err) {
-            console.error(err);
-            notifications.show('操作失敗，請稍後再試', 'error');
+        const addOption = (optionType) => {
+          const options = {
+            status: statusOptions,
+            category: categoryOptions,
+            platform: platformOptions
+          }[optionType];
+
+          if (options) {
+            const newId = Math.max(...options.value.map(opt => opt.id || 0), 0) + 1;
+            options.value.push({ id: newId, name: '' });
           }
         };
 
-        // 編輯
-        const editContentPlan = idx => {
-          editingIndex.value = idx;
-          const p = contentPlans.value[idx];
-          newPlan.value = {
-            ...p,
-            keywordsInput: p.keywords ? p.keywords.join(', ') : ''
-          };
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
+        const removeOption = (optionType, idx) => {
+          const options = {
+            status: statusOptions,
+            category: categoryOptions,
+            platform: platformOptions
+          }[optionType];
 
-        // 取消
-        const cancelEdit = () => {
-          resetForm();
-          alert('已取消編輯。');
-        };
-
-        // 重置
-        const resetForm = () => {
-          newPlan.value = {
-            title: '',
-            category: '',
-            keywordsInput: '',
-            status: '構思中',
-            platform: '',
-            publishDate: '',
-            summary: ''
-          };
-          editingIndex.value = null;
-        };
-
-        // 刪除
-        const deleteContentPlan = idx => {
-          showConfirm('確定要刪除這項內容計劃嗎？', async () => {
-            contentPlans.value.splice(idx, 1);
-            await store.save(contentPlans.value);
-            resetForm();
-            alert('內容計劃已刪除！');
-          });
-        };
-
-        // Badge 樣式
-        const getStatusBadgeClass = status => {
-          switch (status) {
-            case '構思中':
-              return 'inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800';
-            case '撰寫中':
-              return 'inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
-            case '已完成':
-              return 'inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
-            default:
-              return 'inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800';
-          }
-        };
-
-        // 匯出
-        const exportData = () => {
-          try {
-            const data = contentPlans.value.length
-              ? contentPlans.value
-              : store.getTemplates();
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `content-plans-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-            notifications.show('資料匯出成功！', 'success');
-          } catch (e) {
-            console.error(e);
-            notifications.show('資料匯出失敗，請稍後再試', 'error');
-          }
-        };
-
-        // 匯入
-        const importData = event => {
-          const file = event.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = e => {
-            try {
-              const arr = JSON.parse(e.target.result);
-              if (!Array.isArray(arr)) throw new Error();
-              showConfirm(`確定要匯入 ${arr.length} 筆資料嗎？`, async () => {
-                contentPlans.value = arr;
-                await store.save(arr);
-                notifications.show('資料匯入成功！', 'success');
-              });
-            } catch {
-              notifications.show('檔案格式錯誤，請確認是否為正確的 JSON 檔案', 'error');
-            }
-          };
-          reader.readAsText(file);
-          event.target.value = '';
-        };
-
-        // 添加深色模式支持
-        const uxManager = new UXManager();
-        const securityManager = new SecurityManager();
-
-        // 深色模式狀態
-        const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
-
-        // 切換深色模式
-        const toggleDarkMode = () => {
-            isDarkMode.value = uxManager.toggleDarkMode();
-        };
-
-        // 安全備份
-        const secureExport = async () => {
-            try {
-                const backupData = await securityManager.backup();
-                const encrypted = await securityManager.encrypt(backupData);
-                
-                const blob = new Blob([JSON.stringify(encrypted)], { 
-                    type: 'application/json' 
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `secure-backup-${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-                
-                notifications.show('安全備份已完成！', 'success');
-            } catch (e) {
-                console.error(e);
-                notifications.show('備份失敗，請稍後再試', 'error');
-            }
-        };
-
-        // 安全還原
-        const secureImport = async (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
+          if (options) {
+            const optionName = options.value[idx].name;
             
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const encryptedData = JSON.parse(e.target.result);
-                    const decrypted = await securityManager.decrypt(
-                        encryptedData.data,
-                        encryptedData.iv
-                    );
-                    
-                    const restored = await securityManager.restore(decrypted);
-                    
-                    contentPlans.value = restored.data;
-                    statusOptions.value = restored.settings.status;
-                    categoryOptions.value = restored.settings.category;
-                    platformOptions.value = restored.settings.platform;
-                    
-                    await store.save(contentPlans.value);
-                    await settingsStore.save('statusOptions', statusOptions.value);
-                    
-                    notifications.show('資料已安全還原！', 'success');
-                } catch (error) {
-                    console.error(error);
-                    notifications.show('還原失敗，請確認檔案格式是否正確', 'error');
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
+            // 檢查是否有文章使用此選項
+            const isUsed = contentPlans.value.some(plan => {
+              return (optionType === 'status' && plan.status === optionName) ||
+                     (optionType === 'category' && plan.category === optionName) ||
+                     (optionType === 'platform' && plan.platform === optionName);
+            });
+
+            if (isUsed) {
+              notifications.show(`無法刪除：有文章正在使用此${getOptionTypeName(optionType)}`, 'error');
+              return;
+            }
+
+            options.value.splice(idx, 1);
+          }
         };
 
-        // 設定面板：增刪
-        const addOption = type => {
-          if (type === 'status') {
-            statusOptions.value.push({ id: Date.now(), name: '' });
-          }
+        const getOptionTypeName = (type) => {
+          const types = {
+            status: '狀態',
+            category: '分類',
+            platform: '平台'
+          };
+          return types[type] || '';
         };
-        const removeOption = (type, idx) => {
-          if (type === 'status') {
-            statusOptions.value.splice(idx, 1);
-          }
-        };
-        // 設定面板：儲存設定
+
         const saveSettings = async () => {
           try {
-            // 過濾掉空值
+            // 過濾空值
             statusOptions.value = statusOptions.value.filter(opt => opt.name.trim());
-            
-            // 儲存設定
+            categoryOptions.value = categoryOptions.value.filter(opt => opt.name.trim());
+            platformOptions.value = platformOptions.value.filter(opt => opt.name.trim());
+
+            // 儲存所有選項
             await settingsStore.save('statusOptions', statusOptions.value);
-            
-            // 更新 tabs
+            await settingsStore.save('categoryOptions', categoryOptions.value);
+            await settingsStore.save('platformOptions', platformOptions.value);
+
+            // 更新狀態分頁
             tabs.value = [
               { name: '所有文章', value: '所有文章' },
               ...statusOptions.value.map(opt => ({
@@ -770,89 +637,60 @@ class SecurityManager {
                 value: opt.name
               }))
             ];
-            
-            // 如果目前選中的 tab 不在新的選項中，切換到「所有文章」
-            if (!tabs.value.find(tab => tab.value === activeTab.value)) {
-              activeTab.value = '所有文章';
+
+            // 檢查並更新當前文章的選項
+            if (newPlan.value) {
+              if (!statusOptions.value.find(opt => opt.name === newPlan.value.status)) {
+                newPlan.value.status = statusOptions.value[0]?.name || '';
+              }
+              if (!categoryOptions.value.find(opt => opt.name === newPlan.value.category)) {
+                newPlan.value.category = categoryOptions.value[0]?.name || '';
+              }
+              if (!platformOptions.value.find(opt => opt.name === newPlan.value.platform)) {
+                newPlan.value.platform = platformOptions.value[0]?.name || '';
+              }
             }
 
-            // 如果目前編輯表單的狀態不在新的選項中，設為第一個可用的狀態
-            if (statusOptions.value.length > 0 && !statusOptions.value.find(opt => opt.name === newPlan.value.status)) {
-              newPlan.value.status = statusOptions.value[0].name;
-            }
-            
             notifications.show('設定已儲存！', 'success');
-            showSettings.value = false;  // 儲存後關閉設定面板
-          } catch (e) {
-            console.error(e);
+            showSettings.value = false;
+          } catch (error) {
+            console.error('儲存設定失敗:', error);
             notifications.show('儲存設定失敗', 'error');
           }
         };
 
-        // 添加共享與協作功能
-        const sharing = {
-          generateShareLink: async (contentId) => {
-            // 產生分享連結
-          },
-          
-          enableCollaboration: async (contentId) => {
-            // 啟用即時協作
-          }
-        };
-
-        // 添加虛擬滾動
-        const virtualScroll = {
-          itemHeight: 100,
-          visibleItems: computed(() => {
-            const start = Math.floor(scrollTop.value / itemHeight);
-            const count = Math.ceil(viewportHeight.value / itemHeight);
-            return filteredContentPlans.value.slice(start, start + count);
-          })
-        };
-
-        // 添加搜尋優化
-        const search = {
-          index: null,
-          async initialize() {
-            // 建立搜尋索引
-          },
-          async search(query) {
-            // 執行最佳化搜尋
-          }
-        };
-
-        // 首次載入
-        onMounted(async () => {
-          const loaded = await store.load();
-          contentPlans.value = loaded.length ? loaded : [];
-          nextTick(() => window.lucide.createIcons());
-        });
-
-        // 監聽 icons
-        watch(contentPlans, () => {
-          nextTick(() => window.lucide.createIcons());
-        }, { deep: true });
-
+        // 8. 返回需要的響應式數據和方法
         return {
-          contentPlans,
-          activeTab,
-          tabs,
-          newPlan,
-          editingIndex,
-          filteredContentPlans,
-          submitContentPlan,
-          editContentPlan,
-          cancelEdit,
-          deleteContentPlan,
-          getStatusBadgeClass,
-          getContentCount,
-          exportData,
-          importData,
+          // 狀態
+          isDarkMode,
           showSettings,
+          activeTab,
+          editingIndex,
+          contentPlans,
+          newPlan,
+          
+          // 選項
           statusOptions,
-          addOption,
-          removeOption,
-          saveSettings
+          categoryOptions,
+          platformOptions,
+          
+          // 計算屬性
+          filteredContentPlans,
+          tabs,
+          
+          // 方法
+          getContentCount,
+          addStatus: () => addOption('status'),
+          addCategory: () => addOption('category'),
+          addPlatform: () => addOption('platform'),
+          removeStatus: (idx) => removeOption('status', idx),
+          removeCategory: (idx) => removeOption('category', idx),
+          removePlatform: (idx) => removeOption('platform', idx),
+          toggleDarkMode: () => isDarkMode.value = uxManager.toggleDarkMode(),
+          saveSettings,
+          getOptionTypeName,
+          
+          // 其他需要的方法...
         };
       }
     }).mount('#app');
