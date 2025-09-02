@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS 無伺服器架構互動式教學</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 2rem;
+        }
+        .aws-container {
+            position: relative;
+            border: 4px dashed #9ca3af;
+            border-radius: 2rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .aws-container::before {
+            content: "AWS 無伺服器架構";
+            position: absolute;
+            top: -1.5rem;
+            left: 2rem;
+            background-color: #f3f4f6;
+            padding: 0 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4b5563;
+        }
+        .aws-service {
+            position: relative;
+            background-color: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .aws-service:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+        }
+        .aws-service.active {
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+        .aws-service .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background-color: #333;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            white-space: nowrap;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .aws-service:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .description-box {
+            background-color: #fff;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 120px;
+        }
+        .data-flow {
+            position: absolute;
+            background-color: transparent;
+            border-radius: 9999px;
+            animation-timing-function: linear;
+            z-index: 10;
+            filter: drop-shadow(0 0 5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .data-flow.html-data {
+            background-color: #2563eb;
+            box-shadow: 0 0 10px #2563eb;
+        }
+        .data-flow.api-data {
+            background-color: #16a34a;
+            box-shadow: 0 0 10px #16a34a;
+        }
+        .data-flow.upload-data {
+            background-color: #dc2626;
+            box-shadow: 0 0 10px #dc2626;
+        }
+        .data-flow.auth-data {
+            background-color: #f59e0b;
+            box-shadow: 0 0 10px #f59e0b;
+        }
+        .data-flow svg {
+            width: 70%;
+            height: 70%;
+            color: white;
+        }
+        .text-flow {
+            position: absolute;
+            background-color: transparent;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #4b5563;
+            z-index: 10;
+        }
+        .icon-svg {
+            width: 3rem;
+            height: 3rem;
+            margin-bottom: 0.5rem;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.03);
+            }
+        }
+        .icon-s3 {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzUzQjIxOCIgZD0iTTEyIDMuMDVMMy41MTUgNy41NjFMMTIgMTIuMDY3bC04LjQ4NSA0LjUwNlYyMEwxMiAyNC40MzNnOC40ODUtNC41MDd2LTQuNDM2TDcuNTE1IDEybDguNDg1LTQuNTA2TDcgMy4wNTJ6TTEyIDcuNTYyTDcuNTE1IDEybDQuNDg1IDQuNTA3TDE3LjUwNiAxMmwtNC40ODUtNC40MzgiLz48cGF0aCBmaWxsPSIjNTNCMjE4IiBkPSJNMjEuNzE1IDEwLjgzTDExLjkzNyAxNi40bC4wMDIgNC41OTM5Ljc3Ni01LjU1NHpNMjAuMTkgNy4yNUw5Ljk0NyAxMi45OTRMMTAuMDIgMTYuMzEzIDIwLjE5MiAxMS45Mjh6Ii8+PC9zdmc+');
+        }
+        .icon-apigateway {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI0YzQTMyNCIgZD0iTTcuNjMzIDQuMTExYTIuNDczIDIuNDczIDAgMCAxLTIuMTU4IDEuMTM0Yy0xLjI2IDAtMi4yOTUtLjgyOS0yLjI5NS0xLjg0NyAwLTEuMDE4IDEuMDM0LTEuODQ2IDIuMjk1LTEuODQ2YTIuNDczIDIuNDczIDAgMCAxIDIuMTU4IDEuMTM0em03LjQ1IDQuNzM1Yy0xLjI2IDAtMi4yOTYtLjgyOS0yLjI5Ni0xLjg0N3MwLS44MjggMi4yOTYtLjg0N2ExLjYzMyAxLjYzMyAwIDAgMSAxLjQwNy42MzYgMi40MDQgMi40MDQgMCAwIDEgLjYxNSAxLjIxYy4wMS42NzktLjQ4IDEuMjE1LTEuOTgyIDEuNDQ4em0tMi43NzggMi43NTUtMi4yOTUtLjgyOWMyLjE1OC0xLjI2MSAyLjQ3My0yLjQ3MyAyLjM2Mi0yLjU5NWMtLjUxOS0uMzYzLTEuMTg2LS40NzItMS45NDQtLjI3OC0uNzIuMTg3LTEuNDEzLjYyNy0yLjA1MyAxLjEyMi0xLjQxMSAxLjA5Ny0yLjExMSAyLjY4My0yLjY3MSAzLjM3Mi0uNDgzLjU1Mi0xLjAyLjgyOC0xLjAzLjgzeiIgc3R5bGU9ImZpbGw6IHJnYigyNTUsMTU2LDc3KTsiLz48cGF0aCBmaWxsPSIjRjNBMzI0IiBkPSJtMTIuNTUgNy4wNDVjLjAxLS42ODItLjQ4LTEuMjE3LTEuOTg4LTEuNDQ5LTIuNzQtLjQxMi0yLjkxLTMuNTg2LTMuODktNS4zMjUtMS4yMy0yLjE4OC0xLjctMy4wNTEtMi4wNDYtMy4zNThhMy4wODkgMy4wODkgMCAwIDEtLjg1NS0uNDU5Yy0uNi0uMTI0LS45ODMtLjA5Ny0xLjAxNS0uMDk3cy0uNDUzLS4wMjctMS4yNjcuNzQxYy0uODA4Ljc3LS43MDEgMi4zNjMtLjY3NSA0LjM4NWMuMDI4IDEuNzUyLjIxOSAyLjE4OC44ODcgMi4zOTYuNjY3LjIwOSAxLjM1NS0uMDk0IDEuOTQ0LS40NzEuMzUtLjI0NSAxLjIxLS42NTYgMS42OTQtLjY4NnptLTkuMzY2IDBjLS43Ni0uMTgxLTEuNDItLjQyNS0xLjcxLS41ODItMS4xNzMtLjY1NS0xLjgzNy0uOTYyLTIuOTIxLS45NzMtMS4wODYtLjAxMi0xLjUwMy4xMDgtMi4wNzYuNTM0LTIuMjc1IDEuNjg4LTIuOTU1IDQuOTg2LTIuOTU1IDUuMTY2LS4wNTIgMS43NTItLjA1MiAzLjUyNyAwIDUuMjgtLjAyNSAxLjcxMi43MDcgMi43MzQgMi45MDcgMi44MTRsNC41LS4wNzVjMi4wNDYtLjA2IDIuODg4LS43MTEgMi45MzgtMi4zOTguMDUyLTEuNzEtLjA1Mi01LjIzNy0uMDUtNS40MTd6bTExLjYzOCAxMS41YzAtLjQxMi0uNDItLjc3NS0uOTQtLjk0Ni0uNTE2LS4xNzItMS4zNzctLjAzOC0yLjUyLjQ1LTYuNzE2IDMuMjcyLTEwLjk1OSA1LjE1Mi0xNC40MzQgNS41NzYtMy40NzcuNDIzLTIuNTEgMS4xNTUtMi40MDcgMS40MzEuMDkgLjI2NyAxLjEzNS4zMzIgMi4yNzIuMjk1IDEuMTYyLS4wNzggNS4yMTctLjc5OCAxMC42Ny0zLjQ4Yy43MDUtLjM2IDEuMzk3LS45MiAxLjc1LTEuNTA2LjM1NC0uNTg1LjQ1Ni0xLjIuNDU2LTEuNzIyeiIgc3R5bGU9ImZpbGw6IHJnYigyNTUsMTU2LDc3KTsiLz48L3N2Zz4=');
+        }
+        .icon-lambda {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI0ZGOTkyNCIgZD0iTTEyIDBMMy43ODIgMTRoOC4yMTdsLTUgOSA5LTExLjQ5N2gtNS45NzVsNy4yMjEtMTIuNTAzeiIvPjwvc3ZnPg==');
+        }
+        .icon-dynamodb {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzQ3OVZERiIgZD0iTTEyIDkuNjE3Yy0yLjgzNSAwLTIuODYtMy4wMTItNi4zMjgtMi45ODktMi45OTQtLjAyMS02LjMyOCAyLjQzNS02LjMyOCAzLjA4NCAwIC42NSAzLjAyIDMuMDc5IDYuMjY4IDMuMDk2IDEuNzM4LjAwNyAzLjQ2LS42MTcgNC43MDUtMS41OTRjLjkyLS43MTUgMi4xMjctLjczIDMuMzA4LS4wNzMuNjMuNDIgMS4wMDQgMS40MjMgMS4wNzEgMi40MTQuMDYzLjk0LS4zNTMgMS44NzUtLjgxIDEuNjItLjQ4LS4yNzUtMS40MTktLjYyNC0xLjE3OC0uNTkyLTEuMzk5LjA3OS0zLjcyMSAyLjIxMi01Ljc2MiAyLjMyNi0yLjA0NS4xMTQtMy42MzctLjE4OS00Ljc3MS0uMzQxLTEuMzgyLS4xODQtMi45OTItLjY5MS00Ljc0Mi0uNzY0LTYuMTUtLjI2Mi01Ljg0NyA0LjY4Mi01Ljg0NyA1LjIzIDAgLjQ4LS4yOTguNDctLjM5OC40Ni0uMjY1LS4wMjUtLjQyOS0uMjcxLS40MzYtLjU2MS4wNTgtMS43MjYgMi44MzUtMy4wMTIgNi4zMjgtMi45ODkgMy40OTQuMDIxIDYuMzI4LTIuNDM1IDYuMzI4LTMuMDg0IDAtLjY1LTMuMDItMy4wNzktNi4yNjgtMy4wOTYtMS43MzktLjAwNy0zLjQ2LjYxNy00LjcwNSAxLjU5NC0uOTIuNzE1LTIuMTI3LjczLTMuMzA4LjA3My0uNjMtLjQyLTEuMDA0LTEuNDIzLTEuMDcxLTIuNDE0LS4wNjMtLjk0LjM1My0xLjg3NS44MS0xLjYyLjQ4LjI3NSAxLjQxOS42MjQgMS45NzguNTkyLTEuMzk5LS4wNzktMy43MjEtMi4yMTItNS43NjItMi4zMjYtMi4wNDUtLjExNC0zLjYzNy4xODktNC43NzEuMzQxLTEuMzgyLjE4NC0yLjk5Mi42OTEtNC43NDIuNzY0LTYuMTUtLjI2Mi01Ljg0Ny00LjY4Mi01Ljg0Ny01LjIzIDAtLjQ4LjI5OC40Ny4zOTguNDYtLjI2NS4wMjUtLjQyOS4yNzEtLjQzNi41NjFtLTYuNDY4IDYuMTkzYzIuOTk0IC4wMjEgNi4zMjggMi40MzUgNi4zMjggMy4wODQgMCAuNjUtMy4wMiAzLjA3OS02LjI2OCAzLjA5Ni0zLjQ5Mi4wMi0xLjc1NS0yLjk4Mi0zLjQ5Mi0zLjEyN20tMy4yMiA2LjAzNmMtLjQ1Ny4wNzMtLjg3NC0uMDc1LTEuMDU5LS41MzMtLjQ1LTEuMjA2LS4yNTUtMi41NTEuNzctMy41MjkuNTUtLjUxIDEuMTg4LS43NzQgMS45NjktLjY5NyAyLjQ1Ni4yNDIgMi4zMzMgMy40MTUgMS43MDYgNC43MzVzLTEuMzguMjIzLTMuMzkgLjAyNnoiLz48L3N2Zz4=');
+        }
+        .icon-cloudfront {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzgyQjNEMSIgZD0iTTExLjA3MyAxNi4xMzlhNC4xOTIgNC4xOTIgMCAwIDEtMy44MTctNC44MzcgNC4xMDMgNC4xMDMgMCAwIDEgMy41MzUtMi44MjUgMy4zMjIgMy4zMjIgMCAwIDEtLjIyOS0uNjIyYy0uMTctLjU5NS0uMTQyLTEuMTY3LjA2MS0xLjgyM2wuMDA3LS4wMjZzLS43NTQtLjExMy0xLjg2LS42MTRjLTEuNC0uNjIyLTIuMjMtMS43NjYtMi41MTctMi42MjctLjI5LS44NjEtLjU0Mi0xLjQ0OS0uODE5LTEuNjY4YTMuMTUgMy4xNSAwIDAgMC0xLjQwMy0uNTIxIDMuMDI5IDMuMDI5IDAgMCAwLTEuNzQ0LjgyMWMtLjQwMy41NTMtLjg1MiAxLjE4Mi0xLjQxMSAxLjk3OS0uMzEzLjQ0Mi0uNjQzLjkxOC0uOTMyIDEuNDF5LS41MTggLjc1LS45MTYgMS40MTQtMS4xNjYgMS45NjktLjI1OS42MzgtLjM0IDEuMzA2LS4yMjkgMS45MTUtLjc4IDEuODYtMS40NDkgMy45NDgtMS42NzggNS41MTItLjIwNiAxLjQxOC41NTQgMi4yNzkgMS43ODggMi42NzcgMS42MjcuMjg3IDIuODQ2LS44NDEgMy42MjYtMS44ODRsLS4wMDUtLjAwNEM5LjUyNyAxNi40OTggMTAuMjQxIDE2LjI4IDEwLjA3MyAxNi4xMzl6bTUuNTExLS4yMDhjLjAzLS4wNzMuNTc5LTEuNzA2LS43NzctMi43MzktMS4wMzMtLjgwOC0yLjQxNC0uNzI5LTMuMjg3LS4zNjgtLjczNy4yOTctMS4xMjUgLjczLTEuMjU4IDEuMTItLjExNC4zMjktLjA5NC42NDYuMDQ2LjkwNkwxNS41MyAxOC40YzEuMzY0Ljg5NiAzLjI2OC43NzggNC41MjQtLjE5MnYuMDAyYzIuMDM0LTEuNTUzIDIuNDg2LTMuNjY4IDEuMTM0LTUuNzQ3LS45NzQtMS42MTEtMi42MDItMy4wMzYtNC4yOTMtNC4xMjQtMS4wNjItLjc1Ny0yLjM0Ni0xLjYyMy0zLjYwOC0yLjEwNWwtLjAwNS0uMDA2Yy0xLjg1Ni0uODQyLTMuNDg4LS42MjgtMi41NTYuNDYyIDEuNjQ3IDEuOTc0IDMuMTE2IDQuNDk5IDUuMzEzIDUuMzQ5IDEuMzY5LjQ4NyAyLjczNC4yMDMgNC40NzEtLjE3OC4wNDgtLjAwMi4wOTctLjAwMy4xNDQtLjAwNWEzLjU4NSAz.NTg1IDAgMCAxIDMuNTg3IDMuNTYzYzAgLjI4MS0uMDI3LjU0OC0uMDc5Ljc5Mnoiei8+PC9zdmc+');
+        }
+        .icon-cognito {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzgyQjNEMSIgZD0iTTEyIDExYy0uOTc2IDAtMS45NDgtLjM5LTEuNjktLjcxLjMxOC0uNDEtMS41ODMtMS4zMDgtMi4yODMtMS42NzItMS40OTMtLjc2Ni0xLjY3Ni0xLjQ0Ni0xLjY3Ni0yLjI3OCAwLTEuMzQ2Ljg3Mi0yLjQ0MiAyLjAxNi0yLjQ0MmE2LjYwMiA2LjYwMiAwIDAgMSAyLjY5OC41MjYgMy42NDkgMy42NDkgMCAwMS0uMzc4LS44MjVjLS4zOTEtMS4xNzEtLjM1LTIuMjYxLjU0OC0yLjg3Ni45MjQtLjU1NyAyLjIyNy0uNzI4IDMuMzEzLS43MjggMS4xNDkgMCAyLjY4OC4xNzIgMy42MTcuNDE5LjkwNi4yNDEgMS42MDUuNTcyIDIuMDI1LjguMTgzLjE0OC4zMDguMjYyLjM0Mi41MTIuMDcuNDk0LS4wNTIgMS43NTQtMS4xNjYgMi4zNTktLjY4LjM2Ny0xLjM2MS40NzMtMS45MDcuMjQ1LS42MjEtLjI1NS0xLjQwNS0uNDktMi40MjgtLjQ4Ni0xLjA0LjAyMS0xLjUxOS4zMzctMS42ODIgMS4zMjgtLjE0Mi44Ni41IDIuMjg1Ljg5MSAyLjYyOS4zMzkuMjg1IDEuMDA5LjYxNSAxLjc5NS45MzIuMTcuMDY4LjMyOS4xNTguNTQ0LjI5OS40MTMuMjcyLjgyMi42NDMgMS4yMTYuOTY0LjM2MS4zMDQuNzguNjIyIDEuMTUyLjk3LjM4NS4zMjkuODIuNjkxIDEuMjAxIDEuMDI4LjQzMi4zNi45MjEuNzY0IDEuNDY1IDEuMTR2LjAxM2wuMDA3LS4wMTNjLS4wMTgtLjAxMi0uMDI3LS4wMTMtLjAzLS4wMzYuMDEuMDEuMDIuMDIuMDI3LjAzem0tMTUuOTU1IDEuODRjLTEuMzcxLS42NDgtMS42NzQtMS4xNTktMS44MzktMS43ODUtLjE0NC0uNTQ5LS4xMzctMS4xMDQuMTE4LTEuNTg1LjMzLS42OTkgLjg4OS0xLjQ5OSAxLjY3Mi0yLjAzNi44MjctLjU2NyAxLjQ3NC0uNzc5IDIuMTIyLS45MDYuNzc2LS4xNDggMS42ODctLjA2NCAyLjQ0MS4yMDguNzA0LjI1NSAxLjE3LjY2OSAxLjUzNyAxLjA3MS4zNzguNDE0LjczNS45NjggMS4wNjYgMS41NDcuMzI2LjU3OC42MzUgMS4yNDIuOTQ2IDEuOTI5bC4wMDIuMDA2Yy41NiAxLjEzMSAxLjA1MSAyLjE2IDEuNDY2IDMuMDY0bC4wMTIuMDI5Yy42NjQgMS41MDMgMS4yMTkgMi41MjUgMS41NTggMy41ODEuNTkgMS44MzcgMS40MzcgMi42MDMgMS42OTggMi44MjIuNDI3LjM2OS43NTYuNDUzIDEuMTMuNDUzLjQ3NiAwIC44NzYtLjE1NyAxLjI1LS41MTIuNzktLjcyNyAxLjMyNi0xLjczNCAxLjUyMS0yLjQ1Mi4xNDEtLjU5MS4xMzItMS4xMTctLjA0OC0xLjU1Ni0uNjI4LTEuNTU2LTEuMTY2LTMuMjY2LTEuNjc2LTQuODA1LS4yOTQtLjg2NS0uNjAyLTEuNjgtLjkxNS0yLjQ1NC0uNDI5LTEuMDIzLS44MjQtMS45MDgtMS4wOTYtMi41NjktLjIyNC0uNTU1LS4zOTMtMS4wMi0uNTY0LTEuMzhhMi44NiAyLjg2IDAgMCAwLTEuNTQxLS45NDVjLTEuMjQ2LS40MDgtMi44NjUtLjEyMi00LjA3Mi44MDQtMS4wMzQuNzgtMi4yNDYgMS45NjktMy43OTggMy4wMzktMy4zMiAyLjMxNS00LjYzNiAzLjU4MS01LjAxNyAzLjcyOS0uNDI3LjE3LS43MDYuMTc5LTEuMDUxLS4xNzctLjE1LS4xNjMtLjI3NS0uNDU5LS4yMjUtLjc1OS4yOTgtMS42NzMgMS4wMi0yLjA5NSAyLjQ1LTIuNDMzIi8+PC9zdmc+');
+        }
+        .service-group {
+            border: 2px solid #ccc;
+            border-radius: 1rem;
+            padding: 1rem;
+            background-color: #fafafa;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .service-group h2 {
+            position: absolute;
+            top: -0.75rem;
+            left: 1rem;
+            background-color: #f3f4f6;
+            padding: 0 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4b5563;
+        }.back-fab {
+        position: fixed;
+        left: 1rem;
+        bottom: 1rem;   /* 可改為 top: 1rem; 變成左上角浮動 */
+        z-index: 1080;  /* 高於一般內容，低於 Offcanvas/Modal */
+        padding: .75rem 1.25rem;
+        }
+        @media (max-width: 767.98px) {
+        .back-fab {
+            left: .75rem;
+            bottom: .75rem;
+            padding: .625rem 1rem;
+        }}
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+
+    <div class="container mx-auto">
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">AWS 無伺服器架構互動式教學</h1>
+            <a href="../index.html"
+            class="btn btn-primary btn-lg rounded-pill shadow back-fab d-none d-md-inline-flex"
+            aria-label="返回首頁（快捷鍵 H）"
+            aria-keyshortcuts="H">
+            <i class="bi bi-house-door me-2"></i> 回首頁
+            </a>
+            <p class="text-xl text-gray-600">
+                點擊下方按鈕，看見使用者請求如何在AWS服務之間流動。將滑鼠移到服務圖標上，即可看到介紹。
+            </p>
+        </div>
+
+        <!-- Architecture Diagram -->
+        <div class="flex flex-col items-center gap-6 relative">
+            <div id="user-client" class="aws-service w-48 h-32">
+                <p class="text-lg font-semibold">使用者 (Clients)</p>
+                <p class="text-sm text-gray-500">瀏覽器或移動應用程式</p>
+                <div class="tooltip">使用者通過瀏覽器、手機App等發出請求。</div>
+            </div>
+            
+            <div class="aws-container w-full max-w-[1000px] flex flex-col items-center justify-center gap-8">
+                <!-- Top Row: Static Website Delivery & Authentication -->
+                <div class="flex items-center justify-center gap-8 w-full">
+                    <div id="cloudfront" class="aws-service w-48 h-32">
+                        <div class="w-12 h-12 icon-cloudfront icon-svg"></div>
+                        <p class="text-lg font-semibold">CloudFront</p>
+                        <p class="text-sm text-gray-500">內容分發</p>
+                        <div class="tooltip">Amazon CloudFront 是全球內容分發網路 (CDN)。它將網站內容快取到全球各地的邊緣站點，以提供低延遲的網站訪問速度。</div>
+                    </div>
+                    
+                    <div id="s3" class="aws-service w-48 h-32">
+                        <div class="w-12 h-12 icon-s3 icon-svg"></div>
+                        <p class="text-lg font-semibold">S3</p>
+                        <p class="text-sm text-gray-500">靜態網站與儲存</p>
+                        <div class="tooltip">Amazon S3 (Simple Storage Service) 是物件儲存服務，可用於儲存靜態檔案（HTML、CSS、JS、圖片等）並作為靜態網站託管。</div>
+                    </div>
+
+                    <div id="cognito" class="aws-service w-48 h-32">
+                        <div class="w-12 h-12 icon-cognito icon-svg"></div>
+                        <p class="text-lg font-semibold">Cognito</p>
+                        <p class="text-sm text-gray-500">使用者認證</p>
+                        <div class="tooltip">Amazon Cognito 提供使用者身分管理和認證，讓應用程式能輕鬆地讓使用者註冊、登入及控制存取。</div>
+                    </div>
+                </div>
+
+                <!-- Middle Row: API & Backend -->
+                <div class="flex items-center justify-center gap-8 w-full">
+                    <div id="api-gateway" class="aws-service w-48 h-32">
+                        <div class="w-12 h-12 icon-apigateway icon-svg"></div>
+                        <p class="text-lg font-semibold">API Gateway</p>
+                        <p class="text-sm text-gray-500">API 請求</p>
+                        <div class="tooltip">Amazon API Gateway 能夠管理、發布、維護、監控和保護任何規模的 API。它作為使用者與後端服務之間的單一入口。</div>
+                    </div>
+                    
+                    <div id="lambda" class="aws-service w-48 h-32">
+                        <div class="w-12 h-12 icon-lambda icon-svg"></div>
+                        <p class="text-lg font-semibold">Lambda</p>
+                        <p class="text-sm text-gray-500">後端邏輯</p>
+                        <div class="tooltip">AWS Lambda 是無伺服器計算服務，讓您無需佈建或管理伺服器即可執行程式碼。它由事件觸發，例如 API 請求或資料變動。</div>
+                    </div>
+
+                    <div id="dynamodb" class="aws-service w-48 h-32">
+                        <div class="w-12 h-12 icon-dynamodb icon-svg"></div>
+                        <p class="text-lg font-semibold">DynamoDB</p>
+                        <p class="text-sm text-gray-500">NoSQL 資料庫</p>
+                        <div class="tooltip">Amazon DynamoDB 是完全託管的 NoSQL 資料庫服務，提供單一位數毫秒的延遲，可處理任何規模的應用程式。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animation lines and nodes (hidden by default) -->
+        <div id="animation-container" class="relative">
+            <!-- 動態資料流會在此處創建 -->
+        </div>
+
+        <!-- Control and Description Panel -->
+        <hr class="my-6 border-gray-300" />
+        <div class="description-box mt-6 p-8">
+            <div id="controls" class="flex flex-col gap-6 mb-6">
+                <!-- Group 1 -->
+                <div class="service-group">
+                    <h2>基礎服務與認證</h2>
+                    <div class="flex flex-wrap justify-center items-center gap-4 mt-2">
+                        <button onclick="startAnimation('render')" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            1. 渲染靜態網頁
+                        </button>
+                        <button onclick="startAnimation('auth')" class="bg-yellow-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            2. 使用者登入認證
+                        </button>
+                        <button onclick="startAnimation('auth-fail')" class="bg-yellow-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            3. 登入失敗
+                        </button>
+                        <button onclick="startAnimation('token-refresh')" class="bg-yellow-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            4. 認證碼更新
+                        </button>
+                    </div>
+                </div>
+                <!-- Group 2 -->
+                <div class="service-group">
+                    <h2>後端資料互動</h2>
+                    <div class="flex flex-wrap justify-center items-center gap-4 mt-2">
+                        <button onclick="startAnimation('api')" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            5. 讀取資料
+                        </button>
+                        <button onclick="startAnimation('write')" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            6. 寫入資料
+                        </button>
+                        <button onclick="startAnimation('delete')" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            7. 刪除資料
+                        </button>
+                    </div>
+                </div>
+                <!-- Group 3 -->
+                <div class="service-group">
+                    <h2>進階情境</h2>
+                    <div class="flex flex-wrap justify-center items-center gap-4 mt-2">
+                        <button onclick="startAnimation('upload')" class="bg-red-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            8. 檔案上傳
+                        </button>
+                        <button onclick="startAnimation('update')" class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            9. 即時資料更新
+                        </button>
+                        <button onclick="startAnimation('search')" class="bg-gray-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            10. 全文檢索
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dynamic input form for specific scenarios -->
+            <div id="input-form" class="hidden flex flex-col items-center gap-4 mb-6">
+                <input type="text" id="username-input" class="w-64 p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="輸入使用者名稱">
+                <input type="password" id="password-input" class="w-64 p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="輸入密碼">
+                <button onclick="simulateAuth()" class="bg-yellow-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                    發送認證請求
+                </button>
+            </div>
+
+            <div id="message-box" class="text-center text-lg text-gray-700">
+                點擊上方按鈕開始模擬，一步步了解架構運作。
+            </div>
+
+            <div id="summary-box" class="hidden mt-6">
+                <div class="accordion-title" onclick="toggleAccordion()">
+                    <span class="text-xl">▼ 完整步驟</span>
+                    <span class="accordion-icon">▶</span>
+                </div>
+                <div id="steps-content" class="accordion-content">
+                    <ul id="steps-list" class="step-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const services = {
+            'user-client': {
+                element: document.getElementById('user-client'),
+            },
+            'cloudfront': {
+                element: document.getElementById('cloudfront'),
+            },
+            's3': {
+                element: document.getElementById('s3'),
+            },
+            'cognito': {
+                element: document.getElementById('cognito'),
+            },
+            'api-gateway': {
+                element: document.getElementById('api-gateway'),
+            },
+            'lambda': {
+                element: document.getElementById('lambda'),
+            },
+            'dynamodb': {
+                element: document.getElementById('dynamodb'),
+            }
+        };
+
+        const messageBox = document.getElementById('message-box');
+        const animationContainer = document.getElementById('animation-container');
+        const inputForm = document.getElementById('input-form');
+        const controls = document.getElementById('controls');
+        const summaryBox = document.getElementById('summary-box');
+        const stepsList = document.getElementById('steps-list');
+        let stepHistory = [];
+        let currentScenario = '';
+
+        const dataIcons = {
+            'html-data': `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM16 16.5c-1.1-1.1-1.1-2.9 0-4s2.9-1.1 4 0 1.1 2.9 0 4-2.9 1.1-4 0zM12 16.5c-1.1 1.1-1.1 2.9 0 4s2.9 1.1 4 0 1.1-2.9 0-4-2.9-1.1-4 0zM12 12c-1.1 1.1-1.1 2.9 0 4s2.9 1.1 4 0 1.1-2.9 0-4-2.9-1.1-4 0zM8 12c-1.1 1.1-1.1 2.9 0 4s2.9 1.1 4 0 1.1-2.9 0-4-2.9-1.1-4 0zM8 8c-1.1 1.1-1.1 2.9 0 4s2.9 1.1 4 0 1.1-2.9 0-4-2.9-1.1-4 0z"/>
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <path fill-rule="evenodd" d="M16.5 16.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM16.5 12a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM12 16.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" clip-rule="evenodd"/>
+                </svg>
+            `,
+            'api-data': `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+            `,
+            'upload-data': `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4c-3.72 0-6.73 2.72-7.35 6.22-2.33.15-4.15 2.14-4.15 4.54 0 2.4 1.95 4.35 4.35 4.35H19c2.76 0 5-2.24 5-5 0-2.64-2.14-4.79-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                </svg>
+            `,
+            'auth-data': `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99A5.002 5.002 0 0017 12a5 5 0 00-5-5V4.28c2.93 1.28 5 4.14 5 7.72s-2.07 6.44-5 7.72V17a5 5 0 005-5c0-2.76-2.24-5-5-5-2.76 0-5 2.24-5 5s2.24 5 5 5z"/>
+                </svg>
+            `,
+        };
+
+        function clearAnimations() {
+            Object.values(services).forEach(s => s.element.classList.remove('active'));
+            animationContainer.innerHTML = '';
+            inputForm.classList.add('hidden');
+            controls.classList.remove('hidden');
+            summaryBox.classList.add('hidden');
+            stepsList.innerHTML = '';
+            stepHistory.length = 0;
+            clearTimeout(window.animationTimeout);
+        }
+
+        function createFlow(start, end, type, text, duration) {
+            const startRect = services[start].element.getBoundingClientRect();
+            const endRect = services[end].element.getBoundingClientRect();
+            const containerRect = animationContainer.getBoundingClientRect();
+
+            const startX = startRect.left + startRect.width / 2 - containerRect.left;
+            const startY = startRect.top + startRect.height / 2 - containerRect.top;
+            const endX = endRect.left + endRect.width / 2 - containerRect.left;
+            const endY = endRect.top + endRect.height / 2 - containerRect.top;
+
+            const flow = document.createElement('div');
+            flow.classList.add('data-flow', type);
+            flow.style.width = '2rem';
+            flow.style.height = '2rem';
+            flow.style.left = `${startX - 16}px`;
+            flow.style.top = `${startY - 16}px`;
+            flow.innerHTML = dataIcons[type];
+            
+            const flowText = document.createElement('div');
+            flowText.classList.add('text-flow');
+            flowText.style.left = `${startX}px`;
+            flowText.style.top = `${startY - 20}px`;
+            flowText.textContent = text;
+            
+            animationContainer.appendChild(flow);
+            animationContainer.appendChild(flowText);
+
+            setTimeout(() => {
+                flow.style.transition = `transform ${duration}s linear`;
+                flow.style.transform = `translate(${endX - startX}px, ${endY - startY}px)`;
+                flowText.style.transition = `transform ${duration}s linear`;
+                flowText.style.transform = `translate(${endX - startX}px, ${endY - startY}px)`;
+            }, 50);
+
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    flow.remove();
+                    flowText.remove();
+                    resolve();
+                }, duration * 1000 + 100);
+            });
+        }
+
+        async function startAnimation(scenario) {
+            clearAnimations();
+            currentScenario = scenario;
+            
+            if (scenario === 'auth' || scenario === 'auth-fail' || scenario === 'write' || scenario === 'delete') {
+                controls.classList.add('hidden');
+                inputForm.classList.remove('hidden');
+                document.getElementById('password-input').style.display = 'block';
+                messageBox.innerHTML = `
+                    <strong>請輸入模擬資料，並點擊「發送」按鈕。</strong>
+                `;
+                if (scenario === 'auth') {
+                    document.getElementById('username-input').value = 'john.doe';
+                    document.getElementById('password-input').value = 'secure_password';
+                } else if (scenario === 'auth-fail') {
+                    document.getElementById('username-input').value = 'john.doe';
+                    document.getElementById('password-input').value = 'wrong_password';
+                } else if (scenario === 'write') {
+                    document.getElementById('username-input').value = '新留言：AWS真棒！';
+                    document.getElementById('password-input').style.display = 'none';
+                } else if (scenario === 'delete') {
+                    document.getElementById('username-input').value = '留言ID: 12345';
+                    document.getElementById('password-input').style.display = 'none';
+                }
+                return;
+            }
+
+            switch(scenario) {
+                case 'render':
+                    stepHistory.push('使用者在瀏覽器輸入網址，發出對網站的 HTTP 請求。');
+                    messageBox.innerHTML = `
+                        <strong>情境 1：渲染靜態網頁</strong><br>
+                        <strong>步驟 1:</strong> 使用者輸入網址，發出請求。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createFlow('user-client', 'cloudfront', 'html-data', 'HTTP請求', 1);
+
+                    stepHistory.push('CloudFront 接收請求，檢查快取。快取未命中，請求轉發到 S3。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> Amazon CloudFront 接收請求，檢查快取。快取未命中，請求轉發到 S3。
+                    `;
+                    services['user-client'].element.classList.remove('active');
+                    services['cloudfront'].element.classList.add('active');
+                    await createFlow('cloudfront', 's3', 'html-data', '網頁請求', 1);
+                    
+                    stepHistory.push('S3 尋找對應的 HTML/CSS/JS 檔案，並傳送回 CloudFront。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> S3 尋找對應的 HTML/CSS/JS 檔案，並傳送回 CloudFront。
+                    `;
+                    services['cloudfront'].element.classList.remove('active');
+                    services['s3'].element.classList.add('active');
+                    await createFlow('s3', 'cloudfront', 'html-data', '靜態檔案', 1);
+
+                    stepHistory.push('CloudFront 將檔案快取，並傳送給使用者，網頁完成渲染。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> CloudFront 將檔案快取，並傳送給使用者，網頁完成渲染。
+                    `;
+                    services['s3'].element.classList.remove('active');
+                    services['cloudfront'].element.classList.add('active');
+                    await createFlow('cloudfront', 'user-client', 'html-data', '已快取網頁', 1);
+                    services['cloudfront'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    break;
+
+                case 'token-refresh':
+                    stepHistory.push('前端檢查到 JWT 即將過期，發出認證碼更新請求。');
+                    messageBox.innerHTML = `
+                        <strong>情境 4：認證碼更新</strong><br>
+                        <strong>步驟 1:</strong> 前端檢查到 JWT 即將過期，發出認證碼更新請求。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createFlow('user-client', 'cognito', 'auth-data', '更新憑證請求', 1.5);
+                    
+                    stepHistory.push('Cognito 驗證 Refresh Token，並簽發新的 JWT。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> Cognito 驗證 Refresh Token，並簽發新的 JWT。
+                    `;
+                    services['user-client'].element.classList.remove('active');
+                    services['cognito'].element.classList.add('active');
+                    await createFlow('cognito', 'user-client', 'auth-data', '新 JWT', 1.5);
+                    
+                    stepHistory.push('網頁接收到新的 JWT 並儲存，用於後續的 API 請求。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> 網頁接收到新的 JWT 並儲存，用於後續的 API 請求。
+                    `;
+                    services['cognito'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    break;
+                
+                case 'api':
+                    stepHistory.push('網頁上的 JavaScript 發出 API 請求，以取得後端資料。請求會帶上 Cognito 提供的認證碼。');
+                    messageBox.innerHTML = `
+                        <strong>情境 5：讀取資料</strong><br>
+                        <strong>步驟 1:</strong> 網頁發出 API 請求，帶上認證碼。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createFlow('user-client', 'api-gateway', 'api-data', 'API請求 (GET)', 1.5);
+                    
+                    stepHistory.push('API Gateway 驗證認證碼，並觸發 Lambda 函數。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> API Gateway 驗證認證碼，並觸發 Lambda 函數。
+                    `;
+                    services['user-client'].element.classList.remove('active');
+                    services['api-gateway'].element.classList.add('active');
+                    await createFlow('api-gateway', 'lambda', 'api-data', '觸發函數', 1);
+
+                    stepHistory.push('Lambda 從 DynamoDB 讀取資料。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> Lambda 從 DynamoDB 讀取資料。
+                    `;
+                    services['api-gateway'].element.classList.remove('active');
+                    services['lambda'].element.classList.add('active');
+                    await createFlow('lambda', 'dynamodb', 'api-data', '讀取資料', 1);
+
+                    stepHistory.push('DynamoDB 回傳資料給 Lambda 函數。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> DynamoDB 回傳資料給 Lambda 函數。
+                    `;
+                    services['dynamodb'].element.classList.add('active');
+                    await createFlow('dynamodb', 'lambda', 'api-data', '回傳資料', 1);
+
+                    stepHistory.push('Lambda 將處理後的資料回傳給 API Gateway。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 5:</strong> Lambda 將處理後的資料回傳給 API Gateway。
+                    `;
+                    services['dynamodb'].element.classList.remove('active');
+                    await createFlow('lambda', 'api-gateway', 'api-data', '回傳回應', 1);
+                    
+                    stepHistory.push('API Gateway 將回應傳送回網頁，完成資料顯示。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 6:</strong> API Gateway 將回應傳送回網頁，完成資料顯示。
+                    `;
+                    services['api-gateway'].element.classList.add('active');
+                    services['lambda'].element.classList.remove('active');
+                    await createFlow('api-gateway', 'user-client', 'api-data', 'API回應 (JSON)', 1.5);
+                    
+                    services['api-gateway'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    break;
+                
+                case 'upload':
+                    stepHistory.push('網頁請求後端，以取得 S3 預簽名網址 (Presigned URL) 進行直接上傳。');
+                    messageBox.innerHTML = `
+                        <strong>情境 8：檔案上傳至S3</strong><br>
+                        <strong>步驟 1:</strong> 網頁請求後端，以取得 S3 預簽名網址 (Presigned URL) 進行直接上傳。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createFlow('user-client', 'api-gateway', 'upload-data', '請求上傳權限', 1.5);
+
+                    stepHistory.push('API Gateway 觸發 Lambda，由其生成預簽名網址。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> API Gateway 觸發 Lambda，由其生成預簽名網址。
+                    `;
+                    services['user-client'].element.classList.remove('active');
+                    services['api-gateway'].element.classList.add('active');
+                    await createFlow('api-gateway', 'lambda', 'upload-data', '觸發函數', 1);
+                    
+                    stepHistory.push('Lambda 呼叫 S3 API 取得預簽名網址，並回傳給網頁。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> Lambda 呼叫 S3 API 取得預簽名網址，並回傳給網頁。
+                    `;
+                    services['lambda'].element.classList.add('active');
+                    services['api-gateway'].element.classList.remove('active');
+                    await createFlow('lambda', 's3', 'upload-data', '請求簽名', 1);
+                    
+                    stepHistory.push('網頁使用預簽名網址，將檔案直接上傳到 S3，繞過後端伺服器。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> 網頁使用預簽名網址，將檔案直接上傳到 S3，繞過後端伺服器。
+                    `;
+                    services['s3'].element.classList.add('active');
+                    await createFlow('s3', 'user-client', 'upload-data', '預簽名URL', 1.5);
+
+                    services['s3'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    await createFlow('user-client', 's3', 'upload-data', '直接上傳檔案', 2);
+                    
+                    services['s3'].element.classList.add('active');
+                    break;
+
+                case 'update':
+                    stepHistory.push('後端資料庫 (DynamoDB) 有新的資料寫入。');
+                    messageBox.innerHTML = `
+                        <strong>情境 9：資料即時更新</strong><br>
+                        <strong>步驟 1:</strong> 後端資料庫 (DynamoDB) 有新的資料寫入。
+                    `;
+                    services['dynamodb'].element.classList.add('active');
+                    
+                    stepHistory.push('網頁上的 JavaScript 持續發出 API 請求 (Polling) 或透過 WebSocket 監聽，以取得最新資料。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> 網頁上的 JavaScript 持續發出 API 請求 (Polling) 或透過 WebSocket 監聽，以取得最新資料。
+                    `;
+                    await createFlow('dynamodb', 'lambda', 'api-data', '資料更新事件', 1);
+                    services['lambda'].element.classList.add('active');
+                    await createFlow('lambda', 'api-gateway', 'api-data', '回傳新資料', 1);
+                    services['api-gateway'].element.classList.add('active');
+                    services['lambda'].element.classList.remove('active');
+                    await createFlow('api-gateway', 'user-client', 'api-data', '即時資料', 1.5);
+
+                    stepHistory.push('網頁接收到新資料後，立即更新畫面，實現即時性。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> 網頁接收到新資料後，立即更新畫面，實現即時性。
+                    `;
+                    services['api-gateway'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    services['dynamodb'].element.classList.remove('active');
+                    break;
+
+                case 'search':
+                    stepHistory.push('使用者在網頁上發起全文檢索請求。');
+                    messageBox.innerHTML = `
+                        <strong>情境 10：全文檢索</strong><br>
+                        <strong>步驟 1:</strong> 使用者在網頁上發起全文檢索請求。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createFlow('user-client', 'api-gateway', 'api-data', '檢索請求 (POST)', 1.5);
+
+                    stepHistory.push('API Gateway 觸發 Lambda，執行檢索邏輯。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> API Gateway 觸發 Lambda，執行檢索邏輯。
+                    `;
+                    services['user-client'].element.classList.remove('active');
+                    services['api-gateway'].element.classList.add('active');
+                    await createFlow('api-gateway', 'lambda', 'api-data', '觸發檢索函數', 1);
+
+                    stepHistory.push('Lambda 向 DynamoDB 進行高效能的掃描或查詢，以尋找匹配的資料。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> Lambda 向 DynamoDB 進行高效能的掃描或查詢，以尋找匹配的資料。
+                    `;
+                    services['api-gateway'].element.classList.remove('active');
+                    services['lambda'].element.classList.add('active');
+                    await createFlow('lambda', 'dynamodb', 'api-data', '查詢資料', 1);
+
+                    stepHistory.push('DynamoDB 將檢索結果回傳給 Lambda。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> DynamoDB 將檢索結果回傳給 Lambda。
+                    `;
+                    services['dynamodb'].element.classList.add('active');
+                    await createFlow('dynamodb', 'lambda', 'api-data', '回傳結果', 1);
+
+                    stepHistory.push('Lambda 整理檢索結果，回傳給 API Gateway，最終顯示在網頁上。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 5:</strong> Lambda 整理檢索結果，回傳給 API Gateway，最終顯示在網頁上。
+                    `;
+                    services['dynamodb'].element.classList.remove('active');
+                    await createFlow('lambda', 'api-gateway', 'api-data', '回傳回應', 1);
+                    services['lambda'].element.classList.remove('active');
+                    services['api-gateway'].element.classList.add('active');
+                    await createFlow('api-gateway', 'user-client', 'api-data', '檢索結果 (JSON)', 1.5);
+
+                    services['api-gateway'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    break;
+            }
+            
+            renderSummary();
+            window.animationTimeout = setTimeout(() => {
+                messageBox.innerHTML = `
+                    <p class="font-bold text-gray-800">情境模擬完成！</p>
+                    <p class="text-gray-600">現在您可以點擊其他按鈕，探索不同的架構情境。</p>
+                `;
+                Object.values(services).forEach(s => s.element.classList.remove('active'));
+            }, 5000);
+        }
+
+        async function simulateAuth() {
+            const username = document.getElementById('username-input').value;
+            const password = document.getElementById('password-input').value;
+
+            if (currentScenario === 'write' || currentScenario === 'delete') {
+                if (!username) {
+                    messageBox.innerHTML = '請輸入資料！';
+                    return;
+                }
+                clearAnimations();
+                inputForm.classList.add('hidden');
+                controls.classList.remove('hidden');
+
+                if (currentScenario === 'write') {
+                    stepHistory.push(`網頁上輸入的資料發送給 API Gateway。`);
+                    messageBox.innerHTML = `
+                        <strong>情境 6：寫入資料</strong><br>
+                        <strong>步驟 1:</strong> 網頁發出 API 請求，將資料 **"${username}"** 傳送到後端。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createFlow('user-client', 'api-gateway', 'api-data', 'API請求 (POST)', 1.5);
+
+                    stepHistory.push('API Gateway 驗證認證碼，並觸發 Lambda 函數。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> API Gateway 驗證認證碼，並觸發 Lambda 函數。
+                    `;
+                    services['user-client'].element.classList.remove('active');
+                    services['api-gateway'].element.classList.add('active');
+                    await createFlow('api-gateway', 'lambda', 'api-data', '觸發函數', 1);
+                    
+                    stepHistory.push('Lambda 將資料寫入 DynamoDB。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> Lambda 將資料寫入 DynamoDB。
+                    `;
+                    services['api-gateway'].element.classList.remove('active');
+                    services['lambda'].element.classList.add('active');
+                    await createFlow('lambda', 'dynamodb', 'api-data', '寫入資料', 1);
+
+                    stepHistory.push('DynamoDB 儲存資料，並回傳寫入成功的訊息給 Lambda。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> DynamoDB 儲存資料，並回傳寫入成功的訊息給 Lambda。
+                    `;
+                    services['dynamodb'].element.classList.add('active');
+                    await createFlow('dynamodb', 'lambda', 'api-data', '寫入成功', 1);
+
+                    stepHistory.push('Lambda 回傳成功回應給 API Gateway，最終顯示在網頁上。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 5:</strong> Lambda 回傳成功回應給 API Gateway，最終顯示在網頁上。
+                    `;
+                    services['dynamodb'].element.classList.remove('active');
+                    await createFlow('lambda', 'api-gateway', 'api-data', '回傳成功', 1);
+                    services['lambda'].element.classList.remove('active');
+                    services['api-gateway'].element.classList.add('active');
+                    await createFlow('api-gateway', 'user-client', 'api-data', '回應成功', 1.5);
+
+                    services['api-gateway'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                } else if (currentScenario === 'delete') {
+                    stepHistory.push(`網頁上發出刪除資料請求，目標是 **${username}**。`);
+                    messageBox.innerHTML = `
+                        <strong>情境 7：刪除資料</strong><br>
+                        <strong>步驟 1:</strong> 網頁發出刪除資料請求，目標是 **${username}**。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createFlow('user-client', 'api-gateway', 'api-data', 'API請求 (DELETE)', 1.5);
+
+                    stepHistory.push('API Gateway 驗證認證碼，並觸發 Lambda 函數。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> API Gateway 驗證認證碼，並觸發 Lambda 函數。
+                    `;
+                    services['user-client'].element.classList.remove('active');
+                    services['api-gateway'].element.classList.add('active');
+                    await createFlow('api-gateway', 'lambda', 'api-data', '觸發函數', 1);
+
+                    stepHistory.push('Lambda 執行刪除邏輯，向 DynamoDB 發送刪除請求。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> Lambda 執行刪除邏輯，向 DynamoDB 發送刪除請求。
+                    `;
+                    services['api-gateway'].element.classList.remove('active');
+                    services['lambda'].element.classList.add('active');
+                    await createFlow('lambda', 'dynamodb', 'api-data', '刪除資料', 1);
+
+                    stepHistory.push('DynamoDB 刪除資料，並回傳結果。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> DynamoDB 刪除資料，並回傳結果。
+                    `;
+                    services['dynamodb'].element.classList.add('active');
+                    await createFlow('dynamodb', 'lambda', 'api-data', '刪除成功', 1);
+
+                    stepHistory.push('Lambda 回傳成功回應給 API Gateway，最終顯示在網頁上。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 5:</strong> Lambda 回傳成功回應給 API Gateway，最終顯示在網頁上。
+                    `;
+                    services['dynamodb'].element.classList.remove('active');
+                    await createFlow('lambda', 'api-gateway', 'api-data', '回傳成功', 1);
+                    services['lambda'].element.classList.remove('active');
+                    services['api-gateway'].element.classList.add('active');
+                    await createFlow('api-gateway', 'user-client', 'api-data', '回應成功', 1.5);
+
+                    services['api-gateway'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                }
+                renderSummary();
+                window.animationTimeout = setTimeout(() => {
+                    messageBox.innerHTML = `
+                        <p class="font-bold text-gray-800">情境模擬完成！</p>
+                        <p class="text-gray-600">現在您可以點擊其他按鈕，探索不同的架構情境。</p>
+                    `;
+                    Object.values(services).forEach(s => s.element.classList.remove('active'));
+                }, 5000);
+                return;
+            }
+
+            // Authentication logic
+            if (!username || !password) {
+                messageBox.innerHTML = '請輸入使用者名稱和密碼！';
+                return;
+            }
+            
+            clearAnimations();
+            inputForm.classList.add('hidden');
+            controls.classList.remove('hidden');
+
+            stepHistory.push(`網頁上輸入的資料發送給 Cognito。`);
+            messageBox.innerHTML = `
+                <strong>情境 2：使用者登入認證</strong><br>
+                <strong>步驟 1:</strong> 網頁上輸入的資料 **"${username}"** 發送給 Cognito。
+            `;
+            services['user-client'].element.classList.add('active');
+            await createFlow('user-client', 'cognito', 'auth-data', `登入請求: ${username}`, 1.5);
+
+            if (currentScenario === 'auth') {
+                stepHistory.push('Cognito 驗證身份成功，並產生一個 JWT (JSON Web Token) 回傳給網頁。');
+                messageBox.innerHTML = `
+                    <strong>步驟 2:</strong> Cognito 驗證身份成功，並產生一個 JWT (JSON Web Token) 回傳給網頁。
+                `;
+                services['user-client'].element.classList.remove('active');
+                services['cognito'].element.classList.add('active');
+                await createFlow('cognito', 'user-client', 'auth-data', '回傳 JWT', 1.5);
+                
+                stepHistory.push('網頁將 JWT 儲存起來，用於之後所有需要認證的 API 請求。');
+                messageBox.innerHTML = `
+                    <strong>步驟 3:</strong> 網頁將 JWT 儲存起來，用於之後所有需要認證的 API 請求。
+                `;
+                services['cognito'].element.classList.remove('active');
+                services['user-client'].element.classList.add('active');
+            } else if (currentScenario === 'auth-fail') {
+                stepHistory.push('Cognito 驗證身份失敗，回傳錯誤訊息給網頁。');
+                messageBox.innerHTML = `
+                    <strong>情境 3：登入失敗</strong><br>
+                    <strong>步驟 2:</strong> Cognito 驗證身份失敗，回傳錯誤訊息給網頁。
+                `;
+                services['user-client'].element.classList.remove('active');
+                services['cognito'].element.classList.add('active');
+                await createFlow('cognito', 'user-client', 'auth-data', '登入失敗', 1.5);
+                
+                stepHistory.push('網頁顯示登入失敗訊息。');
+                messageBox.innerHTML = `
+                    <strong>步驟 3:</strong> 網頁顯示登入失敗訊息。
+                `;
+                services['cognito'].element.classList.remove('active');
+                services['user-client'].element.classList.add('active');
+            }
+
+            renderSummary();
+            window.animationTimeout = setTimeout(() => {
+                messageBox.innerHTML = `
+                    <p class="font-bold text-gray-800">情境模擬完成！</p>
+                    <p class="text-gray-600">現在您可以點擊其他按鈕，探索不同的架構情境。</p>
+                `;
+                Object.values(services).forEach(s => s.element.classList.remove('active'));
+            }, 5000);
+        }
+
+        function renderSummary() {
+            stepsList.innerHTML = '';
+            stepHistory.forEach((step, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>步驟 ${index + 1}:</strong> ${step}`;
+                stepsList.appendChild(li);
+            });
+            summaryBox.classList.remove('hidden');
+        }
+
+        function toggleAccordion() {
+            const content = document.getElementById('steps-content');
+            const icon = document.querySelector('.accordion-icon');
+            content.classList.toggle('open');
+            icon.classList.toggle('rotate');
+        }
+    </script>
+</body>
+</html>

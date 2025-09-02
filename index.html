@@ -242,7 +242,7 @@
           </div>
         </div>
       </div>
-
+        <div class="row portfolio-container">
           <!-- 報價流程e化 -->
           <div class="portfolio-item" data-category="app">
             <div class="portfolio-wrap">
@@ -260,6 +260,7 @@
               </div>
             </div>
           </div>
+        </div>
     </section><!-- End Portfolio Section -->
     <!-- ======= Resume Section ======= -->
     <section id="resume" class="resume">
@@ -377,7 +378,7 @@
           </div>
           <div class="certification-info">
             <h4>AWS Certified Solutions Architect Associate</h4>
-            <p>AWS 解決方案架構師認證，專注於雲端架構設計和最佳實踐</p>S
+            <p>AWS 解決方案架構師認證，專注於雲端架構設計和最佳實踐</p>
             <div class="certification-meta">
               <span><i class="bi bi-calendar3"></i> 2024</span>
               <span><i class="bi bi-patch-check-fill text-primary"></i> 有效期限：2027</span>
@@ -473,6 +474,73 @@
     </div>
   </div>
 </section><!-- End Certifications Section -->
+
+<!-- 個人軟體資訊教學分享 Section (一致化版) -->
+<section id="tutorials" class="tutorials section-bg">
+  <div class="container">
+    <div class="section-title" data-aos="fade-up">
+      <h2>個人軟體資訊教學分享</h2>
+      <p>精選 IT 技術與軟體教學，依主題快速篩選。</p>
+    </div>
+    <div class="tutorial-filter btn-group mb-4" role="group" aria-label="Tutorial Filter">
+      <button type="button" class="btn btn-outline-primary active" data-tag="all">全部</button>
+      <button type="button" class="btn btn-outline-primary" data-tag="資料庫應用">資料庫應用</button>
+      <button type="button" class="btn btn-outline-primary" data-tag="aws">aws</button>
+      <button type="button" class="btn btn-outline-primary" data-tag="版本控制">版本控制</button>
+      <button type="button" class="btn btn-outline-primary" data-tag="api">api</button>
+    </div>
+    <div class="row" id="tutorial-list">
+      <!-- JS 動態插入卡片 -->
+    </div>
+  </div>
+</section>
+
+<script>
+const tutorialsData = [
+  { title:"網路攻擊視覺化分享", desc:"動畫流程解說 SQL 注入與 XSS 攻擊原理。", link:"it/networkAttack.html", tags:["資料庫應用"] },
+  { title:"AWS架構視覺化分享", desc:"快速學會 AWS Serverless架構視覺化分享。", link:"it/awsServerless.html", tags:["aws"] },
+  { title:"AWS架構視覺化分享", desc:"快速學會 AWS 三層式架構視覺化分享。", link:"it/awsThreeTier.html", tags:["aws"] },
+  { title:"api與osi實際應用", desc:"掌握 pi與osi實際應用。", link:"it/api.html", tags:["api"] }
+];
+
+let currentTag = "all";
+
+function renderTutorials() {
+  const container = document.getElementById('tutorial-list');
+  if (!container) return;
+  let filtered = tutorialsData;
+  if (currentTag !== "all") {
+    filtered = tutorialsData.filter(t => t.tags.includes(currentTag));
+  }
+  container.innerHTML = filtered.map(tutorial => `
+    <div class="col-lg-4 col-md-6 mb-4 d-flex">
+      <div class="card flex-fill shadow-sm border-0">
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title mb-2">${tutorial.title}</h5>
+          <p class="card-text mb-3">${tutorial.desc}</p>
+          <div class="mb-3">
+            ${tutorial.tags.map(tag => `<span class="badge bg-secondary me-1">${tag}</span>`).join('')}
+          </div>
+          <a href="${tutorial.link}" class="btn btn-primary mt-auto" target="_blank">查看教學</a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTutorials();
+  document.querySelectorAll('.tutorial-filter .btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tutorial-filter .btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      currentTag = this.getAttribute('data-tag');
+      renderTutorials();
+    });
+  });
+});
+</script>
+
 
     <!-- ======= Contact Section ======= -->
     <section id="contact" class="contact">
@@ -625,6 +693,70 @@
     <img src="assets/img/certifications/table-tennis.jpg" alt="桌球教練證書" class="img-fluid">
   </div>
 </div>
+
+
+<style>
+.tutorials.section-bg {
+  background: #f8f9fa;
+  padding: 60px 0 40px 0;
+}
+.tutorials .card {
+  border-radius: 12px;
+  transition: box-shadow 0.2s;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+.tutorials .card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(-4px);
+}
+.tutorials .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.tutorials .btn-primary {
+  background: #007bff;
+  border: none;
+}
+.tutorials .badge {
+  font-size: 0.85rem;
+  padding: 0.4em 0.7em;
+}
+.tutorial-filter .btn.active,
+.tutorial-filter .btn:focus {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+.tutorials .section-title {
+  margin-bottom: 32px;
+}
+.tutorials .tutorial-filter {
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+}
+@media (max-width: 991px) {
+  .tutorials .card {
+    min-height: 200px;
+  }
+}
+@media (max-width: 767px) {
+  .tutorials.section-bg {
+    padding: 40px 0 20px 0;
+  }
+  .tutorials .card {
+    min-height: 180px;
+  }
+}
+
+/* 與全站間距對齊 */
+#tutorials.section-bg { /* 使用模板既有 section-bg，避免自行指定顏色 */
+  padding: 60px 0;
+}
+
+</style>
 
 </body>
 </html>

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網路攻擊視覺化教學</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .sql-btn-container {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .control-btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .sql-btn { background-color: #3b82f6; }
+        .sql-btn:hover { background-color: #2563eb; transform: translateY(-2px); }
+
+        .xss-btn { background-color: #f97316; }
+        .xss-btn:hover { background-color: #ea580c; transform: translateY(-2px); }
+
+        .safe-sql-btn { background-color: #10b981; }
+        .safe-sql-btn:hover { background-color: #059669; transform: translateY(-2px); }
+
+        .reset-btn { background-color: #9ca3af; }
+        .reset-btn:hover { background-color: #6b7280; transform: translateY(-2px); }
+
+        .status-message {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        /* 核心動畫區塊 */
+        .core-area {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 350px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 攻擊流程圖通用樣式 */
+        .flow-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+        }
+        .node-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #f3f4f6;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            color: #4b5563;
+        }
+        .node-icon span {
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        .node-label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+        
+        .login-form {
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+        }
+        .login-form input {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        /* 資料包動畫 */
+        .packet {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            transition: transform 1.5s ease-in-out, background-color 0.5s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+        }
+        .packet.sql-packet { background-color: #ef4444; }
+        .packet.xss-packet { background-color: #3b82f6; }
+        .packet.safe-packet { background-color: #10b981; }
+
+        /* SQL 注入動畫路徑 */
+        .packet.sql-1 { top: 40%; left: 15%; }
+        .packet.sql-2 { transform: translateX(180px); }
+        .packet.sql-3 { transform: translateX(360px); }
+        .packet.sql-4 { transform: translateX(540px); }
+        .packet.sql-success { transform: translateX(540px) translateY(100px); }
+        
+        /* XSS 動畫路徑 */
+        .packet.xss-1 { top: 40%; left: 15%; }
+        .packet.xss-2 { transform: translateX(200px); }
+        .packet.xss-3 { transform: translateX(400px); }
+        .packet.xss-4 { transform: translateX(400px) translateY(150px); }
+        
+        /* 安全登入動畫路徑 */
+        .packet.safe-1 { top: 40%; left: 15%; }
+        .packet.safe-2 { transform: translateX(180px); }
+        .packet.safe-3 { transform: translateX(360px); }
+        .packet.safe-4 { transform: translateX(540px); }
+
+        /* 資料庫區塊 */
+        .db-section, .xss-section {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background-color: #f9fafb;
+        }
+        .db-section.visible, .xss-section.visible {
+            display: flex;
+        }
+        .db-code {
+            background-color: #1f2937;
+            color: #d1d5db;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre;
+            position: relative;
+        }
+        .db-code .red-text { color: #f87171; }
+        .db-code .leak { animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* XSS 評論區塊 */
+        .comment-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: #ffffff;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+        }
+        .comment-box textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .comment-box button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .comment-box button:hover { background-color: #2563eb; }
+
+        .comments-display {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .comment {
+            background-color: #f3f4f6;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .user-icon { background-color: #93c5fd; }
+        .server-icon { background-color: #6ee7b7; }
+        .db-icon { background-color: #fca5a5; }
+        .victim-icon { background-color: #a78bfa; }
+
+        /* Modal for fake alert */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            font-size: 1.1rem;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #ef4444;
+        }
+
+        .modal-message {
+            margin-bottom: 20px;
+        }
+
+        .modal-button {
+            padding: 10px 25px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .modal-button:hover {
+            background-color: #2563eb;
+        }
+
+        .log-console {
+            background-color: #1f2937;
+            color: #d1d5db;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 0.875rem;
+            border: 2px solid #e5e7eb;
+        }
+
+        .log-line {
+            line-height: 1.5;
+            padding: 3px 0;
+            border-bottom: 1px dashed #4b5563;
+        }
+        .log-line:last-child {
+            border-bottom: none;
+        }
+
+        .log-title { color: #f59e0b; }
+        .log-info { color: #a5b4fc; }
+        .log-success { color: #34d399; }
+        .log-error { color: #ef4444; }
+        .back-fab {
+        position: fixed;
+        left: 1rem;
+        bottom: 1rem;   /* 可改為 top: 1rem; 變成左上角浮動 */
+        z-index: 1080;  /* 高於一般內容，低於 Offcanvas/Modal */
+        padding: .75rem 1.25rem;
+        }
+        @media (max-width: 767.98px) {
+        .back-fab {
+            left: .75rem;
+            bottom: .75rem;
+            padding: .625rem 1rem;
+        }}
+    </style>
+</head>
+<body>
+
+<div id="app" class="container">
+    
+    <div class="header">
+        <h1>網路攻擊視覺化教學</h1>
+        <a href="../index.html"
+        class="btn btn-primary btn-lg rounded-pill shadow back-fab d-none d-md-inline-flex"
+        aria-label="返回首頁（快捷鍵 H）"
+        aria-keyshortcuts="H">
+        <i class="bi bi-house-door me-2"></i> 回首頁
+        </a>
+        <p>透過動畫流程，輕鬆了解 SQL 注入與跨網站腳本攻擊（XSS）的原理。</p>
+    </div>
+
+    <div class="controls">
+        <div class="sql-btn-container">
+            <button class="control-btn sql-btn" @click="animateSqlInjection" :disabled="isAnimating">示範 SQL 注入</button>
+            <button class="control-btn safe-sql-btn" @click="animateSafeSqlLogin" :disabled="isAnimating">示範安全登入</button>
+        </div>
+        <button class="control-btn xss-btn" @click="animateXss" :disabled="isAnimating">示範 XSS</button>
+        <button class="control-btn reset-btn" @click="resetUI" :disabled="isAnimating">重設</button>
+    </div>
+
+    <div class="status-message">{{ statusMessage }}</div>
+
+    <div class="core-area">
+        <div v-if="!isSqlVisible && !isXssVisible" class="initial-state">
+            <div class="node">
+                <div class="node-icon user-icon"><span>👨‍💻</span></div>
+                <span class="node-label">使用者</span>
+            </div>
+        </div>
+
+        <!-- SQL 注入流程圖 -->
+        <div v-if="isSqlVisible" class="flow-diagram">
+            <div class="node">
+                <div class="node-icon user-icon"><span>👨‍💻</span></div>
+                <span class="node-label">使用者</span>
+            </div>
+            <div class="node">
+                <div class="node-icon server-icon"><span>🖥️</span></div>
+                <span class="node-label">網頁伺服器</span>
+            </div>
+            <div class="node">
+                <div class="node-icon db-icon"><span>🗄️</span></div>
+                <span class="node-label">資料庫</span>
+            </div>
+            <div :class="['packet', { 'sql-packet': sqlPayload.isVulnerable }, { 'safe-packet': !sqlPayload.isVulnerable }, packetClass]">
+                <span v-if="sqlPayload.isVulnerable">💥</span>
+                <span v-else>✅</span>
+            </div>
+        </div>
+
+        <!-- XSS 攻擊流程圖 -->
+        <div v-if="isXssVisible" class="flow-diagram">
+            <div class="node">
+                <div class="node-icon user-icon"><span>😈</span></div>
+                <span class="node-label">攻擊者</span>
+            </div>
+            <div class="node">
+                <div class="node-icon server-icon"><span>🖥️</span></div>
+                <span class="node-label">伺服器</span>
+            </div>
+            <div class="node">
+                <div class="node-icon victim-icon"><span>😢</span></div>
+                <span class="node-label">受害者</span>
+            </div>
+            <div :class="['packet', 'xss-packet', packetClass]">
+                <span>🦠</span>
+            </div>
+        </div>
+        
+        <!-- SQL 登入表單 -->
+        <div v-if="isSqlVisible" class="login-form">
+            <label for="username">使用者名稱</label>
+            <input type="text" id="username" v-model="sqlPayload.username" :disabled="isAnimating" />
+            <label for="password">密碼</label>
+            <input type="password" id="password" v-model="sqlPayload.password" :disabled="isAnimating" />
+        </div>
+    </div>
+
+    <!-- 日誌控制台 -->
+    <div class="log-console">
+        <p v-for="(log, index) in logMessages" :key="index" :class="['log-line', 'log-' + log.type]">
+            <span class="log-title">[{{ log.time }}]</span> {{ log.message }}
+        </p>
+    </div>
+
+    <!-- 資料庫區塊 -->
+    <div :class="['db-section', { 'visible': isSqlVisible }]">
+        <h2>資料庫狀態</h2>
+        <div class="db-code">
+            <pre><code v-html="sqlCode"></code></pre>
+        </div>
+    </div>
+
+    <!-- XSS 評論區塊 -->
+    <div :class="['xss-section', { 'visible': isXssVisible }]">
+        <h2>網頁評論區</h2>
+        <div class="comment-box">
+            <p><strong>攻擊者發布惡意評論</strong></p>
+            <textarea readonly>{{ xssPayload }}</textarea>
+            <button @click="xssPostComment">發佈評論</button>
+        </div>
+        <div class="comments-display">
+            <div class="comment" v-if="commentPosted">
+                <p><strong>攻擊者 (已發佈)</strong></p>
+                <p>{{ xssComment }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div v-if="modal.show" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" @click="hideModal">&times;</span>
+            <p class="modal-title">{{ modal.title }}</p>
+            <p class="modal-message" v-html="modal.message"></p>
+            <button class="modal-button" @click="hideModal">確認</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, reactive, computed } = Vue;
+
+    createApp({
+        setup() {
+            const statusMessage = ref('點擊按鈕開始示範...');
+            const isSqlVisible = ref(false);
+            const isXssVisible = ref(false);
+            const packetClass = ref('');
+            const dbLeaked = ref(false);
+            const xssPayload = ref('<script>alert("您已被XSS攻擊！")</' + 'script>');
+            const xssComment = ref('');
+            const commentPosted = ref(false);
+            const isAnimating = ref(false);
+            const logMessages = reactive([]);
+            const modal = reactive({ show: false, title: '', message: '' });
+
+            const sqlPayload = reactive({
+                username: "' OR '1'='1",
+                password: "",
+                isVulnerable: true
+            });
+
+            // Computed property to generate dynamic SQL code with highlighting
+            const sqlCode = computed(() => {
+                let code = `CREATE TABLE users (
+    id INT,
+    username VARCHAR(255),
+    password VARCHAR(255)
+);
+
+INSERT INTO users (username, password) VALUES
+('admin', 'admin_password'),
+('user1', 'user1_password');
+
+`;
+                if (sqlPayload.isVulnerable) {
+                    const injectedUser = sqlPayload.username.replace(/'/g, "\\'");
+                    const injectedPass = sqlPayload.password.replace(/'/g, "\\'");
+                    const vulnerableQuery = `SELECT * FROM users WHERE username = '${injectedUser}' AND password = '${injectedPass}'`;
+                    
+                    code += `// 應用程式後端程式碼 - 錯誤的寫法 (容易被注入)
+// const query = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'";
+//
+// 實際執行查詢:
+// <span class="red-text">SELECT * FROM users WHERE username = '${injectedUser}' AND password = '${injectedPass}'</span>
+`;
+                } else {
+                    const safeQuery = `SELECT * FROM users WHERE username = ? AND password = ?`;
+                    const escapedUser = sqlPayload.username.replace(/'/g, "''").replace(/OR/g, "''OR''");
+                    const escapedPass = sqlPayload.password.replace(/'/g, "''").replace(/OR/g, "''OR''");
+                    code += `// 應用程式後端程式碼 - 正確的寫法 (使用參數化查詢)
+// const query = "SELECT * FROM users WHERE username = ? AND password = ?";
+// const params = [username, password];
+//
+// 實際執行查詢:
+// SELECT * FROM users WHERE username = '${escapedUser}' AND password = '${escapedPass}'
+`;
+                }
+
+                code += `
+//
+// 查詢結果: 
+<span class="red-text" style="${dbLeaked.value ? 'font-weight: bold; animation: blink 1s infinite;' : ''}">id: 1, username: 'admin', password: 'admin_password'</span>
+id: 2, username: 'user1', password: 'user1_password'
+`;
+                return code;
+            });
+
+            const showModal = (title, message) => {
+                modal.title = title;
+                modal.message = message;
+                modal.show = true;
+            };
+
+            const hideModal = () => {
+                modal.show = false;
+            };
+
+            const addLog = (message, type = 'info') => {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                logMessages.push({ time: timeString, message, type });
+            };
+
+            const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+            const resetUI = () => {
+                isAnimating.value = false;
+                statusMessage.value = '已重設。點擊按鈕開始示範...';
+                isSqlVisible.value = false;
+                isXssVisible.value = false;
+                packetClass.value = '';
+                dbLeaked.value = false;
+                xssComment.value = '';
+                commentPosted.value = false;
+                sqlPayload.username = "' OR '1'='1";
+                sqlPayload.password = "";
+                sqlPayload.isVulnerable = true;
+                logMessages.length = 0;
+                hideModal();
+            };
+
+            const animateSqlInjection = async () => {
+                resetUI();
+                isAnimating.value = true;
+                isSqlVisible.value = true;
+                
+                addLog('==== 開始 SQL 注入攻擊示範 ====');
+                addLog('步驟 1/4: 攻擊者輸入惡意字串... ', 'info');
+                statusMessage.value = '步驟 1/4: 攻擊者發送惡意登入請求...';
+                
+                packetClass.value = 'sql-1';
+                await delay(1500);
+
+                addLog('步驟 2/4: 惡意請求抵達網頁伺服器', 'info');
+                addLog('伺服器未經處理，直接將輸入拼接到 SQL 查詢中。', 'error');
+                statusMessage.value = '步驟 2/4: 請求抵達網頁伺服器，並被**不安全地**傳送到資料庫。';
+                
+                packetClass.value = 'sql-2';
+                await delay(1500);
+
+                addLog('步驟 3/4: 資料庫接收到惡意查詢', 'info');
+                addLog('由於語法有效，資料庫被欺騙，執行了預期外的指令。', 'success');
+                statusMessage.value = '步驟 3/4: 資料庫被欺騙，執行了惡意指令。';
+                
+                packetClass.value = 'sql-3';
+                await delay(1500);
+                
+                addLog('步驟 4/4: 攻擊成功！資料庫返回所有內容。', 'success');
+                statusMessage.value = '步驟 4/4: 攻擊成功！資料被洩露！';
+                packetClass.value = 'sql-success';
+                dbLeaked.value = true;
+                await delay(1500);
+                
+                addLog('==== SQL 注入攻擊示範完成！ ====');
+                isAnimating.value = false;
+            };
+            
+            const animateSafeSqlLogin = async () => {
+                resetUI();
+                isAnimating.value = true;
+                isSqlVisible.value = true;
+                sqlPayload.isVulnerable = false;
+                
+                addLog('==== 開始安全登入示範 ====');
+                addLog('步驟 1/4: 伺服器發送安全請求... ', 'info');
+                statusMessage.value = '步驟 1/4: 伺服器發送安全請求...';
+
+                packetClass.value = 'safe-1';
+                await delay(1500);
+
+                addLog('步驟 2/4: 請求使用**參數化查詢**傳送到資料庫', 'success');
+                statusMessage.value = '步驟 2/4: 請求使用**參數化查詢**傳送到資料庫。';
+                packetClass.value = 'safe-2';
+                await delay(1500);
+                
+                addLog('步驟 3/4: 資料庫將輸入視為純粹的資料，而非指令', 'info');
+                statusMessage.value = '步驟 3/4: 資料庫將輸入視為純粹的資料，而不是可執行的指令。';
+                packetClass.value = 'safe-3';
+                await delay(1500);
+
+                addLog('步驟 4/4: 查詢失敗，未找到匹配的用戶', 'info');
+                addLog('攻擊被有效阻止！', 'success');
+                statusMessage.value = '步驟 4/4: 查詢失敗，因為沒有找到相應的使用者名稱。';
+                packetClass.value = 'safe-4';
+                await delay(1500);
+
+                addLog('==== 安全登入示範完成！ ====');
+                isAnimating.value = false;
+            };
+
+            const xssPostComment = () => {
+                xssComment.value = xssPayload.value;
+                commentPosted.value = true;
+                statusMessage.value = '惡意腳本已發佈到評論區。';
+            };
+
+            const animateXss = async () => {
+                resetUI();
+                isAnimating.value = true;
+                isXssVisible.value = true;
+                
+                addLog('==== 開始跨網站腳本攻擊 (XSS) 示範 ====');
+                addLog('步驟 1/4: 攻擊者提交包含惡意腳本的評論...', 'info');
+                statusMessage.value = '步驟 1/4: 攻擊者提交包含惡意腳本的評論...';
+                packetClass.value = 'xss-1';
+                await delay(1500);
+
+                addLog('步驟 2/4: 惡意評論被伺服器儲存。', 'info');
+                statusMessage.value = '步驟 2/4: 評論被伺服器儲存，包含惡意腳本。';
+                packetClass.value = 'xss-2';
+                xssPostComment();
+                await delay(1500);
+                
+                addLog('步驟 3/4: 受害者訪問頁面，伺服器將惡意腳本返回。', 'info');
+                statusMessage.value = '步驟 3/4: 受害者訪問頁面，伺服器將惡意腳本傳送給他。';
+                packetClass.value = 'xss-3';
+                await delay(1500);
+
+                addLog('步驟 4/4: 惡意腳本在受害者瀏覽器上執行！', 'error');
+                statusMessage.value = '步驟 4/4: 受害者的瀏覽器執行惡意腳本，攻擊成功！';
+                packetClass.value = 'xss-4';
+                showModal("🚨 您已被XSS攻擊！", "惡意腳本成功執行！<br>以下是竊取的機密資訊：<br><br><b>Cookie:</b> `secret_session_id_12345`");
+                await delay(1500);
+
+                addLog('==== XSS 攻擊示範完成！ ====');
+                isAnimating.value = false;
+            };
+
+            return {
+                statusMessage,
+                isSqlVisible,
+                isXssVisible,
+                packetClass,
+                dbLeaked,
+                xssPayload,
+                xssComment,
+                commentPosted,
+                sqlPayload,
+                isAnimating,
+                logMessages,
+                modal,
+                sqlCode,
+                resetUI,
+                animateSqlInjection,
+                animateXss,
+                animateSafeSqlLogin,
+                showModal,
+                hideModal
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
+
+

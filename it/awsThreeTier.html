@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS 三層式架構互動式教學 (精簡版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 2rem;
+        }
+        .aws-container {
+            position: relative;
+            border: 4px dashed #9ca3af;
+            border-radius: 2rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .aws-container::before {
+            content: "AWS 雲端環境";
+            position: absolute;
+            top: -1.5rem;
+            left: 2rem;
+            background-color: #f3f4f6;
+            padding: 0 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4b5563;
+        }
+        .architecture-tier {
+            border: 2px solid #a3a3a3;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .architecture-tier::before {
+            content: attr(data-label);
+            position: absolute;
+            top: -0.75rem;
+            left: 1.5rem;
+            background-color: #f9fafb;
+            padding: 0 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .aws-service {
+            position: relative;
+            background-color: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 180px;
+            height: 120px;
+        }
+        .aws-service:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+        }
+        .aws-service.active {
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+        .aws-service .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background-color: #333;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            white-space: nowrap;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .aws-service:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .description-box {
+            background-color: #fff;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 120px;
+        }
+        .data-flow-path {
+            position: absolute;
+            z-index: 10;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .data-flow-path .flow-line {
+            fill: none;
+            stroke-width: 4px;
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            animation-name: dash;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+        }
+        .data-flow-path .arrow-head {
+            fill: #3b82f6;
+            stroke: none;
+        }
+        .data-flow-path.red .arrow-head { fill: #dc2626; }
+        .data-flow-path.green .arrow-head { fill: #16a34a; }
+        .data-flow-path.purple .arrow-head { fill: #8b5cf6; }
+        .data-flow-path.blue .arrow-head { fill: #2563eb; }
+        .data-flow-path.indigo .arrow-head { fill: #4f46e5; }
+        .data-flow-path.pink .arrow-head { fill: #ec4899; }
+
+        .data-flow-text {
+            position: absolute;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4b5563;
+            z-index: 11;
+            transform: translate(-50%, -50%);
+            background-color: #ffffffc0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        
+        .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .icon-circle svg {
+            width: 30px;
+            height: 30px;
+        }
+        .autoscaling-group {
+            border: 2px dashed #8b5cf6;
+            padding: 1rem;
+            border-radius: 1.5rem;
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .autoscaling-group-label {
+            position: absolute;
+            top: -0.75rem;
+            left: 1.5rem;
+            background-color: #f9fafb;
+            padding: 0 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .ec2-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .ec2-new {
+            animation: fadeIn 1.5s forwards;
+            opacity: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .flex-end { align-self: flex-end; }
+        
+        /* Glow filter for lines */
+        .glow {
+            filter: drop-shadow(0 0 5px var(--glow-color)) drop-shadow(0 0 10px var(--glow-color));
+        }
+        .line-blue { --glow-color: #2563eb; }
+        .line-red { --glow-color: #dc2626; }
+        .line-green { --glow-color: #16a34a; }
+        .line-purple { --glow-color: #8b5cf6; }
+        .line-indigo { --glow-color: #4f46e5; }
+        .line-pink { --glow-color: #ec4899; }
+        .back-fab {
+        position: fixed;
+        left: 1rem;
+        bottom: 1rem;   /* 可改為 top: 1rem; 變成左上角浮動 */
+        z-index: 1080;  /* 高於一般內容，低於 Offcanvas/Modal */
+        padding: .75rem 1.25rem;
+        }
+        @media (max-width: 767.98px) {
+        .back-fab {
+            left: .75rem;
+            bottom: .75rem;
+            padding: .625rem 1rem;
+        }}
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+
+    <div class="container mx-auto">
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">AWS 三層式架構互動式教學</h1>
+            <a href="../index.html"
+        class="btn btn-primary btn-lg rounded-pill shadow back-fab d-none d-md-inline-flex"
+        aria-label="返回首頁（快捷鍵 H）"
+        aria-keyshortcuts="H">
+        <i class="bi bi-house-door me-2"></i> 回首頁
+        </a>
+            <p class="text-xl text-gray-600">
+                點擊下方按鈕，看見數據如何在三層式架構中流動。將滑鼠移到服務圖示上，即可看到介紹。
+            </p>
+        </div>
+
+        <!-- Architecture Diagram -->
+        <div class="flex flex-col items-center gap-6 relative">
+            <div id="user-client" class="aws-service w-64 h-32">
+                <div class="icon-circle bg-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <p class="text-lg font-semibold">使用者 (Clients)</p>
+                <p class="text-sm text-gray-500">瀏覽器或應用程式</p>
+                <div class="tooltip">使用者通過瀏覽器、手機App等發出請求。</div>
+            </div>
+            
+            <div class="aws-container w-full max-w-[1000px] flex flex-col items-center justify-center gap-8">
+                <!-- Top Layer: Presentation Tier -->
+                <div id="presentation-tier" class="architecture-tier w-full" data-label="第一層：展示層 (Presentation Tier)">
+                    <div class="flex flex-wrap justify-center items-center gap-8">
+                        <div id="cloudfront" class="aws-service">
+                            <div class="icon-circle bg-blue-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5c-4 0-7.5-3.5-7.5-7.5S8 6.5 12 6.5s7.5 3.5 7.5 7.5-3.5 7.5-7.5 7.5z"/><path d="M6 14c-1 0-2 .5-2 1.5v3c0 1 .5 2 1.5 2.5s3.5 1.5 5 1.5"/><path d="M18 14c1 0 2-.5 2-1.5v-3c0-1-.5-2-1.5-2.5s-3.5-1.5-5-1.5"/></svg>
+                            </div>
+                            <p class="text-lg font-semibold">CloudFront</p>
+                            <p class="text-sm text-gray-500">內容傳遞網路</p>
+                            <div class="tooltip">CloudFront 是一種內容傳遞網路 (CDN)，用於快取靜態內容，加速網站訪問速度。</div>
+                        </div>
+                        <div id="s3" class="aws-service">
+                            <div class="icon-circle bg-blue-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M18 10h-6l-3-7H9a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V12a2 2 0 0 0-2-2h-3"/><path d="M9 10h12"/></svg>
+                            </div>
+                            <p class="text-lg font-semibold">S3</p>
+                            <p class="text-sm text-gray-500">物件儲存服務</p>
+                            <div class="tooltip">Amazon S3 (Simple Storage Service) 用於儲存靜態檔案和使用者上傳的物件，如圖片、影片。</div>
+                        </div>
+                        <div id="alb" class="aws-service">
+                            <div class="icon-circle bg-blue-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-2-2-4-2c-2 0-4 2-4 2s2-2 4-2c2 0 4 2 4 2z"/><path d="M12 16s-2-2-4-2c-2 0-4 2-4 2s2-2 4-2c2 0 4 2 4 2z"/><path d="M12 12s-2-2-4-2c-2 0-4 2-4 2s2-2 4-2c2 0 4 2 4 2z"/><path d="M12 8s-2-2-4-2c-2 0-4 2-4 2s2-2 4-2c2 0 4 2 4 2z"/><path d="M12 4s-2-2-4-2c-2 0-4 2-4 2s2-2 4-2c2 0 4 2 4 2z"/></svg>
+                            </div>
+                            <p class="text-lg font-semibold">ALB</p>
+                            <p class="text-sm text-gray-500">應用程式負載平衡器</p>
+                            <div class="tooltip">ALB (Application Load Balancer) 在應用程式層級分發流量，將動態請求導向 EC2 伺服器。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Layer: Application Tier -->
+                <div id="application-tier" class="architecture-tier w-full" data-label="第二層：應用層 (Application Tier)">
+                    <div class="flex items-center justify-center gap-8 p-4">
+                        <div id="cloudwatch" class="aws-service">
+                            <div class="icon-circle bg-purple-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.17 17.5a2.98 2.98 0 0 1-2.49 1.48 4 4 0 0 1-4-4v-1a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4 2.98 2.98 0 0 1 2.49 1.48L19.17 17.5z"/><path d="M12 21v-4"/><path d="M12 3v4"/><path d="M16 12h-4"/><path d="M8 12h-4"/><path d="M12 8v4"/><path d="M12 16v4"/><path d="M16.94 5.06l-2.12 2.12"/><path d="M7.06 16.94l-2.12 2.12"/><path d="M16.94 16.94l-2.12-2.12"/><path d="M7.06 7.06l-2.12-2.12"/></svg>
+                            </div>
+                            <p class="text-lg font-semibold">CloudWatch</p>
+                            <p class="text-sm text-gray-500">監控服務</p>
+                            <div class="tooltip">CloudWatch 負責監控 AWS 資源和應用程式，收集並追蹤指標，並發出警報。</div>
+                        </div>
+                         <div id="lambda" class="aws-service flex-end">
+                            <div class="icon-circle bg-yellow-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5c-4 0-7.5-3.5-7.5-7.5S8 6.5 12 6.5s7.5 3.5 7.5 7.5-3.5 7.5-7.5 7.5z"/><path d="M6 14c-1 0-2 .5-2 1.5v3c0 1 .5 2 1.5 2.5s3.5 1.5 5 1.5"/><path d="M18 14c1 0 2-.5 2-1.5v-3c0-1-.5-2-1.5-2.5s-3.5-1.5-5-1.5"/></svg>
+                            </div>
+                            <p class="text-lg font-semibold">Lambda</p>
+                            <p class="text-sm text-gray-500">無伺服器計算</p>
+                            <div class="tooltip">AWS Lambda 是一種無伺服器計算服務，讓您無需佈建或管理伺服器即可執行程式碼。</div>
+                        </div>
+                        <div id="asg" class="autoscaling-group relative w-full flex flex-col items-center">
+                            <span class="autoscaling-group-label">Auto Scaling Group</span>
+                            <div class="ec2-container">
+                                <div id="ec2-1" class="aws-service">
+                                    <div class="icon-circle bg-orange-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 19H5V5h14z"/><path d="M9 9h6v6H9z"/><path d="M12 1v3"/><path d="M12 20v3"/><path d="M23 12h-3"/><path d="M4 12H1"/><path d="M19.07 4.93L16.24 7.76"/><path d="M7.76 16.24L4.93 19.07"/><path d="M19.07 19.07L16.24 16.24"/><path d="M7.76 7.76L4.93 4.93"/></svg>
+                                    </div>
+                                    <p class="text-lg font-semibold">EC2 Instance 1</p>
+                                    <p class="text-sm text-gray-500">執行應用程式</p>
+                                    <div class="tooltip">Amazon EC2 (Elastic Compute Cloud) 是可擴展的虛擬伺服器，用於託管應用程式後端，處理動態邏輯。</div>
+                                </div>
+                                <div id="ec2-2" class="aws-service">
+                                    <div class="icon-circle bg-orange-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 19H5V5h14z"/><path d="M9 9h6v6H9z"/><path d="M12 1v3"/><path d="M12 20v3"/><path d="M23 12h-3"/><path d="M4 12H1"/><path d="M19.07 4.93L16.24 7.76"/><path d="M7.76 16.24L4.93 19.07"/><path d="M19.07 19.07L16.24 16.24"/><path d="M7.76 7.76L4.93 4.93"/></svg>
+                                    </div>
+                                    <p class="text-lg font-semibold">EC2 Instance 2</p>
+                                    <p class="text-sm text-gray-500">執行應用程式</p>
+                                    <div class="tooltip">為了高可用性和可擴展性，通常會部署多個 EC2 執行個體。</div>
+                                </div>
+                                <div id="ec2-3" class="aws-service hidden ec2-new">
+                                    <div class="icon-circle bg-orange-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 19H5V5h14z"/><path d="M9 9h6v6H9z"/><path d="M12 1v3"/><path d="M12 20v3"/><path d="M23 12h-3"/><path d="M4 12H1"/><path d="M19.07 4.93L16.24 7.76"/><path d="M7.76 16.24L4.93 19.07"/><path d="M19.07 19.07L16.24 16.24"/><path d="M7.76 7.76L4.93 4.93"/></svg>
+                                    </div>
+                                    <p class="text-lg font-semibold">EC2 Instance 3</p>
+                                    <p class="text-sm text-gray-500">新啟動的執行個體</p>
+                                    <div class="tooltip">當流量增加時，Auto Scaling 會自動啟動新的 EC2 執行個體。</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bottom Layer: Data Tier -->
+                <div id="data-tier" class="architecture-tier w-full" data-label="第三層：資料層 (Data Tier)">
+                    <div class="flex items-center justify-center gap-8">
+                        <div id="rds" class="aws-service">
+                            <div class="icon-circle bg-green-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3"/><path d="M2 9v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9"/><path d="M2 6v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6"/><ellipse cx="12" cy="3" rx="10" ry="3"/></svg>
+                            </div>
+                            <p class="text-lg font-semibold">RDS (Primary)</p>
+                            <p class="text-sm text-gray-500">主要資料庫</p>
+                            <div class="tooltip">Amazon RDS (Relational Database Service) 是一種託管的關聯式資料庫，用於儲存應用程式的結構化資料，主要負責寫入操作。</div>
+                        </div>
+                        <div id="rds-replica" class="aws-service">
+                            <div class="icon-circle bg-green-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3"/><path d="M2 9v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9"/><path d="M2 6v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6"/><ellipse cx="12" cy="3" rx="10" ry="3"/></svg>
+                            </div>
+                            <p class="text-lg font-semibold">RDS (Read Replica)</p>
+                            <p class="text-sm text-gray-500">讀取副本</p>
+                            <div class="tooltip">RDS 讀取副本用於處理大量的資料讀取操作，降低主要資料庫的負載，實現讀寫分離。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animation lines and nodes (hidden by default) -->
+        <svg id="animation-container" class="data-flow-path">
+            <defs>
+                <filter id="glow">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
+                    <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+                <marker id="arrowhead-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb" /></marker>
+                <marker id="arrowhead-indigo" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4f46e5" /></marker>
+                <marker id="arrowhead-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626" /></marker>
+                <marker id="arrowhead-pink" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ec4899" /></marker>
+                <marker id="arrowhead-purple" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8b5cf6" /></marker>
+                <marker id="arrowhead-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a" /></marker>
+                <marker id="arrowhead-yellow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#f6ad55" /></marker>
+            </defs>
+        </svg>
+
+        <!-- Control and Description Panel -->
+        <hr class="my-6 border-gray-300" />
+        <div class="description-box mt-6 p-8">
+            <div id="controls" class="flex flex-col gap-6 mb-6">
+                <h2 class="text-2xl font-bold text-center text-gray-800">網站互動情境</h2>
+                <div class="space-y-6">
+                    <!-- 讀取情境 -->
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">讀取情境 (Read Scenarios)</h3>
+                        <div class="flex flex-wrap justify-center items-center gap-4">
+                            <button onclick="startAnimation('static')" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                                1. 靜態內容讀取
+                            </button>
+                            <button onclick="startAnimation('dynamic')" class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                                2. 動態資料讀取
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 寫入情境 -->
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">寫入情境 (Write Scenarios)</h3>
+                        <div class="flex flex-wrap justify-center items-center gap-4">
+                            <button onclick="startAnimation('write')" class="bg-red-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                                3. 使用者資料寫入
+                            </button>
+                            <button onclick="startAnimation('fileupload')" class="bg-pink-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                                4. 使用者檔案上傳
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 彈性與擴展情境 -->
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">彈性與擴展情境 (Scaling Scenarios)</h3>
+                        <div class="flex flex-wrap justify-center items-center gap-4">
+                            <button onclick="startAnimation('autoscale')" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                                5. 高流量自動擴展
+                            </button>
+                            <button onclick="startAnimation('readreplica')" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                                6. 高讀取流量最佳化
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 無伺服器情境 -->
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">無伺服器與事件驅動情境 (Serverless Scenarios)</h3>
+                        <div class="flex flex-wrap justify-center items-center gap-4">
+                            <button onclick="startAnimation('lambda-trigger')" class="bg-yellow-500 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                                7. Lambda 事件觸發
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="message-box" class="text-center text-lg text-gray-700">
+                點擊上方按鈕開始模擬，一步步了解架構運作。
+            </div>
+
+            <div id="summary-box" class="hidden mt-6">
+                <div class="accordion-title cursor-pointer py-2" onclick="toggleAccordion()">
+                    <span class="text-xl font-bold">▼ 完整步驟</span>
+                </div>
+                <div id="steps-content" class="accordion-content hidden">
+                    <ul id="steps-list" class="step-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const services = {
+            'user-client': { element: document.getElementById('user-client') },
+            'cloudfront': { element: document.getElementById('cloudfront') },
+            's3': { element: document.getElementById('s3') },
+            'alb': { element: document.getElementById('alb') },
+            'ec2-1': { element: document.getElementById('ec2-1') },
+            'ec2-2': { element: document.getElementById('ec2-2') },
+            'ec2-3': { element: document.getElementById('ec2-3') },
+            'cloudwatch': { element: document.getElementById('cloudwatch') },
+            'asg': { element: document.getElementById('asg') },
+            'lambda': { element: document.getElementById('lambda') },
+            'rds': { element: document.getElementById('rds') },
+            'rds-replica': { element: document.getElementById('rds-replica') }
+        };
+        const messageBox = document.getElementById('message-box');
+        const animationContainer = document.getElementById('animation-container');
+        const summaryBox = document.getElementById('summary-box');
+        const stepsList = document.getElementById('steps-list');
+        let stepHistory = [];
+
+        function clearAnimations() {
+            Object.values(services).forEach(s => s.element.classList.remove('active'));
+            animationContainer.innerHTML = '';
+            summaryBox.classList.add('hidden');
+            stepsList.innerHTML = '';
+            stepHistory.length = 0;
+            clearTimeout(window.animationTimeout);
+            document.getElementById('ec2-3').classList.add('hidden');
+        }
+
+        function getPositions(start, end) {
+            const startEl = services[start].element;
+            const endEl = services[end].element;
+            const containerRect = document.body.getBoundingClientRect();
+            const startRect = startEl.getBoundingClientRect();
+            const endRect = endEl.getBoundingClientRect();
+            
+            return {
+                start: { 
+                    x: startRect.left + startRect.width / 2 - containerRect.left, 
+                    y: startRect.top + startRect.height / 2 - containerRect.top
+                },
+                end: { 
+                    x: endRect.left + endRect.width / 2 - containerRect.left, 
+                    y: endRect.top + endRect.height / 2 - containerRect.top
+                }
+            };
+        }
+
+        function createStraightLine(p1, p2, color, text, duration) {
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const d = `M${p1.x},${p1.y} L${p2.x},${p2.y}`;
+            path.setAttribute("d", d);
+            path.style.stroke = `#${color}`;
+            path.style.strokeWidth = '4px';
+            path.style.strokeLinecap = 'round';
+            path.setAttribute('marker-end', `url(#arrowhead-${color})`);
+            
+            const totalLength = path.getTotalLength();
+            path.style.strokeDasharray = totalLength;
+            path.style.strokeDashoffset = totalLength;
+
+            path.style.transition = `stroke-dashoffset ${duration}s linear`;
+            path.style.strokeDashoffset = 0;
+
+            animationContainer.appendChild(path);
+
+            const textEl = document.createElement('div');
+            textEl.classList.add('data-flow-text', 'opacity-0', 'transition-opacity', 'duration-500');
+            textEl.innerText = text;
+            document.body.appendChild(textEl);
+
+            const interval = 10;
+            const steps = duration * 1000 / interval;
+            let currentStep = 0;
+            const timer = setInterval(() => {
+                currentStep++;
+                const progress = currentStep / steps;
+                const point = path.getPointAtLength(totalLength * progress);
+                textEl.style.left = `${point.x}px`;
+                textEl.style.top = `${point.y}px`;
+
+                if (progress >= 0.2 && textEl.classList.contains('opacity-0')) {
+                    textEl.classList.remove('opacity-0');
+                }
+
+                if (currentStep >= steps) {
+                    clearInterval(timer);
+                    textEl.classList.add('opacity-0');
+                    setTimeout(() => {
+                        textEl.remove();
+                        path.remove();
+                    }, 500);
+                }
+            }, interval);
+            
+            return new Promise(resolve => {
+                setTimeout(resolve, duration * 1000);
+            });
+        }
+
+        async function startAnimation(scenario) {
+            clearAnimations();
+            
+            switch(scenario) {
+                case 'static':
+                    stepHistory.push('使用者請求靜態內容（例如：首頁的 HTML 或圖片）。');
+                    messageBox.innerHTML = `
+                        <strong>情境 1：靜態內容讀取</strong><br>
+                        <strong>步驟 1:</strong> 使用者發出 HTTP GET 請求。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createStraightLine(getPositions('user-client', 'cloudfront').start, getPositions('user-client', 'cloudfront').end, 'blue', '請求靜態內容', 1.5);
+                    services['user-client'].element.classList.remove('active');
+                    services['cloudfront'].element.classList.add('active');
+
+                    stepHistory.push('CloudFront 檢查其快取。若沒有，則從 S3 讀取內容。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> CloudFront 從 S3 讀取靜態檔案。
+                    `;
+                    await createStraightLine(getPositions('cloudfront', 's3').start, getPositions('cloudfront', 's3').end, 'blue', '從 S3 獲取', 1);
+                    services['cloudfront'].element.classList.remove('active');
+                    services['s3'].element.classList.add('active');
+                    
+                    stepHistory.push('S3 將檔案傳送給 CloudFront。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> S3 將檔案回傳給 CloudFront。
+                    `;
+                    await createStraightLine(getPositions('s3', 'cloudfront').start, getPositions('s3', 'cloudfront').end, 'blue', '傳回檔案', 1);
+                    services['s3'].element.classList.remove('active');
+                    services['cloudfront'].element.classList.add('active');
+
+                    stepHistory.push('CloudFront 將靜態內容傳送給使用者。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> CloudFront 將快取內容回傳給使用者。
+                    `;
+                    await createStraightLine(getPositions('cloudfront', 'user-client').start, getPositions('cloudfront', 'user-client').end, 'blue', '傳送最終回應', 1.5);
+                    services['cloudfront'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    break;
+                
+                case 'dynamic':
+                    stepHistory.push('使用者請求需要後端處理的動態內容 (例如：個人資料頁面)。');
+                    messageBox.innerHTML = `
+                        <strong>情境 2：動態資料讀取</strong><br>
+                        <strong>步驟 1:</strong> 使用者發出 HTTP GET 請求。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createStraightLine(getPositions('user-client', 'alb').start, getPositions('user-client', 'alb').end, 'indigo', '請求動態頁面', 1.5);
+                    services['user-client'].element.classList.remove('active');
+                    services['alb'].element.classList.add('active');
+
+                    stepHistory.push('ALB 將請求導向其中一個 EC2 執行個體。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> ALB 將請求導向 EC2 執行個體。
+                    `;
+                    const targetEC2 = Math.random() < 0.5 ? 'ec2-1' : 'ec2-2';
+                    await createStraightLine(getPositions('alb', targetEC2).start, getPositions('alb', targetEC2).end, 'indigo', '負載平衡', 1);
+                    services['alb'].element.classList.remove('active');
+                    services[targetEC2].element.classList.add('active');
+
+                    stepHistory.push('EC2 執行個體從 RDS 資料庫讀取資料。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> EC2 執行個體從 RDS 讀取資料。
+                    `;
+                    await createStraightLine(getPositions(targetEC2, 'rds').start, getPositions(targetEC2, 'rds').end, 'green', '查詢資料庫', 1);
+                    services[targetEC2].element.classList.remove('active');
+                    services['rds'].element.classList.add('active');
+                    
+                    stepHistory.push('RDS 回傳請求的資料給 EC2。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> RDS 回傳請求的資料。
+                    `;
+                    await createStraightLine(getPositions('rds', targetEC2).start, getPositions('rds', targetEC2).end, 'green', '回傳查詢結果', 1);
+                    services['rds'].element.classList.remove('active');
+                    services[targetEC2].element.classList.add('active');
+
+                    stepHistory.push('EC2 處理資料後，回傳給 ALB。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 5:</strong> EC2 處理後回傳回應給 ALB。
+                    `;
+                    await createStraightLine(getPositions(targetEC2, 'alb').start, getPositions(targetEC2, 'alb').end, 'indigo', '回傳處理結果', 1);
+                    services[targetEC2].element.classList.remove('active');
+                    services['alb'].element.classList.add('active');
+                    
+                    stepHistory.push('ALB 將最終回應傳送給使用者。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 6:</strong> ALB 將最終回應傳送回使用者。
+                    `;
+                    await createStraightLine(getPositions('alb', 'user-client').start, getPositions('alb', 'user-client').end, 'indigo', '傳送最終回應', 1.5);
+                    services['alb'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    break;
+                
+                case 'write':
+                    stepHistory.push('使用者提交一個表單，發出資料寫入請求 (例如：新增留言或註冊)。');
+                    messageBox.innerHTML = `
+                        <strong>情境 3：使用者資料寫入</strong><br>
+                        <strong>步驟 1:</strong> 使用者發出 HTTP POST 請求，包含要寫入的資料。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createStraightLine(getPositions('user-client', 'alb').start, getPositions('user-client', 'alb').end, 'red', '傳送寫入請求', 1.5);
+                    services['user-client'].element.classList.remove('active');
+                    services['alb'].element.classList.add('active');
+
+                    stepHistory.push('ALB 將請求轉發到健康的 EC2 執行個體。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> ALB 將請求導向 EC2 執行個體。
+                    `;
+                    const writeTargetEC2 = Math.random() < 0.5 ? 'ec2-1' : 'ec2-2';
+                    await createStraightLine(getPositions('alb', writeTargetEC2).start, getPositions('alb', writeTargetEC2).end, 'red', '負載平衡', 1);
+                    services['alb'].element.classList.remove('active');
+                    services[writeTargetEC2].element.classList.add('active');
+
+                    stepHistory.push('EC2 執行個體處理請求，將資料寫入 RDS 資料庫。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> EC2 執行個體將資料寫入 RDS 資料庫。
+                    `;
+                    await createStraightLine(getPositions(writeTargetEC2, 'rds').start, getPositions(writeTargetEC2, 'rds').end, 'green', '寫入資料庫', 1);
+                    services[writeTargetEC2].element.classList.remove('active');
+                    services['rds'].element.classList.add('active');
+
+                    stepHistory.push('RDS 儲存資料，並回傳寫入成功的訊息給 EC2。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> RDS 回傳寫入成功訊息。
+                    `;
+                    await createStraightLine(getPositions('rds', writeTargetEC2).start, getPositions('rds', writeTargetEC2).end, 'green', '寫入成功', 1);
+                    services['rds'].element.classList.remove('active');
+                    services[writeTargetEC2].element.classList.add('active');
+
+                    stepHistory.push('EC2 回傳寫入成功的回應給 ALB。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 5:</strong> EC2 回傳回應給 ALB。
+                    `;
+                    await createStraightLine(getPositions(writeTargetEC2, 'alb').start, getPositions(writeTargetEC2, 'alb').end, 'red', '回傳處理結果', 1);
+                    services[writeTargetEC2].element.classList.remove('active');
+                    services['alb'].element.classList.add('active');
+                    
+                    stepHistory.push('ALB 將最終回應傳送給使用者。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 6:</strong> ALB 將最終回應傳送回使用者。
+                    `;
+                    await createStraightLine(getPositions('alb', 'user-client').start, getPositions('alb', 'user-client').end, 'red', '傳送最終回應', 1.5);
+                    services['alb'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    break;
+                
+                case 'fileupload':
+                    stepHistory.push('使用者點擊上傳按鈕，後端 EC2 產生一個預簽署 URL。');
+                    messageBox.innerHTML = `
+                        <strong>情境 4：使用者檔案上傳處理</strong><br>
+                        <strong>步驟 1:</strong> 使用者點擊上傳，EC2 產生一個 S3 預簽署 URL。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createStraightLine(getPositions('user-client', 'ec2-1').start, getPositions('user-client', 'ec2-1').end, 'pink', '請求上傳', 1.5);
+                    services['user-client'].element.classList.remove('active');
+                    services['ec2-1'].element.classList.add('active');
+                    await createStraightLine(getPositions('ec2-1', 'user-client').start, getPositions('ec2-1', 'user-client').end, 'pink', '回傳預簽署 URL', 1);
+                    services['ec2-1'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+
+                    stepHistory.push('使用者瀏覽器直接使用 URL 將檔案上傳到 S3。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> 瀏覽器直接將檔案上傳到 S3。
+                    `;
+                    services['s3'].element.classList.add('active');
+                    await createStraightLine(getPositions('user-client', 's3').start, getPositions('user-client', 's3').end, 'red', '直接上傳檔案', 2);
+                    services['user-client'].element.classList.remove('active');
+
+                    stepHistory.push('S3 偵測到新物件上傳，自動觸發 Lambda 函式。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> S3 觸發 Lambda 函式。
+                    `;
+                    services['s3'].element.classList.remove('active');
+                    services['lambda'].element.classList.add('active');
+                    await createStraightLine(getPositions('s3', 'lambda').start, getPositions('s3', 'lambda').end, 'purple', '觸發事件', 1);
+
+                    stepHistory.push('Lambda 函式執行處理邏輯（例如：圖片縮圖或病毒掃描）。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> Lambda 處理檔案。
+                    `;
+                    services['lambda'].element.classList.remove('active');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    services['s3'].element.classList.add('active');
+                    await createStraightLine(getPositions('lambda', 's3').start, getPositions('lambda', 's3').end, 'green', '回存處理後的檔案', 1);
+                    services['s3'].element.classList.remove('active');
+                    break;
+                
+                case 'autoscale':
+                    stepHistory.push('網站流量開始增加，ALB 偵測到流量並分配給現有 EC2 執行個體。');
+                    messageBox.innerHTML = `
+                        <strong>情境 5：高流量自動擴展</strong><br>
+                        <strong>步驟 1:</strong> 使用者請求增加，ALB 將請求分散到 EC2-1 和 EC2-2。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createStraightLine(getPositions('user-client', 'alb').start, getPositions('user-client', 'alb').end, 'blue', '增加的請求', 1);
+                    services['user-client'].element.classList.remove('active');
+                    services['alb'].element.classList.add('active');
+
+                    stepHistory.push('CloudWatch 監控到 EC2 的 CPU 使用率超過預設閾值。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> EC2 執行個體開始負載過高，CloudWatch 監控到 CPU 指標。
+                    `;
+                    services['ec2-1'].element.classList.add('active');
+                    services['ec2-2'].element.classList.add('active');
+                    await createStraightLine(getPositions('ec2-1', 'cloudwatch').start, getPositions('ec2-1', 'cloudwatch').end, 'purple', '傳送指標數據', 1);
+                    await createStraightLine(getPositions('ec2-2', 'cloudwatch').start, getPositions('ec2-2', 'cloudwatch').end, 'purple', '傳送指標數據', 1);
+                    services['ec2-1'].element.classList.remove('active');
+                    services['ec2-2'].element.classList.remove('active');
+                    services['cloudwatch'].element.classList.add('active');
+
+                    stepHistory.push('CloudWatch 發出警報，通知 Auto Scaling Group 進行擴展。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> CloudWatch 發出警報，觸發 ASG 的擴展策略。
+                    `;
+                    await createStraightLine(getPositions('cloudwatch', 'asg').start, getPositions('cloudwatch', 'asg').end, 'purple', '擴展警報', 1);
+                    services['cloudwatch'].element.classList.remove('active');
+                    services['asg'].element.classList.add('active');
+
+                    stepHistory.push('Auto Scaling Group 根據策略啟動一個新的 EC2 執行個體（EC2-3）。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> ASG 自動啟動一個新的 EC2 執行個體。
+                    `;
+                    await new Promise(resolve => setTimeout(() => {
+                        const newEc2El = services['ec2-3'].element;
+                        newEc2El.classList.remove('hidden');
+                        newEc2El.classList.add('ec2-new');
+                        resolve();
+                    }, 1000));
+                    await createStraightLine(getPositions('asg', 'ec2-3').start, getPositions('asg', 'ec2-3').end, 'purple', '啟動新執行個體', 1);
+                    services['asg'].element.classList.remove('active');
+                    services['ec2-3'].element.classList.add('active');
+                    
+                    stepHistory.push('新的 EC2 執行個體被註冊到 ALB，開始分攤流量。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 5:</strong> 新的 EC2 加入 ALB 負載平衡。
+                    `;
+                    await createStraightLine(getPositions('ec2-3', 'alb').start, getPositions('ec2-3', 'alb').end, 'blue', '註冊到ALB', 1);
+                    services['ec2-3'].element.classList.remove('active');
+                    services['alb'].element.classList.add('active');
+
+                    stepHistory.push('ALB 現在將流量分散到所有三個 EC2 執行個體，負載恢復正常。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 6:</strong> ALB 將請求分散給所有執行個體，服務恢復正常。
+                    `;
+                    services['ec2-1'].element.classList.add('active');
+                    services['ec2-2'].element.classList.add('active');
+                    services['ec2-3'].element.classList.add('active');
+                    await createStraightLine(getPositions('alb', 'ec2-1').start, getPositions('alb', 'ec2-1').end, 'blue', '分配請求', 1);
+                    await createStraightLine(getPositions('alb', 'ec2-2').start, getPositions('alb', 'ec2-2').end, 'blue', '分配請求', 1);
+                    await createStraightLine(getPositions('alb', 'ec2-3').start, getPositions('alb', 'ec2-3').end, 'blue', '分配請求', 1);
+                    services['ec2-1'].element.classList.remove('active');
+                    services['ec2-2'].element.classList.remove('active');
+                    services['ec2-3'].element.classList.remove('active');
+                    services['alb'].element.classList.remove('active');
+                    break;
+                
+                case 'readreplica':
+                    stepHistory.push('使用者請求讀取頻繁的資料（例如：部落格文章列表）。');
+                    messageBox.innerHTML = `
+                        <strong>情境 6：高讀取流量最佳化</strong><br>
+                        <strong>步驟 1:</strong> 使用者發出讀取請求。
+                    `;
+                    services['user-client'].element.classList.add('active');
+                    await createStraightLine(getPositions('user-client', 'alb').start, getPositions('user-client', 'alb').end, 'green', '請求頁面', 1.5);
+                    services['user-client'].element.classList.remove('active');
+                    services['alb'].element.classList.add('active');
+
+                    stepHistory.push('ALB 將請求導向 EC2 執行個體。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> ALB 負載平衡到 EC2。
+                    `;
+                    const readTargetEC2 = Math.random() < 0.5 ? 'ec2-1' : 'ec2-2';
+                    await createStraightLine(getPositions('alb', readTargetEC2).start, getPositions('alb', readTargetEC2).end, 'green', '負載平衡', 1);
+                    services['alb'].element.classList.remove('active');
+                    services[readTargetEC2].element.classList.add('active');
+
+                    stepHistory.push('EC2 執行個體識別為讀取請求，並將查詢發送到 RDS 讀取副本。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 3:</strong> EC2 將讀取請求發送到 RDS 讀取副本。
+                    `;
+                    await createStraightLine(getPositions(readTargetEC2, 'rds-replica').start, getPositions(readTargetEC2, 'rds-replica').end, 'green', '讀取資料庫', 1);
+                    services[readTargetEC2].element.classList.remove('active');
+                    services['rds-replica'].element.classList.add('active');
+
+                    stepHistory.push('RDS 讀取副本處理查詢並回傳結果。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 4:</strong> 讀取副本回傳查詢結果。
+                    `;
+                    await createStraightLine(getPositions('rds-replica', readTargetEC2).start, getPositions('rds-replica', readTargetEC2).end, 'green', '回傳結果', 1);
+                    services['rds-replica'].element.classList.remove('active');
+                    services[readTargetEC2].element.classList.add('active');
+
+                    stepHistory.push('EC2 處理後回傳回應，經由 ALB 傳回使用者。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 5:</strong> EC2 將最終回應傳回使用者。
+                    `;
+                    await createStraightLine(getPositions(readTargetEC2, 'alb').start, getPositions(readTargetEC2, 'alb').end, 'green', '傳回回應', 1);
+                    services[readTargetEC2].element.classList.remove('active');
+                    services['alb'].element.classList.add('active');
+                    await createStraightLine(getPositions('alb', 'user-client').start, getPositions('alb', 'user-client').end, 'green', '傳送最終回應', 1.5);
+                    services['alb'].element.classList.remove('active');
+                    services['user-client'].element.classList.add('active');
+                    break;
+                
+                case 'lambda-trigger':
+                    stepHistory.push('應用程式後端需要執行一個背景任務，例如處理訂單或寄送通知信。');
+                    messageBox.innerHTML = `
+                        <strong>情境 7：Lambda 事件觸發</strong><br>
+                        <strong>步驟 1:</strong> EC2 執行個體產生一個事件（例如：訂單完成），並將其放入一個佇列或發布到一個主題。
+                    `;
+                    services['ec2-1'].element.classList.add('active');
+                    await createStraightLine(getPositions('ec2-1', 'lambda').start, getPositions('ec2-1', 'lambda').end, 'yellow', '觸發事件', 1);
+                    services['ec2-1'].element.classList.remove('active');
+                    services['lambda'].element.classList.add('active');
+
+                    stepHistory.push('Lambda 函式被觸發，它獨立於 EC2 執行任務。');
+                    messageBox.innerHTML = `
+                        <strong>步驟 2:</strong> Lambda 被觸發，執行任務（例如：寄送確認信）。
+                    `;
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    services['lambda'].element.classList.remove('active');
+                    break;
+            }
+            
+            renderSummary();
+            window.animationTimeout = setTimeout(() => {
+                messageBox.innerHTML = `
+                    <p class="font-bold text-gray-800">情境模擬完成！</p>
+                    <p class="text-gray-600">現在您可以點擊其他按鈕，探索不同的架構情境。</p>
+                `;
+                Object.values(services).forEach(s => s.element.classList.remove('active'));
+            }, 5000);
+        }
+
+        function renderSummary() {
+            stepsList.innerHTML = '';
+            stepHistory.forEach((step, index) => {
+                const li = document.createElement('li');
+                li.className = 'py-1';
+                li.innerHTML = `<strong>步驟 ${index + 1}:</strong> ${step}`;
+                stepsList.appendChild(li);
+            });
+            summaryBox.classList.remove('hidden');
+        }
+
+        function toggleAccordion() {
+            const content = document.getElementById('steps-content');
+            const title = document.querySelector('.accordion-title span');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                title.textContent = '▼ 完整步驟';
+            } else {
+                content.classList.add('hidden');
+                title.textContent = '▶ 完整步驟';
+            }
+        }
+    </script>
+</body>
+</html>

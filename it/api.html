@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 和 OSI 模型教學</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .osi-layer {
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: #e5e7eb;
+            border-bottom: 1px solid #d1d5db;
+        }
+        .handshake-packet {
+            width: 25px;
+            height: 25px;
+            position: absolute;
+            display: none;
+            border-radius: 50%;
+            background-color: #93c5fd;
+            color: white;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 1s cubic-bezier(.42, 0, .58, 1.0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        /* New pulse animation */
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(147, 197, 253, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(147, 197, 253, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(147, 197, 253, 0); }
+        }
+        .pulse-animation {
+            animation: pulse 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+        /* Layer info text on the side */
+        .layer-info {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 105%; /* Position to the right of the layer */
+            width: 240px; /* Adjust width as needed */
+            background-color: #fff;
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .layer-info.active {
+            opacity: 1;
+        }
+        .info-content p {
+            margin: 0;
+        }
+        .info-data {
+            font-weight: bold;
+            color: #3b82f6;
+            background-color: #eff6ff;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+        #network-line {
+            height: 4px;
+            background-color: #d1d5db;
+            transition: background-color 1s ease-in-out;
+            border-radius: 2px;
+        }
+        .network-active {
+            background-color: #22c55e;
+            box-shadow: 0 0 10px #22c55e, 0 0 20px #22c55e;
+        }
+        .back-fab {
+        position: fixed;
+        left: 1rem;
+        bottom: 1rem;   /* 可改為 top: 1rem; 變成左上角浮動 */
+        z-index: 1080;  /* 高於一般內容，低於 Offcanvas/Modal */
+        padding: .75rem 1.25rem;
+        }
+        @media (max-width: 767.98px) {
+        .back-fab {
+            left: .75rem;
+            bottom: .75rem;
+            padding: .625rem 1rem;
+        }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-6xl w-full flex flex-col items-center space-y-8">
+        <h1 class="text-4xl font-bold text-center text-gray-800">API 和 OSI 模型教學</h1>
+        <!-- 建議放在教學內容最上方或最下方 -->
+        <a href="../index.html"
+        class="btn btn-primary btn-lg rounded-pill shadow back-fab d-none d-md-inline-flex"
+        aria-label="返回首頁（快捷鍵 H）"
+        aria-keyshortcuts="H">
+        <i class="bi bi-house-door me-2"></i> 回首頁
+        </a>
+        <p class="text-center text-gray-600 max-w-2xl">
+            這個互動式工具將帶您了解 API 請求如何在客戶端和伺服器之間傳輸。選擇一個內容類型和傳輸協定，然後點擊按鈕發送請求。
+        </p>
+
+        <!-- Main Content Area -->
+        <div class="flex flex-col md:flex-row justify-between w-full items-center md:items-start space-y-8 md:space-y-0 md:space-x-8">
+
+            <!-- Client Section -->
+            <div class="flex-1 bg-gray-50 rounded-2xl p-6 shadow-inner border-4 border-dashed border-gray-300">
+                <h2 class="text-2xl font-semibold text-center text-gray-700 mb-6">客戶端 (Client)</h2>
+                <div id="client-osi" class="space-y-2">
+                    <!-- Layers will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- OSI Model & Controls -->
+            <div class="flex-none flex flex-col items-center space-y-6">
+                <!-- Data Format Selector -->
+                <div class="flex flex-col items-center space-y-2">
+                    <label for="dataType" class="text-gray-700 font-medium">選擇資料格式：</label>
+                    <select id="dataType" class="bg-white border border-gray-300 rounded-md py-2 px-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="text">文字 (JSON)</option>
+                        <option value="image">圖片 (JPG)</option>
+                        <option value="video">影片 (MP4)</option>
+                    </select>
+                </div>
+                
+                <!-- Protocol Selector -->
+                <div class="flex flex-col items-center space-y-2">
+                    <label for="protocolType" class="text-gray-700 font-medium">選擇傳輸協定：</label>
+                    <select id="protocolType" class="bg-white border border-gray-300 rounded-md py-2 px-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="tcp">TCP (可靠) 🔒</option>
+                        <option value="udp">UDP (快速) ⚡</option>
+                    </select>
+                </div>
+                
+                <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                    <button id="successButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105">
+                        發送成功請求
+                    </button>
+                    <button id="404Button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105">
+                        發送 404 請求
+                    </button>
+                    <button id="500Button" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105">
+                        發送 500 請求
+                    </button>
+                </div>
+
+                <div class="bg-yellow-100 text-yellow-800 font-medium py-3 px-6 rounded-lg text-sm text-center shadow-md border border-yellow-300 w-full md:w-auto">
+                    <p id="statusMessage">點擊按鈕，看資料如何穿越 OSI 模型！</p>
+                </div>
+                
+                <!-- New Network Line -->
+                <div class="w-full">
+                    <div id="network-line"></div>
+                </div>
+
+                <div id="packet-container" class="relative w-full h-full">
+                    <!-- Handshake packets -->
+                    <div id="synPacket" class="handshake-packet">SYN</div>
+                    <div id="synAckPacket" class="handshake-packet">SYN-ACK</div>
+                    <div id="ackPacket" class="handshake-packet">ACK</div>
+                </div>
+            </div>
+
+            <!-- Server Section -->
+            <div class="flex-1 bg-gray-50 rounded-2xl p-6 shadow-inner border-4 border-dashed border-gray-300">
+                <h2 class="text-2xl font-semibold text-center text-gray-700 mb-6">伺服器 (Server)</h2>
+                <div id="server-osi" class="space-y-2">
+                    <!-- Layers will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- New HTTP Status Code Table -->
+        <div class="mt-12 w-full max-w-3xl">
+            <h2 class="text-2xl font-semibold text-center text-gray-700 mb-4">常見 HTTP 狀態碼</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-500 rounded-lg shadow-md overflow-hidden">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-200">
+                        <tr>
+                            <th scope="col" class="py-3 px-6 rounded-tl-lg">狀態碼</th>
+                            <th scope="col" class="py-3 px-6">名稱</th>
+                            <th scope="col" class="py-3 px-6 rounded-tr-lg">說明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="py-4 px-6 font-medium text-green-600 whitespace-nowrap">200 OK</td>
+                            <td class="py-4 px-6">成功</td>
+                            <td class="py-4 px-6">伺服器成功處理了請求。</td>
+                        </tr>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="py-4 px-6 font-medium text-red-600 whitespace-nowrap">404 Not Found</td>
+                            <td class="py-4 px-6">未找到</td>
+                            <td class="py-4 px-6">伺服器找不到所請求的資源。</td>
+                        </tr>
+                        <tr class="bg-white hover:bg-gray-50">
+                            <td class="py-4 px-6 font-medium text-orange-600 whitespace-nowrap">500 Internal Server Error</td>
+                            <td class="py-4 px-6">內部伺服器錯誤</td>
+                            <td class="py-4 px-6">伺服器執行請求時發生了預期之外的錯誤。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Use an IIFE (Immediately Invoked Function Expression) to avoid global scope pollution
+        (function() {
+            const layers = [
+                {
+                    name: '應用層 (Layer 7)',
+                    dataDisplay: {
+                        text: '📝 HTTP 請求 (JSON)',
+                        image: '🖼️ HTTP 請求 (JPG)',
+                        video: '🎬 HTTP 請求 (MP4)',
+                        error404: '🚨 404 回應',
+                        error500: '🚨 500 回應'
+                    },
+                    apiConcepts: {
+                        request: `<strong>API 的起點</strong>：API 就像是服務的菜單。當您點擊發送請求，應用程式層就會產生一個 HTTP 請求。這層決定了請求的類型（GET、POST 等）和目標。`,
+                        response: `<strong>API 的終點</strong>：伺服器處理完請求，會傳回一個 HTTP 回應。這個回應會包含一個「狀態碼」與您請求的資料。`
+                    }
+                },
+                {
+                    name: '表示層 (Layer 6)',
+                    dataDisplay: {
+                        request: '📊 格式化資料',
+                        response: '📊 解碼資料'
+                    },
+                    apiConcepts: {
+                        request: `<strong>資料格式化</strong>：這層會將您的原始資料（例如一張圖片）轉換為標準的網路格式，例如 JSON 或 XML。這就像是打包禮物，確保收件人能正確打開。`,
+                        response: `<strong>資料解碼</strong>：收到的資料在這裡被解碼，例如將 JSON 字串解析為應用程式能讀懂的物件。這層也負責解密 HTTPS 請求中的資料。`
+                    }
+                },
+                {
+                    name: '會話層 (Layer 5)',
+                    dataDisplay: {
+                        request: '🤝 會話資料',
+                        response: '🤝 會話資料'
+                    },
+                    apiConcepts: {
+                        request: `<strong>建立會話</strong>：API 請求經常需要保持一個「會話」，以確保資料完整地傳輸。這層就像是開始一次電話交談，確保雙方都準備好接收和發送資料。`,
+                        response: `<strong>管理會話</strong>：它確保請求與回應是成對的，並且在傳輸完成後正確地結束連線，以釋放資源。`
+                    }
+                },
+                {
+                    name: '傳輸層 (Layer 4)',
+                    dataDisplay: {
+                        request: '📦 TCP Segments / UDP Datagrams',
+                        response: '📦 TCP Segments / UDP Datagrams'
+                    },
+                    apiConcepts: {
+                        request: `<strong>可靠性與速度</strong>：這層決定了資料傳輸的協定。<strong>TCP</strong> (可靠) 就像是發送帶有回執的包裹，確保每個段都送達；而 <strong>UDP</strong> (快速) 則像是寄明信片，不保證送達但速度極快。`,
+                        response: `<strong>重新組裝資料</strong>：收到的資料段 (Segments) 在這裡被重新組合，並檢查是否有遺失或錯誤。`
+                    }
+                },
+                {
+                    name: '網路層 (Layer 3)',
+                    dataDisplay: {
+                        request: '🌐 IP 封包',
+                        response: '🌐 IP 封包'
+                    },
+                    apiConcepts: {
+                        request: `<strong>尋找目標</strong>：這層是網際網路的 GPS。它會加入 IP 位址，告訴封包要送往哪一個伺服器。這確保了您的請求能被路由到正確的目的地。`,
+                        response: `<strong>接收與轉送</strong>：當封包送達時，這層會讀取目標 IP，確認封包是給自己的，然後往上傳送。`
+                    }
+                },
+                {
+                    name: '資料連結層 (Layer 2)',
+                    dataDisplay: {
+                        request: '🖼️ 乙太網訊框',
+                        response: '🖼️ 乙太網訊框'
+                    },
+                    apiConcepts: {
+                        request: `<strong>區域網路傳輸</strong>：這層處理同一網路中的資料傳輸，比如您家中的路由器。它使用 MAC 位址來標識網路卡，並將資料封裝成訊框。`,
+                        response: `<strong>錯誤檢查</strong>：這層會對收到的訊框進行錯誤檢測，確保資料在區域網路中傳輸時沒有損壞。`
+                    }
+                },
+                {
+                    name: '實體層 (Layer 1)',
+                    dataDisplay: {
+                        request: '➡️ 位元流',
+                        response: '➡️ 位元流'
+                    },
+                    apiConcepts: {
+                        request: `<strong>物理傳輸</strong>：這是 API 請求最底層的物理傳輸，將資料轉換為光纖或電纜中的電訊號。這就像是資料在網線中以光速傳輸。`,
+                        response: `<strong>物理接收</strong>：這層將物理訊號轉換回數位位元流，準備好向上傳遞給資料連結層。`
+                    }
+                },
+            ];
+
+            const clientOsi = document.getElementById('client-osi');
+            const serverOsi = document.getElementById('server-osi');
+            const successButton = document.getElementById('successButton');
+            const button404 = document.getElementById('404Button');
+            const button500 = document.getElementById('500Button');
+            const statusMessage = document.getElementById('statusMessage');
+            const dataTypeSelector = document.getElementById('dataType');
+            const protocolTypeSelector = document.getElementById('protocolType');
+            const synPacket = document.getElementById('synPacket');
+            const synAckPacket = document.getElementById('synAckPacket');
+            const ackPacket = document.getElementById('ackPacket');
+            const networkLine = document.getElementById('network-line');
+            let isAnimating = false;
+
+            const createLayers = (container) => {
+                layers.forEach((layer) => {
+                    const layerDiv = document.createElement('div');
+                    layerDiv.className = `osi-layer rounded-lg border-2 border-gray-300 text-sm md:text-base font-semibold transition-colors duration-500 ease-in-out`;
+                    layerDiv.innerHTML = `<div class="w-full text-center">${layer.name}</div><div class="layer-info"><div class="info-content"></div><div class="info-data"></div></div>`;
+                    container.appendChild(layerDiv);
+                });
+            };
+
+            createLayers(clientOsi);
+            createLayers(serverOsi);
+
+            const clientLayers = document.querySelectorAll('#client-osi .osi-layer');
+            const serverLayers = document.querySelectorAll('#server-osi .osi-layer');
+            const allButtons = document.querySelectorAll('button');
+
+            const resetUI = () => {
+                synPacket.style.display = 'none';
+                synAckPacket.style.display = 'none';
+                ackPacket.style.display = 'none';
+                synPacket.style.transform = 'translateY(0) translateX(0)';
+                synAckPacket.style.transform = 'translateY(0) translateX(0)';
+                ackPacket.style.transform = 'translateY(0) translateX(0)';
+                networkLine.classList.remove('network-active');
+                document.querySelectorAll('.osi-layer').forEach(el => {
+                    el.style.backgroundColor = '#e5e7eb';
+                    el.classList.remove('pulse-animation');
+                });
+                document.querySelectorAll('.layer-info').forEach(infoEl => {
+                    infoEl.classList.remove('active');
+                });
+                statusMessage.innerHTML = '<strong>點擊按鈕，看資料如何穿越 OSI 模型！</strong>';
+                allButtons.forEach(btn => btn.disabled = false);
+                isAnimating = false;
+            };
+
+            const animateLayers = async (layerElements, type, requestType = 'success') => {
+                const isRequest = (type === 'request');
+                const start = isRequest ? 0 : layers.length - 1;
+                const end = isRequest ? layers.length : -1;
+                const step = isRequest ? 1 : -1;
+
+                for (let i = start; i !== end; i += step) {
+                    const layer = layers[i];
+                    const layerEl = layerElements[i];
+                    const infoContentEl = layerEl.querySelector('.info-content');
+                    const infoDataEl = layerEl.querySelector('.info-data');
+
+                    layerEl.classList.add('pulse-animation');
+                    layerEl.style.backgroundColor = isRequest ? '#93c5fd' : '#86efac';
+
+                    infoContentEl.innerHTML = layer.apiConcepts[type] || '';
+
+                    let dataText = '';
+                    if (isRequest && i === 0) { // Application Layer on request
+                        dataText = layer.dataDisplay[dataTypeSelector.value];
+                    } else if (!isRequest && i === layers.length - 1) { // Physical Layer on response
+                        dataText = layer.dataDisplay[type];
+                    } else if (isRequest && i === layers.length - 1) { // Physical Layer on request
+                        dataText = layer.dataDisplay[type];
+                    } else if (!isRequest && i === 0) { // Application Layer on response
+                        dataText = layer.dataDisplay[requestType === 'success' ? dataTypeSelector.value : `error${requestType}`];
+                    } else { // All other layers
+                        dataText = layer.dataDisplay[type];
+                    }
+
+                    infoDataEl.textContent = dataText;
+
+                    const layerInfoEl = layerEl.querySelector('.layer-info');
+                    layerInfoEl.classList.add('active');
+
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+
+                    layerEl.style.backgroundColor = '#e5e7eb';
+                    layerEl.classList.remove('pulse-animation');
+                    layerInfoEl.classList.remove('active');
+                }
+            };
+
+            const startAnimation = async (requestType) => {
+                if (isAnimating) return;
+                isAnimating = true;
+                allButtons.forEach(btn => btn.disabled = true);
+
+                const protocolType = protocolTypeSelector.value;
+                const protocolIcon = protocolType === 'tcp' ? '🔒' : '⚡';
+
+                statusMessage.innerHTML = `使用 ${protocolType.toUpperCase()} 協定 ${protocolIcon}...`;
+
+                if (protocolType === 'tcp') {
+                    await animateHandshake();
+                }
+
+                statusMessage.innerHTML = `資料在客戶端準備中...`;
+                await animateLayers(clientLayers, 'request');
+
+                statusMessage.innerHTML = `資料穿越網路... ${protocolIcon}`;
+                networkLine.classList.add('network-active');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                networkLine.classList.remove('network-active');
+
+                statusMessage.innerHTML = `資料在伺服器處理中...`;
+                await animateLayers(serverLayers, 'request', requestType);
+
+                if (requestType === 'success') {
+                    statusMessage.innerHTML = '伺服器處理請求並準備回應...';
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    statusMessage.innerHTML = `回應在伺服器準備中...`;
+                    await animateLayers(serverLayers, 'response');
+
+                    statusMessage.innerHTML = `回應穿越網路... ${protocolIcon}`;
+                    networkLine.classList.add('network-active');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    networkLine.classList.remove('network-active');
+
+                    statusMessage.innerHTML = `回應在客戶端處理中...`;
+                    await animateLayers(clientLayers, 'response');
+                } else {
+                    statusMessage.innerHTML = `<strong>伺服器錯誤！</strong><br><span style="color:#ef4444;">${layers[0].dataDisplay[`error${requestType}`]}</span>`;
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    statusMessage.innerHTML = `錯誤回應在伺服器準備中...`;
+                    await animateLayers(serverLayers, 'response', requestType);
+
+                    statusMessage.innerHTML = `錯誤回應穿越網路... ${protocolIcon}`;
+                    networkLine.classList.add('network-active');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    networkLine.classList.remove('network-active');
+
+                    statusMessage.innerHTML = `錯誤回應在客戶端處理中...`;
+                    await animateLayers(clientLayers, 'response', requestType);
+                }
+
+                statusMessage.innerHTML = '教學完成！';
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                resetUI();
+            };
+
+            const animateHandshake = async () => {
+                const clientY = clientLayers[3].offsetTop + (clientLayers[3].offsetHeight / 2) - (synPacket.offsetHeight / 2);
+                const serverY = serverLayers[3].offsetTop + (serverLayers[3].offsetHeight / 2) - (synAckPacket.offsetHeight / 2);
+                const clientX = clientLayers[3].offsetLeft;
+                const serverX = serverLayers[3].offsetLeft;
+
+                statusMessage.innerHTML = `TCP: 客戶端發送 SYN (同步) 請求 ${'🔒'}`;
+                synPacket.style.display = 'flex';
+                synPacket.style.transform = `translateY(0) translateX(0)`;
+                networkLine.classList.add('network-active');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                synPacket.style.transform = `translate(${serverX - clientX}px, ${serverY - clientY}px)`;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                networkLine.classList.remove('network-active');
+                synPacket.style.display = 'none';
+
+                statusMessage.innerHTML = `TCP: 伺服器發送 SYN-ACK 回應 ${'🔒'}`;
+                synAckPacket.style.display = 'flex';
+                synAckPacket.style.transform = `translate(${serverX - clientX}px, ${serverY - clientY}px)`;
+                networkLine.classList.add('network-active');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                synAckPacket.style.transform = `translate(0, 0)`;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                networkLine.classList.remove('network-active');
+                synAckPacket.style.display = 'none';
+
+                statusMessage.innerHTML = `TCP: 客戶端發送 ACK (確認) 回應，連線建立 ${'🔒'}`;
+                ackPacket.style.display = 'flex';
+                ackPacket.style.transform = `translateY(0) translateX(0)`;
+                networkLine.classList.add('network-active');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                ackPacket.style.transform = `translate(${serverX - clientX}px, ${serverY - clientY}px)`;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                networkLine.classList.remove('network-active');
+                ackPacket.style.display = 'none';
+
+                statusMessage.innerHTML = 'TCP 連線已建立。準備發送資料。';
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            };
+
+            successButton.addEventListener('click', () => startAnimation('success'));
+            button404.addEventListener('click', () => startAnimation('404'));
+            button500.addEventListener('click', () => startAnimation('500'));
+
+            resetUI();
+        })();
+    </script>
+</body>
+</html>
