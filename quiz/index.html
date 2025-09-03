@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <meta name="description" content="A modern quiz game built with HTML, CSS, and JavaScript.">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="icon" href="favicon.ico">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            /* 全域背景漸層或圖片，可依需求調整 */
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            /* 若想用圖片可改成 background: url('assets/bg.jpg') center/cover no-repeat; */
+        }
+        main.container {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        #home {
+            margin-bottom: 2rem;
+        }
+        #quizOptions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            justify-content: center;
+            align-items: stretch;
+            background: rgba(255,255,255,0.8);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+        }
+        #quizOptions label {
+            display: flex;
+            flex-direction: column;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        #quizOptions select, #quizOptions input[type="number"] {
+            margin-top: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 0.4rem;
+            border: 1px solid #bbb;
+            font-size: 1rem;
+        }
+        footer {
+            margin-top: 2rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <section id="home" class="flex-center flex-column">
+            <h1>Quick Quiz</h1>
+            <p>Test your knowledge and challenge your friends!</p>
+            <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
+                <a class="btn" href="game.html">Play</a>
+                <a class="btn" href="highscores.html">High Scores</a>
+            </div>
+        </section>
+        <form id="quizOptions" autocomplete="off">
+            <h2 style="margin-bottom:0.5rem; text-align:center; color:#007bff;">Custom Quiz</h2>
+            <p style="font-size:1rem; color:#555; text-align:center; margin-bottom:1rem;">
+                Choose your favorite category, difficulty, type, and question amount.
+            </p>
+            <label>
+                Category
+                <select id="categorySelect">
+                    <option value="">Any</option>
+                </select>
+            </label>
+            <label>
+                Difficulty
+                <select id="difficultySelect">
+                    <option value="">Any</option>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </label>
+            <label>
+                Type
+                <select id="typeSelect">
+                    <option value="">Any</option>
+                    <option value="multiple">Multiple Choice</option>
+                    <option value="boolean">True / False</option>
+                </select>
+            </label>
+            <label>
+                Amount
+                <input type="number" id="amountInput" min="1" max="50" value="10" style="width:5em;">
+            </label>
+            <button type="submit" class="btn">Start Quiz</button>
+        </form>
+
+        <!-- 答題 summary 區塊 -->
+        <section id="summarySection" style="margin:2rem auto 0 auto; max-width:500px; background:rgba(255,255,255,0.9); border-radius:1rem; box-shadow:0 2px 16px rgba(0,0,0,0.06); padding:1.5rem;">
+            <h2 style="color:#007bff; text-align:center;">Quiz Summary</h2>
+            <div style="margin-bottom:1rem; text-align:center;">
+                <label for="userSelect"><b>User:</b></label>
+                <select id="userSelect" style="margin-left:0.5em;"></select>
+            </div>
+            <div id="summaryContent" style="margin-top:1rem;"></div>
+            <canvas id="summaryChart" width="400" height="140" style="margin-top:1.5rem; display:block;"></canvas>
+        </section>
+    </main>
+    <footer class="flex-center">
+        <small>&copy; 2025 KenL-TW Quiz App. All rights reserved.</small>
+    </footer>
+    <script src="js/main.js"></script>
+</body>
+</html>
