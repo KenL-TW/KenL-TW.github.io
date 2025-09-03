@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 流程視覺化：電子商務顧客分析</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* 全域樣式 */
+    html, body {
+      font-family: 'Inter', sans-serif;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      background-color: #0d1117;
+      background-image: radial-gradient(at 100% 0%, #1f2937 0%, #0d1117 70%);
+      transition: background-image 1s ease-in-out;
+    }
+    
+    #ai-app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .phases-wrapper {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(300px, 1fr));
+      gap: 2rem;
+      width: 100%;
+      max-width: 1400px;
+      margin-top: 2rem;
+    }
+    
+    @media (max-width: 1024px) {
+      .phases-wrapper {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .phase-container {
+      width: 100%;
+      background-color: #1a202c;
+      border: 1px solid #2d3748;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      padding: 2rem;
+      transition: all 0.5s ease-in-out;
+      opacity: 0.5;
+      transform: translateY(20px) scale(0.95);
+      min-height: 550px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .phase-container.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      background-color: #2d3748;
+    }
+
+    /* 階段一 - 感知樣式 */
+    .data-chaos-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+    .data-icon {
+      position: absolute;
+      animation: float 10s ease-in-out infinite;
+      transition: all 0.8s ease-in-out;
+      opacity: 1;
+    }
+    @keyframes float {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      50% { transform: translate(10px, 10px) rotate(10deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    .data-icon.fade-out {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    
+    .pipeline {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+    .pipeline-step {
+        width: 90%;
+        background: linear-gradient(135deg, #1f2937, #374151);
+        border: 2px solid #4b5563;
+        border-radius: 1rem;
+        padding: 1rem;
+        text-align: center;
+        margin: 0.5rem 0;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.5s ease-out;
+    }
+    .pipeline-step.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .pipeline-arrow {
+      width: 2px;
+      height: 30px;
+      background-color: #3b82f6;
+      transition: height 0.5s ease-in-out;
+      opacity: 0;
+    }
+    .pipeline-arrow.active { opacity: 1; }
+
+    /* 階段二 - 理解樣式 */
+    .training-area {
+      position: relative;
+      height: 300px;
+      width: 100%;
+      background-color: #1f2937;
+      border: 1px solid #4b5563;
+      border-radius: 1rem;
+      cursor: crosshair;
+    }
+    .data-point {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      transition: all 0.5s ease-in-out;
+    }
+    .decision-boundary {
+      position: absolute;
+      width: 3px;
+      height: 120%;
+      background-color: #3b82f6;
+      box-shadow: 0 0 15px #3b82f6;
+      left: 50%;
+      top: -10%;
+      transform-origin: center center;
+      transition: transform 0.2s ease-in-out;
+    }
+    .decision-boundary-complex {
+        background: none;
+        box-shadow: none;
+        border-right: 3px dashed #3b82f6;
+    }
+
+    /* 階段三 - 行動樣式 */
+    .new-data-point {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      transition: all 0.5s ease-in-out;
+      box-shadow: 0 0 10px #f97316;
+      z-index: 10;
+    }
+    .prediction-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 1rem;
+    }
+    .final-prediction-result {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 1s ease-out;
+    }
+    .final-prediction-result.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .summary-section {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1s ease-out;
+    }
+    .summary-section.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .tooltip {
+        position: absolute;
+        background-color: rgba(30, 41, 59, 0.9);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        pointer-events: none;
+        z-index: 20;
+        transform: translate(-50%, -120%);
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+    .tooltip.visible {
+        opacity: 1;
+    }
+
+    @keyframes pulse-green {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      }
+      50% {
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+      }
+    }
+
+    .misclassified-point {
+        animation: pulse-green 1.5s infinite;
+        border: 2px solid #22c55e !important;
+    }
+
+    .value-change-animation {
+        animation: value-pulse 0.5s ease-out;
+    }
+
+    @keyframes value-pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); color: #60a5fa; }
+        100% { transform: scale(1); }
+    }
+    
+    /* 新增的結束步驟樣式 */
+    .ending-step-container {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1s ease-out;
+    }
+    .ending-step-container.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* 結束畫面與教學區塊 */
+    .deep-dive-section {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1s ease-out;
+    }
+    .deep-dive-section.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+  <div id="ai-app">
+    <header class="text-center my-8">
+      <h1 class="text-5xl font-bold tracking-tight mb-4 text-slate-100">AI 流程視覺化：電子商務顧客分析</h1>
+      <a href="../index.html"
+        class="btn btn-primary btn-lg rounded-pill shadow back-fab d-none d-md-inline-flex"
+        aria-label="返回首頁（快捷鍵 H）"
+        aria-keyshortcuts="H">
+        <i class="bi bi-house-door me-2"></i> 回首頁
+        </a>
+      <p class="text-lg text-gray-400 max-w-3xl mx-auto">
+        想像我們是一家電子商務公司，目標是預測哪些新顧客最可能購買我們的產品。透過以下三個階段，我們將 AI 模型的運作過程完整視覺化。
+      </p>
+      <div class="mt-8 flex justify-center space-x-4">
+        <button @click="startAutomation" :disabled="isAutomating || currentPhase > 1" :class="{'opacity-50 cursor-not-allowed': isAutomating || currentPhase > 1}" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-full font-bold transition-colors shadow-lg hover:shadow-xl">
+          <span v-if="isAutomating">自動分析中...</span>
+          <span v-else>開始自動分析</span>
+        </button>
+        <button v-if="!isAutomating && currentPhase <= 2" @click="nextPhase" class="px-8 py-3 bg-gray-600 hover:bg-gray-700 rounded-full font-bold transition-colors shadow-lg hover:shadow-xl">
+          {{ nextButtonText }}
+        </button>
+      </div>
+    </header>
+
+    <div class="phases-wrapper">
+      <!-- 階段一：感知 - 資料準備的藝術 -->
+      <section class="phase-container" :class="{ 'active': currentPhase === 1 }">
+        <div class="text-center mb-4">
+          <h2 class="text-3xl font-semibold mb-2">階段一：感知</h2>
+          <p class="text-gray-400 text-sm">將龐雜的顧客資料轉化為 AI 可理解的格式。</p>
+        </div>
+        <div class="visualizer">
+          <div v-if="phase1Step === 'raw'" class="data-chaos-container">
+            <p class="text-sm text-gray-400 mb-2">原始資料：包含瀏覽紀錄、購買歷史等混亂數據</p>
+            <div v-for="n in 50" :key="n" class="data-icon" :style="getIconStyle(n)">
+              <img :src="getIcon(n)" class="w-8 h-8" />
+            </div>
+          </div>
+          <div v-if="phase1Step !== 'raw'" class="pipeline">
+            <div class="pipeline-step" :class="{ 'active': phase1Step === 'cleaning' }">
+              <p class="font-semibold text-lg">1. 資料清洗</p>
+              <p class="text-xs text-gray-400 mt-1">移除遺失值、重複資料，處理異常值，確保資料品質。</p>
+            </div>
+            <div class="pipeline-arrow" :class="{ 'active': phase1Step === 'features' }"></div>
+            <div class="pipeline-step" :class="{ 'active': phase1Step === 'features' }">
+              <p class="font-semibold text-lg">2. 特徵工程</p>
+              <p class="text-xs text-gray-400 mt-1">從資料中提取關鍵特徵，如「最近瀏覽次數」或「平均購物金額」。</p>
+            </div>
+            <div class="pipeline-arrow" :class="{ 'active': phase1Step === 'normalization' }"></div>
+            <div class="pipeline-step" :class="{ 'active': phase1Step === 'normalization' }">
+              <p class="font-semibold text-lg">3. 資料正規化</p>
+              <p class="text-xs text-gray-400 mt-1">將不同尺度的特徵（例如金額與次數）縮放到統一範圍。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 階段二：理解 - 模型的學習過程 -->
+      <section class="phase-container" :class="{ 'active': currentPhase === 2 }">
+        <div class="text-center mb-4">
+          <h2 class="text-3xl font-semibold mb-2">階段二：理解</h2>
+          <p class="text-gray-400 text-sm">模型如何從顧客行為中找到購買規律。</p>
+        </div>
+        <div class="visualizer">
+          <div class="flex justify-center items-center mb-4 space-x-4 flex-wrap">
+            <span class="text-gray-400 text-sm">模型類型:</span>
+            <button @click="modelType = 'classification'" :class="{'bg-gray-600': modelType === 'classification'}" class="px-4 py-2 rounded-full border border-gray-500 text-sm transition-colors" :disabled="isTraining">分類</button>
+            <button @click="modelType = 'regression'" :class="{'bg-gray-600': modelType === 'regression'}" class="px-4 py-2 rounded-full border border-gray-500 text-sm transition-colors" :disabled="isTraining">迴歸</button>
+            <span class="text-gray-400 text-sm ml-4" v-if="modelType === 'classification'">決策邊界:</span>
+            <button v-if="modelType === 'classification'" @click="isComplexModel = false" :class="{'bg-gray-600': !isComplexModel}" class="px-4 py-2 rounded-full border border-gray-500 text-sm transition-colors" :disabled="isTraining">線性</button>
+            <button v-if="modelType === 'classification'" @click="isComplexModel = true" :class="{'bg-gray-600': isComplexModel}" class="px-4 py-2 rounded-full border border-gray-500 text-sm transition-colors" :disabled="isTraining">非線性</button>
+          </div>
+          <div @click="handlePredictionClick" class="training-area relative h-96 w-full">
+            <div v-if="modelTrained && modelType === 'classification'">
+                <p class="text-center text-gray-400 text-sm mb-2">訓練資料（有色點），與驗證資料（綠框點）</p>
+            </div>
+            <div v-if="modelType === 'classification'" class="w-full h-full relative border border-dashed border-gray-600 rounded-xl">
+              <div v-for="(point, index) in trainingData" :key="'train-' + index" 
+                   @mouseenter="showTooltip($event, point)" 
+                   @mouseleave="hideTooltip"
+                   class="data-point" 
+                   :class="`bg-${point.type}-500 ${point.isMisclassified ? 'misclassified-point' : ''}`" 
+                   :style="{ left: `${point.x}%`, top: `${100 - point.y}%` }"></div>
+              <div v-for="(point, index) in validationData" :key="'val-' + index" 
+                   @mouseenter="showTooltip($event, point)" 
+                   @mouseleave="hideTooltip"
+                   class="data-point" 
+                   :class="`bg-${point.type}-500 opacity-60 ${point.isMisclassified ? 'misclassified-point' : ''}`" 
+                   :style="{ left: `${point.x}%`, top: `${100 - point.y}%`, border: '2px solid #22c55e' }"></div>
+              
+              <div v-if="isTraining || modelTrained" class="decision-boundary" :style="{ transform: `rotate(${decisionBoundaryRotation}deg)` }"></div>
+              <div v-if="isComplexModel && (isTraining || modelTrained)" class="absolute inset-0">
+                  <div class="decision-boundary decision-boundary-complex left-1/4" :style="{ transform: `rotate(${decisionBoundaryRotation * 0.5}deg)`}"></div>
+                  <div class="decision-boundary decision-boundary-complex left-3/4" :style="{ transform: `rotate(${decisionBoundaryRotation * 1.5}deg)`}"></div>
+              </div>
+
+              <div v-if="newPoint" class="new-data-point" :style="{ left: `${newPoint.x}%`, top: `${100 - newPoint.y}%` }"></div>
+
+            </div>
+            <div v-if="modelType === 'regression'" class="w-full h-full relative border border-dashed border-gray-600 rounded-xl">
+              <div v-for="(point, index) in trainingData" :key="'train-' + index" class="data-point bg-yellow-500" :style="{ left: `${point.x}%`, top: `${100 - point.y}%` }"></div>
+              <div v-if="isTraining || modelTrained" class="regression-line"></div>
+            </div>
+          </div>
+
+          <!-- 資料點資訊氣泡 -->
+          <div v-if="hoveredPoint" class="tooltip" :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }" :class="{'visible': tooltip.visible}">
+            <p>瀏覽次數：{{ Math.round(hoveredPoint.x) }}</p>
+            <p>購物金額：${{ Math.round(hoveredPoint.y * 10) }}</p>
+          </div>
+
+          <div class="training-info mt-4 w-full">
+            <p v-if="isTraining" class="text-center text-sm">
+                模型訓練中... <span class="text-blue-400">訓練週期 (Epoch): {{ currentEpoch }}</span>
+            </p>
+            <p v-else-if="modelTrained" class="text-center text-sm text-green-400 font-bold">
+                模型訓練完成！
+            </p>
+            <div class="flex justify-center items-center space-x-4 mt-2">
+                <p class="text-green-300">
+                    <span class="font-semibold text-xs">訓練準確率:</span> <span class="text-lg font-bold" :class="{'value-change-animation': !isTraining}">{{ trainingAccuracy.toFixed(2) }}%</span>
+                </p>
+                <p class="text-yellow-300">
+                    <span class="font-semibold text-xs">驗證準確率:</span> <span class="text-lg font-bold" :class="{'value-change-animation': !isTraining}">{{ validationAccuracy.toFixed(2) }}%</span>
+                </p>
+            </div>
+            <div class="loss-graph">
+              <canvas id="lossCanvas" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 階段三：行動 - 預測與決策 -->
+      <section class="phase-container" :class="{ 'active': currentPhase === 3 }">
+        <div class="text-center mb-4">
+          <h2 class="text-3xl font-semibold mb-2">階段三：行動</h2>
+          <p class="text-gray-400 text-sm">將訓練好的模型應用於新的顧客資料。</p>
+        </div>
+        <div class="visualizer">
+          <div v-if="!predictionResult && !isAutomating && !showEndingStep" class="w-full text-center p-8 border border-dashed border-gray-600 rounded-xl bg-gray-700/50 animate-pulse">
+              <p class="text-lg text-blue-300 font-bold mb-2">請點擊左側圖表，加入新的顧客數據</p>
+              <div class="flex justify-center items-center text-4xl mt-4">
+                  <span class="animate-bounce">👉</span>
+              </div>
+          </div>
+          <div v-else-if="isAutomating" class="w-full text-center p-8">
+              <p class="text-lg text-gray-400 font-bold mb-2 animate-pulse">新顧客數據正在通過模型...</p>
+          </div>
+          
+          <div v-if="predictionResult" class="w-full prediction-container">
+              <div class="flex items-center space-x-4 mb-4">
+                  <span class="text-5xl" v-if="predictionResult.isHighValue">💰</span>
+                  <span class="text-5xl" v-else>🧑‍🤝‍🧑</span>
+              </div>
+              <div class="p-4 rounded-xl border border-gray-600 bg-gray-700/50 w-full text-center final-prediction-result" :class="{'active': predictionResult}">
+                  <p class="text-xl font-bold mb-2">預測結果：{{ predictionResult.label }}</p>
+                  <p class="text-sm text-gray-300">
+                      根據模型預測，這位顧客的最終行銷決策為：<span class="font-bold text-lg" :class="`text-${predictionResult.color}-300`">{{ predictionResult.decision }}</span>
+                  </p>
+              </div>
+              <div class="mt-8">
+                <p class="text-center text-lg font-bold">這是正確的預測嗎？</p>
+                <div class="flex justify-center space-x-4 mt-2">
+                  <button @click="provideFeedback(true)" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-full">是</button>
+                  <button @click="provideFeedback(false)" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-full">否 (回饋錯誤)</button>
+                </div>
+              </div>
+          </div>
+
+          <div v-if="showEndingStep" class="ending-step-container active w-full text-center p-8 border border-dashed border-gray-600 rounded-xl bg-gray-700/50 mt-8">
+            <h3 class="text-xl font-bold text-green-300 mb-4">本輪分析結束</h3>
+            <p class="text-gray-400 mb-4">你已成功完成本輪的 AI 分析流程。現在你可以選擇：</p>
+            <div class="flex justify-center space-x-4">
+                <button @click="resetStates" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-full font-bold">開始新的分析</button>
+                <button @click="showDeepDive = true" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-full font-bold">深入了解概念</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 流程總結與目標區塊 -->
+    <section v-if="!isAutomating && currentPhase === 3" class="summary-section active w-full max-w-4xl mt-12 bg-gray-800 p-8 rounded-xl shadow-2xl">
+      <h2 class="text-3xl font-bold text-center mb-6">情境總結與目標結果</h2>
+      <div class="space-y-6 text-gray-300">
+        <div>
+          <h3 class="text-2xl font-semibold text-blue-400 mb-2">情境總結 (Scenario Summary)</h3>
+          <p class="text-lg leading-relaxed">
+            我們的目標是利用歷史數據，來預測新加入的電子商務顧客是屬於**「高價值顧客」**還是**「普通顧客」**。高價值顧客的特徵是**瀏覽次數多且單次消費金額高**。模型將學習如何從這些特徵中區分兩類顧客。
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-2xl font-semibold text-green-400 mb-2">流程解析 (Process Breakdown)</h3>
+          <ul class="list-disc list-inside space-y-2 text-lg">
+            <li>**階段一：感知** - 我們將原始的顧客數據（如瀏覽紀錄、購物車內容等）進行**清洗**、**特徵化**，並**正規化**為 AI 可理解的格式（例如：將「最近瀏覽次數」與「單次購物金額」轉化為二維座標）。</li>
+            <li>**階段二：理解** - 模型使用這些處理過的數據進行**訓練**。在每個**訓練週期 (Epoch)** 中，模型會反覆調整內部參數，以最小化**損失函數 (Loss Function)**。您可以看到模型的「決策邊界」或「迴歸線」不斷優化，直到能夠準確區分兩類顧客。</li>
+            <li>**階段三：行動** - 訓練完成後，模型已經具備預測能力。當有新的顧客數據進來時，模型會根據學到的規律，快速做出**預測**，並提供**最終的商業決策**。</li>
+            <li>**回饋迴圈** - 最重要的是，我們將預測結果與實際商業結果進行比對。如果發現模型預測錯誤，我們將這個錯誤的數據點回饋給模型，進行**再訓練**，讓模型在未來做得更好。</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-2xl font-semibold text-yellow-400 mb-2">目標結果 (Target Outcome)</h3>
+          <p class="text-lg leading-relaxed">
+            透過這整個流程，我們能夠將新顧客自動分組。對於被預測為**「高價值顧客」**的群體，我們可以立即發送**獨家折扣代碼**，以此提高轉換率和顧客忠誠度。對於**「普通顧客」**，則可以發送**一般促銷訊息**，進行有效的差異化行銷，從而實現商業價值的最大化。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 新增的教學區塊 -->
+    <section v-if="showDeepDive" class="deep-dive-section active w-full max-w-4xl mt-12 bg-gray-800 p-8 rounded-xl shadow-2xl">
+      <h2 class="text-3xl font-bold text-center mb-6">深入探討 AI 核心概念</h2>
+      <div class="space-y-8 text-gray-300">
+        <div>
+          <h3 class="text-2xl font-semibold text-purple-400 mb-2">損失函數 (Loss Function) 是什麼？</h3>
+          <p class="text-lg leading-relaxed">
+            在 AI 學習的過程中，**損失函數**就像是模型的「教練」。它的作用是衡量模型預測結果與實際正確答案之間的差異有多大。如果模型的預測越接近真實答案，損失值就越低。
+            <br/><br/>
+            例如，在我們的顧客分類情境中，如果模型預測某位顧客是「普通顧客」，但實際上他是一位「高價值顧客」，那麼損失函數就會計算出一個較高的損失值，告訴模型：「你錯了，要調整！」
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-2xl font-semibold text-teal-400 mb-2">決策邊界 (Decision Boundary) 如何形成？</h3>
+          <p class="text-lg leading-relaxed">
+            **決策邊界**是分類模型學習的最終成果。它是一條將不同類別資料點分開的虛擬線或曲面。在我們的視覺化中，您可以觀察到這條線在訓練過程中不斷調整，目的是找到一個最佳位置，能夠最有效地將「高價值顧客」（紅點）和「普通顧客」（藍點）區分開來。
+            <br/><br/>
+            如果我們選擇一個**線性**模型，決策邊界就是一條直線。而對於更複雜的**非線性**模型，決策邊界可以是多條線或曲線，能夠處理更難以區分的數據集。
+          </p>
+        </div>
+
+        <div class="text-center">
+            <button @click="showDeepDive = false; showEndingStep = true" class="px-8 py-3 bg-red-600 hover:bg-red-700 rounded-full font-bold transition-colors">返回</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    const { createApp, ref, reactive, computed, onMounted } = Vue;
+
+    const app = createApp({
+      setup() {
+        const currentPhase = ref(1);
+        const phase1Step = ref('raw'); 
+        const modelType = ref('classification');
+        const isComplexModel = ref(false); 
+        const isTraining = ref(false);
+        const modelTrained = ref(false);
+        const trainingAccuracy = ref(0);
+        const validationAccuracy = ref(0);
+        const currentEpoch = ref(0);
+        const decisionBoundaryRotation = ref(0);
+        const trainingData = ref([]);
+        const validationData = ref([]);
+        const predictionResult = ref(null);
+        const isAutomating = ref(false);
+        const lossHistory = ref([]);
+        const newPoint = ref(null); 
+        const showEndingStep = ref(false); // 控制結束步驟的顯示
+        const showDeepDive = ref(false); // 控制深入教學區塊的顯示
+
+        // 資料點氣泡
+        const hoveredPoint = ref(null);
+        const tooltip = reactive({ x: 0, y: 0, visible: false });
+
+        const icons = ['📄', '🖼️', '📊', '🔊', '📝', '🛒', '📦', '📈', '💬', '📍', '💰', '🧑‍🤝‍🧑', '🌐', '📞'];
+        
+        // 預先定義的模擬資料集
+        const simulatedData = [
+            // 高價值顧客 (High-Value Customers) - 靠近右上方
+            { x: 75, y: 85, type: 'red' }, { x: 80, y: 90, type: 'red' }, { x: 90, y: 75, type: 'red' },
+            { x: 85, y: 80, type: 'red' }, { x: 70, y: 95, type: 'red' }, { x: 88, y: 88, type: 'red' },
+            { x: 95, y: 70, type: 'red' }, { x: 72, y: 82, type: 'red' }, { x: 81, y: 89, type: 'red' },
+            { x: 78, y: 92, type: 'red' }, { x: 65, y: 88, type: 'red' }, { x: 92, y: 68, type: 'red' },
+            
+            // 普通顧客 (Regular Customers) - 靠近左下方
+            { x: 20, y: 30, type: 'blue' }, { x: 30, y: 25, type: 'blue' }, { x: 15, y: 40, type: 'blue' },
+            { x: 40, y: 15, type: 'blue' }, { x: 25, y: 35, type: 'blue' }, { x: 35, y: 20, type: 'blue' },
+            { x: 18, y: 38, type: 'blue' }, { x: 28, y: 28, type: 'blue' }, { x: 45, y: 10, type: 'blue' },
+            { x: 33, y: 42, type: 'blue' }, { x: 12, y: 33, type: 'blue' }, { x: 22, y: 22, type: 'blue' },
+
+            // 隨機資料點
+            { x: 50, y: 60, type: 'red' }, { x: 60, y: 45, type: 'blue' }, { x: 40, y: 55, type: 'blue' },
+            { x: 55, y: 50, type: 'blue' }, { x: 62, y: 58, type: 'red' }, { x: 48, y: 42, type: 'blue' },
+            { x: 70, y: 50, type: 'red' }, { x: 30, y: 65, type: 'red' }, { x: 65, y: 30, type: 'blue' },
+            { x: 50, y: 80, type: 'red' }, { x: 40, y: 20, type: 'blue' }, { x: 60, y: 70, type: 'red' },
+            { x: 35, y: 60, type: 'red' }, { x: 75, y: 25, type: 'blue' }, { x: 80, y: 50, type: 'red' },
+            { x: 25, y: 70, type: 'red' }, { x: 70, y: 40, type: 'blue' }, { x: 45, y: 85, type: 'red' },
+            { x: 85, y: 35, type: 'blue' }, { x: 30, y: 50, type: 'blue' }, { x: 55, y: 75, type: 'red' },
+        ];
+
+
+        const nextButtonText = computed(() => {
+          if (currentPhase.value === 1) {
+            if (phase1Step.value === 'raw') return '下一步：資料清洗';
+            if (phase1Step.value === 'cleaning') return '下一步：特徵工程';
+            if (phase1Step.value === 'features') return '下一步：資料正規化';
+            if (phase1Step.value === 'normalization') return '進入階段二：理解';
+          }
+          if (currentPhase.value === 2) {
+            if (!modelTrained.value) return '開始訓練模型';
+            return '進入階段三：行動';
+          }
+          if (currentPhase.value === 3) return '重置流程';
+          return '開始';
+        });
+
+        const getIconStyle = (index) => {
+          const x = Math.random() * 90 + 5;
+          const y = Math.random() * 90 + 5;
+          return {
+            top: `${y}%`,
+            left: `${x}%`,
+            animationDelay: `${Math.random() * 2}s`,
+            transform: `rotate(${Math.random() * 360}deg)`,
+          };
+        };
+        const getIcon = (index) => {
+          return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-size='20' fill='%23fff'%3E${icons[index % icons.length]}%3C/text%3E%3C/svg%3E`;
+        };
+
+        const nextPhase = () => {
+            if (isAutomating.value) return;
+
+            if (currentPhase.value === 1) {
+                if (phase1Step.value === 'raw') {
+                    phase1Step.value = 'cleaning';
+                    document.querySelectorAll('.data-icon').forEach(icon => {
+                        if (Math.random() > 0.8) icon.classList.add('fade-out');
+                    });
+                } else if (phase1Step.value === 'cleaning') {
+                    phase1Step.value = 'features';
+                } else if (phase1Step.value === 'features') {
+                    phase1Step.value = 'normalization';
+                } else if (phase1Step.value === 'normalization') {
+                    currentPhase.value = 2;
+                    generateDataPoints();
+                }
+            } else if (currentPhase.value === 2) {
+                if (!modelTrained.value) {
+                    startTraining();
+                } else {
+                    currentPhase.value = 3;
+                }
+            } else if (currentPhase.value === 3) {
+                resetStates();
+            }
+        };
+
+        const startAutomation = () => {
+            if (isAutomating.value) return;
+            isAutomating.value = true;
+            resetStates();
+            
+            // 視覺引導動畫
+            const pipelineSteps = document.querySelectorAll('.pipeline-step, .pipeline-arrow');
+            let stepIndex = 0;
+            const animateStep = () => {
+                if (stepIndex < pipelineSteps.length) {
+                    pipelineSteps[stepIndex].classList.add('active');
+                    stepIndex++;
+                    setTimeout(animateStep, 1000);
+                }
+            };
+            
+            setTimeout(() => {
+                phase1Step.value = 'cleaning';
+                const icons = document.querySelectorAll('.data-icon');
+                icons.forEach(icon => { if (Math.random() > 0.8) icon.classList.add('fade-out'); });
+                animateStep();
+                setTimeout(() => {
+                    phase1Step.value = 'features';
+                    setTimeout(() => {
+                        phase1Step.value = 'normalization';
+                        setTimeout(() => {
+                            currentPhase.value = 2;
+                            generateDataPoints();
+                            startTraining(true);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 500);
+        };
+        
+        const resetStates = () => {
+            currentPhase.value = 1;
+            phase1Step.value = 'raw';
+            isTraining.value = false;
+            modelTrained.value = false;
+            trainingAccuracy.value = 0;
+            validationAccuracy.value = 0;
+            currentEpoch.value = 0;
+            predictionResult.value = null;
+            newPoint.value = null;
+            lossHistory.value = [];
+            isAutomating.value = false;
+            showEndingStep.value = false;
+            showDeepDive.value = false;
+            document.querySelectorAll('.data-icon').forEach(icon => icon.classList.remove('fade-out'));
+            
+            // 重置所有資料點的 misclassified 狀態
+            trainingData.value.forEach(p => p.isMisclassified = false);
+            validationData.value.forEach(p => p.isMisclassified = false);
+        };
+
+        const generateDataPoints = () => {
+          trainingData.value = [];
+          validationData.value = [];
+          simulatedData.forEach(point => {
+            const isValidation = Math.random() > 0.8; 
+            if (isValidation) {
+                validationData.value.push({...point, isMisclassified: false});
+            } else {
+                trainingData.value.push({...point, isMisclassified: false});
+            }
+          });
+        };
+
+        const startTraining = (isAuto = false) => {
+          isTraining.value = true;
+          lossHistory.value = [];
+          
+          let currentTrainingAccuracy = 0;
+          let currentValidationAccuracy = 0;
+
+          const trainingInterval = setInterval(() => {
+            currentTrainingAccuracy += Math.random() * 4 + 2;
+            currentValidationAccuracy = currentTrainingAccuracy * (0.95 + Math.random() * 0.05);
+            currentEpoch.value++;
+
+            const loss = 100 - currentTrainingAccuracy;
+            lossHistory.value.push(loss);
+            drawLossGraph();
+
+            if (currentTrainingAccuracy > 95 || currentEpoch.value >= 20) {
+              currentTrainingAccuracy = 98.5;
+              currentValidationAccuracy = 95.2 + Math.random() * 3;
+              clearInterval(trainingInterval);
+              isTraining.value = false;
+              modelTrained.value = true;
+              trainingAccuracy.value = currentTrainingAccuracy;
+              validationAccuracy.value = currentValidationAccuracy;
+
+              if (isAuto) {
+                setTimeout(() => {
+                  currentPhase.value = 3;
+                }, 2000);
+              }
+            }
+            trainingAccuracy.value = currentTrainingAccuracy;
+            validationAccuracy.value = currentValidationAccuracy;
+
+            if (modelType.value === 'classification') {
+              if (isComplexModel.value) {
+                decisionBoundaryRotation.value = 45 + (Math.random() - 0.5) * 40;
+              } else {
+                decisionBoundaryRotation.value = 45 + (Math.random() - 0.5) * 20 - (currentTrainingAccuracy/100) * 10;
+              }
+            }
+          }, 150);
+        };
+        
+        const drawLossGraph = () => {
+            const canvas = document.getElementById('lossCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const maxLoss = 100;
+            const data = lossHistory.value;
+            if (data.length < 2) return;
+
+            const xStep = canvas.width / dpr / (data.length - 1);
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+
+            ctx.moveTo(0, canvas.height / dpr - (data[0] / maxLoss) * canvas.height / dpr);
+            for (let i = 1; i < data.length; i++) {
+                ctx.lineTo(i * xStep, canvas.height / dpr - (data[i] / maxLoss) * canvas.height / dpr);
+            }
+            ctx.stroke();
+
+            // Draw current loss
+            const lastLoss = data[data.length - 1];
+            ctx.fillStyle = '#f87171';
+            ctx.beginPath();
+            ctx.arc((data.length - 1) * xStep, canvas.height / dpr - (lastLoss / maxLoss) * canvas.height / dpr, 4, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Display text
+            ctx.fillStyle = '#f87171';
+            ctx.font = `bold 16px Inter`;
+            ctx.textAlign = 'center';
+            ctx.fillText(`損失值: ${lastLoss.toFixed(2)}%`, canvas.width / dpr / 2, 20);
+        };
+
+
+        const handlePredictionClick = (event) => {
+            if (currentPhase.value !== 3 || isAutomating.value) return;
+
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = (event.clientX - rect.left) / rect.width * 100;
+            const y = (rect.height - (event.clientY - rect.top)) / rect.height * 100;
+
+            predict({ x, y });
+        };
+        
+        const predict = (point) => {
+            const newPointData = point;
+            newPoint.value = newPointData;
+            
+            const isHighValue = newPointData.y > newPointData.x + 10;
+            let result = '';
+            let color = '';
+            let decision = '';
+            
+            if (modelType.value === 'classification') {
+                if (isHighValue) {
+                    result = '高價值顧客';
+                    color = 'red';
+                    decision = '發送獨家折扣代碼';
+                } else {
+                    result = '普通顧客';
+                    color = 'blue';
+                    decision = '發送一般促銷訊息';
+                }
+            } else {
+                const predictedValue = (newPointData.x + newPointData.y) / 2;
+                result = `預測消費額: $${predictedValue.toFixed(2)}`;
+                color = 'yellow';
+                decision = `建議行銷預算為 $${predictedValue.toFixed(2)}`;
+            }
+            
+            predictionResult.value = { 
+                label: result, 
+                color, 
+                decision, 
+                isHighValue, 
+                trueLabel: isHighValue ? 'red' : 'blue',
+                x: newPointData.x,
+                y: newPointData.y
+            };
+        };
+
+        const provideFeedback = (isCorrect) => {
+            if (!isCorrect) {
+                const pointToUpdate = predictionResult.value;
+                pointToUpdate.isMisclassified = true;
+                
+                trainingData.value.push({
+                    x: pointToUpdate.x,
+                    y: pointToUpdate.y,
+                    type: pointToUpdate.trueLabel, 
+                    isMisclassified: true
+                });
+                
+                predictionResult.value = null;
+                newPoint.value = null;
+                modelTrained.value = false;
+                currentEpoch.value = 0;
+                startTraining();
+            } else {
+              predictionResult.value = null;
+              newPoint.value = null;
+              showEndingStep.value = true;
+            }
+        };
+
+        const showTooltip = (event, point) => {
+            hoveredPoint.value = point;
+            tooltip.x = event.clientX;
+            tooltip.y = event.clientY;
+            tooltip.visible = true;
+        };
+
+        const hideTooltip = () => {
+            hoveredPoint.value = null;
+            tooltip.visible = false;
+        };
+
+        onMounted(() => {
+          generateDataPoints();
+        });
+
+        return {
+          currentPhase,
+          phase1Step,
+          modelType,
+          isComplexModel,
+          isTraining,
+          modelTrained,
+          trainingAccuracy,
+          validationAccuracy,
+          currentEpoch,
+          decisionBoundaryRotation,
+          trainingData,
+          validationData,
+          predictionResult,
+          isAutomating,
+          icons,
+          nextButtonText,
+          newPoint,
+          hoveredPoint,
+          tooltip,
+          showEndingStep,
+          showDeepDive,
+          getIconStyle,
+          getIcon,
+          nextPhase,
+          startAutomation,
+          startTraining,
+          handlePredictionClick,
+          provideFeedback,
+          showTooltip,
+          hideTooltip,
+          resetStates
+        };
+      }
+    });
+
+    app.mount('#ai-app');
+  </script>
+</body>
+</html>

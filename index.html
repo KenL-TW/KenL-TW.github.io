@@ -49,6 +49,23 @@
   * Author: BootstrapMade.com
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
+  <link rel="canonical" href="https://kenl-tw.github.io/index.html" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ken Liao - AI & SA 系統分析師 | Portfolio">
+  <meta name="twitter:description" content="AI、SEO、數位轉型與系統分析，Ken Liao 的個人頁面">
+  <meta name="twitter:image" content="https://kenl-tw.github.io/assets/img/profile-img.png">
+  <!-- 結構化資料 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Ken Liao",
+    "url": "https://kenl-tw.github.io/",
+    "image": "https://kenl-tw.github.io/assets/img/profile-img.png",
+    "jobTitle": "AI & SA 系統分析師"
+  }
+  </script>
 </head>
 
 <body>
@@ -488,6 +505,7 @@
       <button type="button" class="btn btn-outline-primary" data-tag="aws">aws</button>
       <button type="button" class="btn btn-outline-primary" data-tag="版本控制">版本控制</button>
       <button type="button" class="btn btn-outline-primary" data-tag="api">api</button>
+      <button type="button" class="btn btn-outline-primary" data-tag="ai">ai應用</button>
     </div>
     <div class="row" id="tutorial-list">
       <!-- JS 動態插入卡片 -->
@@ -500,7 +518,8 @@ const tutorialsData = [
   { title:"網路攻擊視覺化分享", desc:"動畫流程解說 SQL 注入與 XSS 攻擊原理。", link:"it/networkAttack.html", tags:["資料庫應用"] },
   { title:"AWS架構視覺化分享", desc:"快速學會 AWS Serverless架構視覺化分享。", link:"it/awsServerless.html", tags:["aws"] },
   { title:"AWS架構視覺化分享", desc:"快速學會 AWS 三層式架構視覺化分享。", link:"it/awsThreeTier.html", tags:["aws"] },
-  { title:"api與osi實際應用", desc:"掌握 pi與osi實際應用。", link:"it/api.html", tags:["api"] }
+  { title:"api與osi實際應用", desc:"掌握 pi與osi實際應用。", link:"it/api.html", tags:["api"] },
+  { title:"ai", desc:"ai預測模型。", link:"it/aiModal.html", tags:["ai"] }
 ];
 
 let currentTag = "all";
