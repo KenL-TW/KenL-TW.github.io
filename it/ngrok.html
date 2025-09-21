@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ngrok 學習平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e2e8f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2.5rem;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .flow-container {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2.5rem 0;
+        }
+        .flow-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            padding: 0 1rem;
+            min-width: 120px;
+            position: relative;
+        }
+        .flow-item .icon {
+            display: block;
+            margin-bottom: 0.5rem;
+            width: 40px;
+            height: 40px;
+        }
+        .flow-box {
+            background-color: #e0f2fe;
+            background-image: linear-gradient(to bottom right, #e0f2fe, #bfdbfe);
+            border: 2px solid #3b82f6;
+            padding: 1.5rem 1rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-in-out;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .flow-box.active {
+            animation: pulse-border 1.5s infinite;
+            border-color: #f97316;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px 5px rgba(249, 115, 22, 0.5);
+        }
+        @keyframes pulse-border {
+            0% { border-color: #f97316; }
+            50% { border-color: #ffedd5; }
+            100% { border-color: #f97316; }
+        }
+        .flow-arrow {
+            position: absolute;
+            height: 4px;
+            transition: all 0.5s ease-in-out;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #cbd5e1;
+        }
+        .flow-arrow .label {
+            position: absolute;
+            top: -25px;
+            font-size: 0.8rem;
+            color: #4b5563;
+            background-color: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .flow-arrow.active {
+            background-color: #22c55e;
+            background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #22c55e 10px, #22c55e 20px);
+            background-size: 40px 100%;
+            animation: flow-active 2s linear infinite;
+        }
+        .flow-arrow.active.outbound {
+            background-color: #f97316;
+            background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #f97316 10px, #f97316 20px);
+        }
+        .flow-arrow.active .label {
+            opacity: 1;
+        }
+        @keyframes flow-active {
+            from { background-position-x: 0; }
+            to { background-position-x: -40px; }
+        }
+        
+        .data-packet {
+            width: 12px;
+            height: 12px;
+            background-color: #f3f4f6;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            animation: packet-move 1.5s linear infinite;
+            opacity: 0;
+        }
+        .flow-arrow.active .data-packet {
+            opacity: 1;
+        }
+        @keyframes packet-move {
+            0% { transform: translateY(-50%) translateX(0); }
+            100% { transform: translateY(-50%) translateX(calc(100% - 12px)); }
+        }
+        .flow-arrow.active.outbound .data-packet {
+            animation: packet-move-outbound 1.5s linear infinite;
+        }
+        @keyframes packet-move-outbound {
+            0% { transform: translateY(-50%) translateX(0); }
+            100% { transform: translateY(-50%) translateX(calc(100% - 12px)); }
+        }
+
+        .terminal-output {
+            background-color: #1f2937;
+            color: #d1fae5;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .terminal-header {
+            color: #6ee7b7;
+        }
+        
+        /* Flashcard Styles */
+        .flashcard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .flashcard {
+            background-color: transparent;
+            width: 100%;
+            height: 250px;
+            perspective: 1000px; /* For 3D effect */
+        }
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+        }
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 2px solid #9ca3af;
+        }
+        .flashcard-front {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        .flashcard-back {
+            background-color: #d1fae5;
+            color: #1f2937;
+            transform: rotateY(180deg);
+            text-align: left;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .flashcard-back p {
+            margin-bottom: 0.5rem;
+        }
+        .flashcard-back strong {
+            color: #059669;
+        }
+        
+        /* Mobile-first approach for responsiveness */
+        @media (max-width: 768px) {
+            .flow-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .flow-item {
+                margin-bottom: 2rem;
+            }
+            .flow-arrow {
+                height: 30px;
+                width: 4px;
+                top: 50%;
+                left: 50%;
+                transform: translateX(-50%) rotate(90deg);
+                margin-top: -15px;
+            }
+            .flow-arrow.arrow1 { margin-top: -15px; }
+            .flow-arrow.arrow2 { margin-top: -15px; }
+            .flow-arrow.arrow3 { margin-top: -15px; }
+            .flow-arrow.arrow4 { margin-top: -15px; }
+            .flow-arrow .label {
+                top: auto;
+                bottom: -25px;
+            }
+            .flow-arrow .data-packet {
+                left: 50%;
+                top: 0;
+                transform: translateX(-50%);
+                animation: packet-move-vertical 1.5s linear infinite;
+            }
+            @keyframes packet-move-vertical {
+                0% { transform: translateX(-50%) translateY(0); }
+                100% { transform: translateX(-50%) translateY(calc(100% - 12px)); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-200 flex flex-col items-center justify-center min-h-screen p-4">
+
+<div class="container">
+    <div class="text-center mb-10">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">ngrok 學習平台</h1>
+        <a href="../index.html"
+        class="btn btn-primary btn-lg rounded-pill shadow back-fab d-none d-md-inline-flex"
+        aria-label="返回首頁（快捷鍵 H）"
+        aria-keyshortcuts="H">
+        <i class="bi bi-house-door me-2"></i> 回首頁
+        <p class="text-gray-500 text-lg">透過視覺化方式，理解 ngrok 如何讓本地伺服器公開於網路</p>
+    </div>
+
+    <div class="bg-indigo-50 p-6 rounded-xl shadow-inner mb-8">
+        <h2 class="text-2xl font-bold text-indigo-700 mb-4 flex items-center">
+            ngrok 運作核心：安全隧道
+        </h2>
+        <ul class="list-disc list-inside space-y-2 text-gray-600 mt-4">
+            <li><strong>繞過防火牆：</strong>ngrok 客戶端主動向 ngrok 雲端伺服器建立外向連線，因此防火牆通常不會阻擋它。</li>
+            <li><strong>雙向通道：</strong>一旦連線建立，就形成一個穩定的「隧道」。ngrok 雲端會將所有外部請求，透過這個隧道轉發給您的客戶端。</li>
+            <li><strong>請求傳遞：</strong>您的 ngrok 客戶端收到請求後，再轉發給您的本地伺服器，回應則循原路徑返回。</li>
+        </ul>
+    </div>
+    
+    <div class="flow-container relative">
+        <!-- Components -->
+        <div class="flow-item">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 4c0-1.1.9-2 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zm2 0v16h12V4H6zm1 1h10v10H7V5zm11.5 13a.5.5 0 1 0 0 1H5.5a.5.5 0 1 0 0-1h13z"/>
+            </svg>
+            <div class="flow-box mb-2">
+                <p class="font-semibold text-blue-600 text-lg">瀏覽器</p>
+            </div>
+        </div>
+
+        <div class="flow-item">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.75-2.12-2.56-5-6.87-5-9.75z"/>
+            </svg>
+            <div class="flow-box mb-2">
+                <p class="font-semibold text-blue-600 text-lg">ngrok URL</p>
+                <div id="public-url" class="text-sm text-gray-600 mt-1 break-all"></div>
+            </div>
+        </div>
+
+        <div class="flow-item">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.35 12.04A7.47 7.47 0 0 0 12 5.5c-4.14 0-7.5 3.36-7.5 7.5S7.86 20 12 20s7.5-3.36 7.5-7.5c0-.98-.2-1.93-.5-2.81L22 7.74l-2-2-1.5-1.5-3.5 3.5-2.5-2.5L12 1.5 8.5 5 6 2.5l-2 2-2.65 2.65L2 9.5l3.5 3.5 2.5 2.5L12 20l5-5-2.5-2.5-1.5-1.5z"/>
+            </svg>
+            <div class="flow-box mb-2">
+                <p class="font-semibold text-blue-600 text-lg">ngrok 雲端</p>
+                <div class="text-xs text-gray-500 mt-1">（安全隧道入口）</div>
+            </div>
+        </div>
+
+        <div class="flow-item">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4z"/>
+            </svg>
+            <div class="flow-box mb-2">
+                <p class="font-semibold text-blue-600 text-lg">ngrok 客戶端</p>
+                <div class="text-xs text-gray-500 mt-1">（您的電腦）</div>
+            </div>
+        </div>
+
+        <div class="flow-item">
+            <svg id="server-icon" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 4v10H2V4c0-1.1.9-2 2-2h16c1.1 0 2 .9 2 2v10H4zm14 2c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-3 0c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm3 8H6v6h12v-6zM6 16c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm3 0c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/>
+            </svg>
+            <div class="flow-box mb-2">
+                <p class="font-semibold text-blue-600 text-lg">本地伺服器</p>
+                <p class="text-sm text-gray-600" id="local-server-port"></p>
+            </div>
+        </div>
+
+        <!-- Arrows with Labels and Data Packets -->
+        <div id="arrow1" class="flow-arrow h-1 w-[15%] left-[2%] top-1/2 -translate-y-1/2"><span class="label"></span><div class="data-packet"></div></div>
+        <div id="arrow2" class="flow-arrow h-1 w-[15%] left-[21%] top-1/2 -translate-y-1/2"><span class="label"></span><div class="data-packet"></div></div>
+        <div id="arrow3" class="flow-arrow h-1 w-[15%] left-[40%] top-1/2 -translate-y-1/2"><span class="label"></span><div class="data-packet"></div></div>
+        <div id="arrow4" class="flow-arrow h-1 w-[15%] left-[59%] top-1/2 -translate-y-1/2"><span class="label"></span><div class="data-packet"></div></div>
+    </div>
+
+    <div class="flex flex-col md:flex-row justify-between items-center bg-gray-100 p-6 rounded-xl shadow-inner mb-8">
+        <div class="flex items-center">
+            <label for="port-input" class="text-gray-600 font-medium mr-2 whitespace-nowrap">本地伺服器端口:</label>
+            <input type="number" id="port-input" value="8080" class="w-32 p-2 border rounded-md text-center focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+        <div class="flex items-center space-x-4 mt-4 md:mt-0">
+            <button id="start-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105 disabled:bg-gray-400 disabled:shadow-none">
+                啟動 ngrok 模擬
+            </button>
+        </div>
+    </div>
+
+    <div class="terminal-output mb-8">
+        <h3 class="terminal-header text-lg font-mono mb-2">ngrok 終端機模擬</h3>
+        <pre id="log-output" class="text-sm font-mono overflow-auto whitespace-pre-wrap"></pre>
+    </div>
+
+    <!-- New section for Flashcards -->
+    <div class="mt-12">
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-8">
+            核心概念字卡教學
+        </h2>
+        <div class="flashcard-grid">
+            <!-- Flashcard 1: TCP -->
+            <div class="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <p>字卡 1：TCP 連線</p>
+                    </div>
+                    <div class="flashcard-back">
+                        <p><strong>ngrok 終端機模擬流程:</strong> 「正在建立與 ngrok 雲端的 TCP 連線...」</p>
+                        <p><strong>延伸教學:</strong> <strong>TCP</strong> (傳輸控制協定) 是一種網路通訊協定，像是一場通話前需要先撥通的電話。它確保資料在發送和接收時的可靠性、依序傳輸，並處理錯誤。這也是為什麼 ngrok 客戶端和雲端之間能夠建立穩定、可信賴的「隧道」。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flashcard 2: TLS/SSL -->
+            <div class="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <p>字卡 2：TLS 握手</p>
+                    </div>
+                    <div class="flashcard-back">
+                        <p><strong>ngrok 終端機模擬流程:</strong> 「進行 TLS/SSL 握手...」</p>
+                        <p><strong>延伸教學:</strong> <strong>TLS/SSL</strong> (傳輸層安全協議) 就像是兩個電腦之間的「秘密握手」。在交換數據前，它們會透過這個過程來驗證彼此身份，並建立一個加密通道，確保資料在傳輸過程中不會被第三方竊取或篡改。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flashcard 3: Authtoken -->
+            <div class="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <p>字卡 3：Authtoken 驗證</p>
+                    </div>
+                    <div class="flashcard-back">
+                        <p><strong>ngrok 終端機模擬流程:</strong> 「客戶端發送 Authtoken 進行身份驗證...」</p>
+                        <p><strong>延伸教學:</strong> <strong>Authtoken</strong> 就像是 ngrok 雲端發給您的「鑰匙」。當您使用 ngrok 服務時，客戶端會出示這把鑰匙，證明您有權限使用這個帳號，這是一種基於令牌的身份驗證機制。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flashcard 4: DNS -->
+            <div class="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <p>字卡 4：DNS 查詢</p>
+                    </div>
+                    <div class="flashcard-back">
+                        <p><strong>ngrok 終端機模擬流程:</strong> 「瀏覽器發起 DNS 查詢 ngrok URL...」</p>
+                        <p><strong>延伸教學:</strong> <strong>DNS</strong> (域名系統) 的功能，類似於網路世界的「電話簿」。當您輸入一個網址 (例如 `example.ngrok.io`)，DNS 會將這個人類可讀的域名轉換成電腦能理解的IP位址，讓瀏覽器知道要去哪裡找到ngrok雲端伺服器。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flashcard 5: HTTP -->
+            <div class="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <p>字卡 5：HTTP 請求與回應</p>
+                    </div>
+                    <div class="flashcard-back">
+                        <p><strong>ngrok 終端機模擬流程:</strong> 「瀏覽器發送 HTTP 請求...」、「本地伺服器處理請求並生成 HTTP 回應...」</p>
+                        <p><strong>延伸教學:</strong> <strong>HTTP</strong> (超文本傳輸協定) 是網頁瀏覽的基礎。它定義了客戶端 (瀏覽器) 如何向伺服器發送**請求**，以及伺服器如何返回**回應**。每次您點擊網頁連結或提交表單，都會發生這個「請求-回應」的循環。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const startBtn = document.getElementById('start-btn');
+    const portInput = document.getElementById('port-input');
+    const publicUrlDisplay = document.getElementById('public-url');
+    const localServerPort = document.getElementById('local-server-port');
+    const logOutput = document.getElementById('log-output');
+    const flowItems = document.querySelectorAll('.flow-box');
+    const arrows = document.querySelectorAll('.flow-arrow');
+    const serverIcon = document.getElementById('server-icon');
+
+    let isTunnelActive = false;
+    let logTimeout = null;
+    let animationTimeout = null;
+
+    const logMessages = [
+        "正在啟動 ngrok 客戶端...", "正在建立與 ngrok 雲端的 TCP 連線...",
+        "TCP 連線成功建立。", "進行 TLS/SSL 握手...", "TLS 握手完成，安全連線已建立。",
+        "客戶端發送 Authtoken 進行身份驗證...", "Authtoken 驗證成功。",
+        "正在向雲端請求一個隨機公開 URL...", "雲端分配 ngrok.io 子域名...",
+        "通道已開啟，流量將導向 http://localhost:PORT...", "\n ngrok 公用 URL 已就緒！\n",
+        "\n[外部請求流程開始]\n",
+        "瀏覽器發起 DNS 查詢 ngrok URL...", "DNS 伺服器回傳 ngrok 雲端 IP...",
+        "瀏覽器發送 HTTP 請求...",
+        "ngrok 雲端服務收到請求，並通過隧道轉發...",
+        "請求已通過安全隧道，到達您的 ngrok 客戶端...",
+        "ngrok 客戶端將請求導向 http://localhost:PORT...", "本地伺服器處理請求並生成 HTTP 回應...",
+        "回應已發送至 ngrok 客戶端...", "ngrok 客戶端將回應通過隧道傳輸...",
+        "ngrok 雲端服務將回應發送至瀏覽器...", "成功將回應傳送給使用者，頁面渲染完成。",
+        "\n[請求流程結束]\n"
+    ];
+
+    const animationSteps = [
+        // Tunnel establishment
+        { item: 4, arrow: null, label: null, duration: 500 },
+        { item: 3, arrow: null, label: null, duration: 500 },
+        { item: 2, arrow: 3, label: '隧道建立連線', duration: 1500 },
+        { item: 1, arrow: 2, label: '分配 URL', duration: 1500 },
+        { item: 0, arrow: 1, label: '發起 DNS 查詢', duration: 1500 },
+        { item: 1, arrow: 1, label: '發送請求', duration: 1500 },
+        { item: 2, arrow: 2, label: '隧道轉發請求', duration: 1500 },
+        { item: 3, arrow: 3, label: '轉發至 Port PORT', duration: 1500 },
+        { item: 4, arrow: 3, label: '本地伺服器回應', reverse: true, duration: 1500 },
+        { item: 3, arrow: 2, label: '隧道轉發回應', reverse: true, duration: 1500 },
+        { item: 2, arrow: 1, label: '回應', reverse: true, duration: 1500 },
+        { item: 1, arrow: 0, label: '回應', reverse: true, duration: 1500 },
+        { item: 0, arrow: 0, label: null, duration: 500 }
+    ];
+
+    function runAnimationSequence() {
+        let stepIndex = 0;
+        const totalSteps = animationSteps.length;
+
+        function runStep() {
+            if (stepIndex >= totalSteps) {
+                reset();
+                return;
+            }
+
+            const step = animationSteps[stepIndex];
+            
+            flowItems.forEach(item => item.classList.remove('active'));
+            arrows.forEach(arrow => {
+                arrow.classList.remove('active', 'inbound', 'outbound');
+                arrow.querySelector('.label').textContent = '';
+            });
+
+            if (step.item !== null) {
+                flowItems[step.item].classList.add('active');
+            }
+            if (step.arrow !== null) {
+                const arrow = arrows[step.arrow];
+                arrow.classList.add('active', step.reverse ? 'outbound' : 'inbound');
+                if (step.label) {
+                    arrow.querySelector('.label').textContent = step.label.replace('PORT', portInput.value);
+                }
+            }
+            
+            stepIndex++;
+            animationTimeout = setTimeout(runStep, step.duration);
+        }
+
+        runStep();
+    }
+
+    function runLogSequence() {
+        let logIndex = 0;
+        const totalLogs = logMessages.length;
+
+        function runLog() {
+            if (logIndex >= totalLogs) {
+                return;
+            }
+
+            const message = logMessages[logIndex].replace('PORT', portInput.value);
+            logOutput.textContent += `> ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+            
+            logIndex++;
+            logTimeout = setTimeout(runLog, 800);
+        }
+        
+        runLog();
+    }
+
+    function reset() {
+        isTunnelActive = false;
+        startBtn.disabled = false;
+        portInput.disabled = false;
+        
+        clearTimeout(logTimeout);
+        clearTimeout(animationTimeout);
+        
+        flowItems.forEach(item => item.classList.remove('active'));
+        arrows.forEach(arrow => {
+            arrow.classList.remove('active', 'inbound', 'outbound');
+            arrow.querySelector('.label').textContent = '';
+        });
+        
+        logOutput.textContent += '\n> 模擬已完成。';
+        logOutput.scrollTop = logOutput.scrollHeight;
+        publicUrlDisplay.textContent = '';
+        localServerPort.textContent = '';
+    }
+
+    startBtn.addEventListener('click', () => {
+        if (isTunnelActive) return;
+
+        const port = portInput.value;
+        if (!port || port <= 0) {
+            logOutput.textContent = '> 錯誤: 請輸入有效的端口號碼。\n';
+            return;
+        }
+
+        isTunnelActive = true;
+        startBtn.disabled = true;
+        portInput.disabled = true;
+        logOutput.textContent = '';
+        
+        publicUrlDisplay.textContent = `https://${Math.random().toString(36).substring(2, 8)}.ngrok.io`;
+        localServerPort.textContent = `http://localhost:${port}`;
+        
+        runLogSequence();
+        runAnimationSequence();
+    });
+
+    // Flashcard functionality
+    document.querySelectorAll('.flashcard').forEach(card => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('flipped');
+        });
+    });
+</script>
+
+</body>
+</html>
