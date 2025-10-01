@@ -640,6 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="container">
     <div class="copyright text-center">
       &copy; 2025 Ken Liao Portfolio. All Rights Reserved.
+      <div>訪問次數：<span id="visit-count">--</span></div>
     </div>
   </div>
 </footer><!-- End  Footer -->
@@ -683,6 +684,26 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeCertificateModal() {
     document.getElementById('certificateModal').style.display = 'none';
   }
+</script>
+
+<script>
+  // 全站合計
+  const key = "site-total";
+
+  // 你的 Lambda Function URL（已可用）
+  const API = "https://chfh3c23fqc323zovyiuw2un6m0oiryl.lambda-url.ap-northeast-1.on.aws/";
+
+  // 同一瀏覽器的同一分頁只 +1（避免自己刷新灌水）
+  const guard = `hit_${key}`;
+  const doGet = () => fetch(`${API}?mode=get&key=${encodeURIComponent(key)}`, { cache: "no-store" }).then(r => r.json());
+  const doHit = () => fetch(`${API}?mode=hit&key=${encodeURIComponent(key)}`, { cache: "no-store" }).then(r => r.json());
+
+  (sessionStorage.getItem(guard) ? doGet() : doHit())
+    .then(d => {
+      sessionStorage.setItem(guard, "1");
+      document.getElementById("visit-count").textContent = Number(d.value || 0).toLocaleString();
+    })
+    .catch(() => { document.getElementById("visit-count").textContent = "N/A"; });
 </script>
 
 <!-- Add Modal HTML -->
