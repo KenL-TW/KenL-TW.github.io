@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 
 <head>
   <!-- Google Analytics -->
@@ -18,7 +18,7 @@
     <title>Ken Liao - 系統分析師與專案經理 | Portfolio</title>
     <meta name="description" content="Ken Liao - 擁有AWS解決方案架構師、PMP專案管理等認證的系統分析師，專注於數位轉型與雲端架構設計">
     <meta name="keywords" content="廖子寬, 系統分析師, AWS架構師, PMP, 專案管理, Portfolio">
-    
+    <meta property="og:url" content="https://kenl-tw.github.io/">
     <!-- Add Open Graph tags -->
     <meta property="og:title" content="Ken Liao - 數位轉型系統分析師 | Portfolio">
     <meta property="og:description" content="專注於數位轉型與流程設計的系統分析師，擁有AWS與PMP認證">
@@ -37,11 +37,12 @@
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
   <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+  <!-- <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet"> -->
 
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
-
+  <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
   <!-- =======================================================
   * Template Name: iPortfolio
   * Template URL: https://bootstrapmade.com/iportfolio-bootstrap-portfolio-websites-template/
@@ -70,49 +71,60 @@
 
 <body>
 
-  <!-- ======= Mobile nav toggle button ======= -->
-  <i class="bi bi-list mobile-nav-toggle d-xl-none"></i>
+  <!-- ======= Site Layout Wrapper ======= -->
+  <div id="app" class="site-layout">
 
-  <!-- ======= Header ======= -->
-  <header id="header">
-  <div class="d-flex flex-column">
+    <!-- ======= Mobile nav toggle button ======= -->
+    <i class="bi bi-list mobile-nav-toggle d-xl-none"></i>
 
-    <div class="profile">
-      <img src="assets/img/profile-img.png" alt="" class="img-fluid rounded-circle">
-      <h1 class="text-light"><a href="index.html">Ken Liao</a></h1>
-      <div class="social-links mt-3 text-center">
-        <a href="https://medium.com/@kenAaa" class="medium"><i class="bx bxl-medium"></i></a>
+    <!-- ======= Header ======= -->
+    <header id="header">
+      <div class="d-flex flex-column">
+
+        <div class="profile">
+          <img src="assets/img/profile-img.png" alt="" class="img-fluid rounded-circle">
+          <h1 class="text-light"><a href="index.html">Ken Liao</a></h1>
+        </div>
+
+        <nav id="navbar" class="nav-menu navbar">
+          <ul>
+            <li><a href="#hero" class="nav-link scrollto active" data-nav-section="hero"><i class="bx bx-home"></i> <span>Home</span></a></li>
+            <li><a href="#about" class="nav-link scrollto" data-nav-section="about"><i class="bx bx-user"></i> <span>About</span></a></li>
+            <li><a href="#skills" class="nav-link scrollto" data-nav-section="skills"><i class="bx bx-code-block"></i> <span>Skills</span></a></li>
+            <li><a href="#portfolio" class="nav-link scrollto" data-nav-section="portfolio"><i class="bx bx-book-content"></i> <span>Portfolio</span></a></li>
+            <li><a href="#resume" class="nav-link scrollto" data-nav-section="resume"><i class="bx bx-file-blank"></i> <span>Resume</span></a></li>
+            <li><a href="#certifications" class="nav-link scrollto" data-nav-section="certifications"><i class="bx bx-award"></i> <span>Certifications</span></a></li>
+            <!--<li><a href="blog\blog.html" class="nav-link scrollto" data-nav-section="blog"><i class="bx bx-briefcase"></i> <span>blog</span></a></li>-->
+            <li><a href="#contact" class="nav-link scrollto" data-nav-section="contact"><i class="bx bx-envelope"></i> <span>Contact</span></a></li>
+
+          </ul>
+        </nav>
       </div>
-    </div>
+    </header>
 
-    <nav id="navbar" class="nav-menu navbar">
-      <ul>
-        <li><a href="#hero" class="nav-link scrollto active"><i class="bx bx-home"></i> <span>Home</span></a></li>
-        <li><a href="#about" class="nav-link scrollto"><i class="bx bx-user"></i> <span>About</span></a></li>
-        <li><a href="#skills" class="nav-link scrollto"><i class="bx bx-code-block"></i> <span>Skills</span></a></li>
-        <li><a href="#portfolio" class="nav-link scrollto"><i class="bx bx-book-content"></i> <span>Portfolio</span></a></li>
-        <li><a href="#resume" class="nav-link scrollto"><i class="bx bx-file-blank"></i> <span>Resume</span></a></li>
-        <li><a href="#certifications" class="nav-link scrollto"><i class="bx bx-award"></i> <span>Certifications</span></a></li>
-        <li><a href="#tutorials" class="nav-link scrollto"><i class="bx bx-briefcase"></i> <span>tutorials</span></a></li>
-        <li><a href="#contact" class="nav-link scrollto"><i class="bx bx-envelope"></i> <span>Contact</span></a></li>
-        
-      </ul>
-    </nav>
-  </div>
-</header>
+    <!-- ======= Hero Section ======= -->
+    <section id="hero" class="d-flex flex-column justify-content-center align-items-center" data-section="hero">
+      <div class="hero-container" data-aos="fade-in">
+        <h1>Ken Liao</h1>
+        <p>I'm <span class="typed" data-typed-items="System Analyst, Project Manager, Table Tennis Coach"></span></p>
+      </div>
+    </section><!-- End Hero -->
 
-  <!-- ======= Hero Section ======= -->
-  <section id="hero" class="d-flex flex-column justify-content-center align-items-center">
-    <div class="hero-container" data-aos="fade-in">
-      <h1>Ken Liao</h1>
-      <p>I'm <span class="typed" data-typed-items="System Analyst, Project Manager, Table Tennis Coach"></span></p>
-    </div>
-  </section><!-- End Hero -->
+    <main id="main">
 
-  <main id="main">
+      <!--
+        Page Sections Overview (data-section attribute mirrors each anchor target):
+        - About
+        - Skills
+        - Portfolio
+        - Resume
+        - Certifications
+        - Tutorials
+        - Contact
+      -->
 
-    <!-- ======= About Section ======= -->
-    <section id="about" class="about">
+      <!-- ======= About Section ======= -->
+      <section id="about" class="about" data-section="about">
       <div class="container">
 
         <div class="section-title">
@@ -153,10 +165,10 @@
         </div>
 
       </div>
-    </section><!-- End About Section -->
+      </section><!-- End About Section -->
 
     <!-- ======= Skills Section ======= -->
-    <section id="skills" class="skills section-bg">
+      <section id="skills" class="skills section-bg" data-section="skills">
       <div class="container">
 
         <div class="section-title">
@@ -221,10 +233,10 @@
         </div>
 
       </div>
-    </section><!-- End Skills Section -->
+      </section><!-- End Skills Section -->
 
     <!-- ======= Portfolio Section ======= -->
-    <section id="portfolio" class="portfolio section-bg">
+      <section id="portfolio" class="portfolio section-bg" data-section="portfolio">
       <div class="container">
         <div class="section-title">
           <h2>Portfolio</h2>
@@ -261,27 +273,39 @@
         </div>
       </div>
         <div class="row portfolio-container">
-          <!-- 報價流程e化 -->
-          <div class="portfolio-item" data-category="app">
-            <div class="portfolio-wrap">
-              <img src="assets/img/portfolio/e-Quotation.jpg" alt="報價e化專案">
-              <div class="portfolio-info">
-                <h4>報價流程e化</h4>
-                <p>作為專案DRI，負責整合機會資訊、KYC驗證、報價管理、料號管理、簽核管理、購物車模組，解決報價資訊孤島及優化企業流程。</p>
-                <div class="tech-stack">
-                  <span>IT Project Management</span><br>
-                  <span>System Analysis</span><br>
-                  <span>CRM (sfdc + customalized System)</span><br>
-                  <span>API Integration</span><br>
-                  <span>Business Needs and Complany Policy Integration</span><br>
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- CTSS 在台導入專案 — 技術顧問 / 在地化支持 -->
+  <div class="portfolio-item" data-category="consulting">
+    <div class="portfolio-wrap">
+        <div class="portfolio-img">
+          <img src="assets/img/portfolio/zhongxin-log.png"
+               alt="CTSS 在台導入與技術顧問專案">
         </div>
-    </section><!-- End Portfolio Section -->
+        <div class="portfolio-info">
+          <h4 class="portfolio-title">CTSS 平台：在地化導入 + 技術顧問</h4>
+          <p class="portfolio-desc">
+            作為 CTSS 在台的技術顧問與系統分析人員，我協助日方團隊落地台灣市場。負責功能設計建議、跨文化溝通橋樑、自動化流程規劃，以及招募數據分析，以確保平台在台灣環境下能順利運行並具備可維運性。
+          </p>
+          <ul class="tech-stack-list">
+            <li>
+              <a href="https://ctssjpit.com"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                 在台招募網站建置（完整建置 + 部署維運）
+              </a>
+            </li>
+            <li>系統分析與功能設計</li>
+            <li>人力策略與市場分析建議</li>
+            <li>自動化流程設計</li>
+            <li>協助分析整體工作流程並給予實務建議，追蹤優化後成效</li>
+          </ul>
+        </div>
+    </div>
+  </div>
+</div>
+
+      </section><!-- End Portfolio Section -->
     <!-- ======= Resume Section ======= -->
-    <section id="resume" class="resume">
+      <section id="resume" class="resume" data-section="resume">
       <div class="container">
         <div class="section-title">
           <h2>Resume</h2>
@@ -331,11 +355,10 @@
               <h5>2023/12 ~ Now</h5>
               <p><em>數位轉型 - 系統分析師</em></p>
               <ul>
-                <li>負責評估和分析現行運作系統，深入了解專案需求、資源需求以及專案時程。基於評估結果，制定專案架
-                    構、工作聲明書（SOW），並確定系統開發的功能清單和專案範圍。</li>
-                <li>分析使用者的需求及系統結構，撰寫對應開發規格書及系統流程，以發展功能實作範疇。</li>
-                <li>擔任海外SA團隊對口窗口，協助數位轉型推廣及HQ系統導入至國外。</li>
-                <li>應用資料庫及資料表欄位，使其結合入功能規格及維運使用。</li>
+                <li>負責評估和分析現行運作系統，深入了解專案需求、資源需求以及專案時程。基於評估結果，制定工作聲明書（SOW），並拆解系統開發的功能清單和專案範圍。</li>
+                <li>分析使用者的需求及系統結構，撰寫對應開發技術規格書及系統流程，以明定功能實作範疇。</li>
+                <li>擔任SA團隊海外導入窗口，協助數位轉型推廣及HQ系統導入至國外。</li>
+                <li>設計關聯式資料庫欄位，使其結合入功能規格及維運使用。</li>
                 <LI>召開跨部門會議並整合需求，以專案形式規劃 AS IS 流程至 TO BE 流程並交付專案成果。</LI>
               </ul>
             </div>
@@ -354,10 +377,10 @@
         </div>
 
       </div>
-    </section><!-- End Resume Section -->
+      </section><!-- End Resume Section -->
 
     <!-- ======= Certifications Section ======= -->
-<section id="certifications" class="certifications section-bg">
+      <section id="certifications" class="certifications section-bg" data-section="certifications">
   <div class="container">
     <div class="section-title">
       <h2>Certifications</h2>
@@ -468,82 +491,12 @@
       </div>
     </div>
   </div>
-</section><!-- End Certifications Section -->
-
-<!-- 個人軟體資訊教學分享 Section (一致化版) -->
-<section id="tutorials" class="tutorials section-bg">
-  <div class="container">
-    <div class="section-title" data-aos="fade-up">
-      <h2>個人軟體資訊教學分享</h2>
-      <p>精選 IT 技術與軟體教學，依主題快速篩選。</p>
-    </div>
-    <div class="tutorial-filter btn-group mb-4" role="group" aria-label="Tutorial Filter">
-      <button type="button" class="btn btn-outline-primary active" data-tag="all">全部</button>
-      <button type="button" class="btn btn-outline-primary" data-tag="資料庫應用">資料庫應用</button>
-      <button type="button" class="btn btn-outline-primary" data-tag="aws">aws</button>
-      <button type="button" class="btn btn-outline-primary" data-tag="版本控制">版本控制</button>
-      <button type="button" class="btn btn-outline-primary" data-tag="api">api</button>
-      <button type="button" class="btn btn-outline-primary" data-tag="ai">ai應用</button>
-    </div>
-    <div class="row" id="tutorial-list">
-      <!-- JS 動態插入卡片 -->
-    </div>
-  </div>
-</section>
-
-<script>
-const tutorialsData = [
-  { title:"網路攻擊視覺化分享", desc:"動畫流程解說 SQL 注入與 XSS 攻擊原理。", link:"it/networkAttack.html", tags:["資料庫應用"] },
-  { title:"AWS架構視覺化分享", desc:"快速學會 AWS Serverless架構視覺化分享。", link:"it/awsServerless.html", tags:["aws"] },
-  { title:"AWS架構視覺化分享", desc:"快速學會 AWS 三層式架構視覺化分享。", link:"it/awsThreeTier.html", tags:["aws"] },
-  { title:"api與osi實際應用", desc:"掌握 pi與osi實際應用。", link:"it/api.html", tags:["api"] },
-  { title:"ai", desc:"ai預測模型。", link:"it/aiModal.html", tags:["ai"] },
-  { title:"JS API應用", desc:"JS API應用與Web APP製作。", link:"quiz/index.html", tags:["api"] },
-  { title:"Ngrok應用", desc:"Ngrok應用分享與常見知識補充。", link:"it/ngrok.html", tags:["all"] }
-];
-
-let currentTag = "all";
-
-function renderTutorials() {
-  const container = document.getElementById('tutorial-list');
-  if (!container) return;
-  let filtered = tutorialsData;
-  if (currentTag !== "all") {
-    filtered = tutorialsData.filter(t => t.tags.includes(currentTag));
-  }
-  container.innerHTML = filtered.map(tutorial => `
-    <div class="col-lg-4 col-md-6 mb-4 d-flex">
-      <div class="card flex-fill shadow-sm border-0">
-        <div class="card-body d-flex flex-column">
-          <h5 class="card-title mb-2">${tutorial.title}</h5>
-          <p class="card-text mb-3">${tutorial.desc}</p>
-          <div class="mb-3">
-            ${tutorial.tags.map(tag => `<span class="badge bg-secondary me-1">${tag}</span>`).join('')}
-          </div>
-          <a href="${tutorial.link}" class="btn btn-primary mt-auto" target="_blank">查看教學</a>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  renderTutorials();
-  document.querySelectorAll('.tutorial-filter .btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.tutorial-filter .btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      currentTag = this.getAttribute('data-tag');
-      renderTutorials();
-    });
-  });
-});
-</script>
+      </section><!-- End Certifications Section -->
 
 
-    <!-- ======= Contact Section ======= -->
-    <section id="contact" class="contact">
-      <div class="container">
+      <!-- ======= Contact Section ======= -->
+      <section id="contact" class="contact" data-section="contact">
+        <div class="container">
 
         <div class="section-title">
           <h2>Contact</h2>
@@ -599,61 +552,74 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-      </div>
-    </section><!-- End Contact Section -->
+        </div>
+      </section><!-- End Contact Section -->
 
-    <!-- Portfolio Modal -->
-<div id="portfolio-modal" class="portfolio-modal">
-  <div class="modal-content">
-    <button class="close-modal">&times;</button>
-    <h2 id="modal-title"></h2>
-    
-    <div class="portfolio-gallery">
-      <div class="swiper-container">
-        <div class="swiper-wrapper" id="modal-gallery"></div>
-        <div class="swiper-pagination"></div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-      </div>
-    </div>
+      <!-- ======= Global Components ======= -->
+      <!-- Portfolio Modal -->
+      <div id="portfolio-modal" class="portfolio-modal" data-component="portfolio-modal">
+        <div class="modal-content">
+          <button class="close-modal">&times;</button>
+          <h2 id="modal-title"></h2>
 
-    <div class="project-details">
-      <p id="modal-description"></p>
-      <div id="modal-tech-tags" class="tech-tags"></div>
-      
-      <div class="project-links">
-        <a id="modal-demo-link" href="#" target="_blank" class="btn btn-primary">
-          <i class="bi bi-eye"></i> 查看演示
-        </a>
-        <a id="modal-github-link" href="#" target="_blank" class="btn btn-secondary">
-          <i class="bi bi-github"></i> 原始碼
-        </a>
+          <div class="portfolio-gallery">
+          <div class="swiper" id="portfolio-swiper">
+            <div class="swiper-wrapper" id="modal-gallery"></div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+          </div>
+        </div>
+
+          <div class="project-details">
+            <p id="modal-description"></p>
+            <div id="modal-tech-tags" class="tech-tags"></div>
+
+            <div class="project-links">
+              <a id="modal-demo-link" href="#" target="_blank" class="btn btn-primary">
+                <i class="bi bi-eye"></i> 查看演示
+              </a>
+              <a id="modal-github-link" href="#" target="_blank" class="btn btn-secondary">
+                <i class="bi bi-github"></i> 原始碼
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
+
+      <!-- Certificate Modal -->
+      <div id="certificateModal" class="modal" style="display: none;" data-component="certificate-modal">
+        <div class="modal-content">
+          <span class="close-btn" onclick="closeCertificateModal()">&times;</span>
+          <img src="assets/img/certifications/table-tennis.jpg" alt="桌球教練證書" class="img-fluid">
+        </div>
+      </div>
 
     </main><!-- End #main -->
 
   <!-- ======= Footer ======= -->
   <footer id="footer">
-  <div class="container">
-    <div class="copyright text-center">
-      &copy; 2025 Ken Liao Portfolio. All Rights Reserved.
-      <div>訪問次數：<span id="visit-count">--</span></div>
+    <div class="container">
+      <div class="copyright text-center">
+        &copy; 2025 Ken Liao Portfolio. All Rights Reserved.
+        <div>訪問次數：<span id="visit-count">--</span></div>
+      </div>
     </div>
-  </div>
-</footer><!-- End  Footer -->
+  </footer><!-- End  Footer -->
 
+  <!-- ======= Back To Top Trigger ======= -->
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
+  </div><!-- End Site Layout Wrapper -->
+
+  <!-- ======= Global Scripts ======= -->
   <!-- Vendor JS Files -->
   <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
   <script src="assets/vendor/aos/aos.js"></script>
   <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
   <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
-  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <!-- <script src="assets/vendor/swiper/swiper-bundle.min.js"></script> -->
   <script src="assets/vendor/typed.js/typed.umd.js"></script>
   <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
   <script src="assets/vendor/php-email-form/validate.js"></script>
@@ -672,9 +638,115 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   </script>
 
+  <!-- Swiper v11（避免與舊版重複載入） -->
+<link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
+<script src="https://unpkg.com/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('portfolio-swiper');
+  if (!el) return;
+  new Swiper('#portfolio-swiper', {
+    loop: true,
+    spaceBetween: 16,
+    pagination: { el: '#portfolio-swiper .swiper-pagination', clickable: true },
+    navigation: { nextEl: '#portfolio-swiper .swiper-button-next', prevEl: '#portfolio-swiper .swiper-button-prev' }
+  });
+});
+</script>
+
+<script>
+  // 雙模式載入：file:// 用內嵌資料，上線時抓 /blog/posts.json
+  const USE_FETCH = location.protocol !== 'file:';
+  const POSTS_INLINE = [
+    {slug:"hello-world",title:"從零打造個人部落格（純前端架構）",date:"2025-10-08",tags:["blog","web"],excerpt:"純 HTML + JS + GitHub Pages，輕巧可維護。",cover:"assets/img/blog/hello-world.jpg"},
+    {slug:"system-analysis",title:"系統分析師的思維與方法論",date:"2025-09-25",tags:["analysis","career"],excerpt:"需求、架構與交付之間的平衡術。",cover:"assets/img/blog/system-analysis.jpg"},
+    {slug:"network-attack",title:"網路攻擊視覺化分享",date:"2025-08-31",tags:["tutorials","security"],excerpt:"用動畫拆解 SQLi 與 XSS。",cover:"assets/img/tutorials/network-attack.jpg"},
+    {slug:"aws-serverless",title:"AWS 架構視覺化：Serverless",date:"2025-08-25",tags:["aws","architecture"],excerpt:"事件驅動與雲端原生的設計心法。",cover:"assets/img/tutorials/aws-serverless.jpg"},
+    {slug:"api-osi",title:"API 設計與 OSI 的對位",date:"2025-08-15",tags:["api","networking"],excerpt:"從用例到契約，從層到責任。",cover:"assets/img/tutorials/api-osi.jpg"}
+  ];
+
+  async function loadPosts() {
+    if (!USE_FETCH) return POSTS_INLINE;
+    try {
+      const r = await fetch('/blog/posts.json', { cache:'no-store' });
+      return await r.json();
+    } catch (e) {
+      return POSTS_INLINE; // 線上抓失敗時退回
+    }
+  }
+
+  (async function initHomeLatest(){
+    const mount = document.getElementById('home-latest-wrapper');
+    if (!mount) return;
+
+    let posts = await loadPosts();
+    // 以日期排序（最新在前）
+    posts = posts
+      .filter(p => p?.date && p?.slug)
+      .sort((a,b)=> String(b.date).localeCompare(String(a.date)))
+      .slice(0, 6); // 顯示前 6 篇
+
+    // 產生卡片
+    mount.innerHTML = posts.map(p => `
+      <div class="swiper-slide" aria-roledescription="slide">
+        <article class="post-card" itemscope itemtype="https://schema.org/BlogPosting">
+          <img class="post-cover" src="${p.cover}" alt="${escapeHtml(p.title)} 封面" loading="lazy" width="640" height="360" itemprop="image">
+          <div class="post-body">
+            <h3 class="post-title" itemprop="headline">${p.title}</h3>
+            <div class="post-meta"><time itemprop="datePublished" datetime="${p.date}">${p.date}</time></div>
+            <p class="post-excerpt" itemprop="description">${p.excerpt||''}</p>
+            <div>${(p.tags||[]).slice(0,3).map(t=>`<span class="badge">#${t}</span>`).join('')}</div>
+            <a class="btn" href="blog/post.html?slug=${p.slug}" itemprop="url">閱讀更多</a>
+          </div>
+        </article>
+      </div>
+    `).join('');
+
+    // 無障礙：遵守使用者「減少動態」偏好
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const autoplay = prefersReduced ? false : { delay: 3200, disableOnInteraction: false };
+
+    // 初始化 Swiper v11
+    new Swiper('#home-latest-swiper', {
+      effect: 'coverflow',
+      grabCursor: true,
+      centeredSlides: true,
+      loop: posts.length > 1,
+      slidesPerView: 'auto',
+      coverflowEffect: { rotate: 16, stretch: 0, depth: 140, modifier: 1, slideShadows: true },
+      autoplay,
+      pagination: { el: '#home-latest-swiper .swiper-pagination', clickable: true },
+      navigation: { nextEl: '#home-latest-swiper .swiper-button-next', prevEl: '#home-latest-swiper .swiper-button-prev' },
+    });
+
+    // 注入結構化資料（ItemList）
+    injectItemListLD(posts);
+
+    function injectItemListLD(list){
+      const ld = {
+        "@context":"https://schema.org",
+        "@type":"ItemList",
+        "itemListElement": list.map((p,i)=>({
+          "@type":"ListItem",
+          "position": i+1,
+          "url": (location.origin || 'https://kenl-tw.github.io') + "/blog/post.html?slug=" + p.slug
+        }))
+      };
+      const s = document.createElement('script');
+      s.type='application/ld+json';
+      s.textContent = JSON.stringify(ld);
+      document.head.appendChild(s);
+    }
+    function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  })();
+</script>
+
+
   <!-- Move jQuery to the end of body -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+  <!-- ======= Inline Scripts (Page Specific) ======= -->
   <!-- Certificate Modal Script -->
 <script>
   function showCertificateModal() {
@@ -705,78 +777,5 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(() => { document.getElementById("visit-count").textContent = "N/A"; });
 </script>
-
-<!-- Add Modal HTML -->
-<div id="certificateModal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeCertificateModal()">&times;</span>
-    <img src="assets/img/certifications/table-tennis.jpg" alt="桌球教練證書" class="img-fluid">
-  </div>
-</div>
-
-
-<style>
-.tutorials.section-bg {
-  background: #f8f9fa;
-  padding: 60px 0 40px 0;
-}
-.tutorials .card {
-  border-radius: 12px;
-  transition: box-shadow 0.2s;
-  min-height: 220px;
-  display: flex;
-  flex-direction: column;
-}
-.tutorials .card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  transform: translateY(-4px);
-}
-.tutorials .card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-.tutorials .btn-primary {
-  background: #007bff;
-  border: none;
-}
-.tutorials .badge {
-  font-size: 0.85rem;
-  padding: 0.4em 0.7em;
-}
-.tutorial-filter .btn.active,
-.tutorial-filter .btn:focus {
-  background: #007bff;
-  color: #fff;
-  border-color: #007bff;
-}
-.tutorials .section-title {
-  margin-bottom: 32px;
-}
-.tutorials .tutorial-filter {
-  margin-bottom: 32px;
-  display: flex;
-  justify-content: center;
-}
-@media (max-width: 991px) {
-  .tutorials .card {
-    min-height: 200px;
-  }
-}
-@media (max-width: 767px) {
-  .tutorials.section-bg {
-    padding: 40px 0 20px 0;
-  }
-  .tutorials .card {
-    min-height: 180px;
-  }
-}
-
-/* 與全站間距對齊 */
-#tutorials.section-bg { /* 使用模板既有 section-bg，避免自行指定顏色 */
-  padding: 60px 0;
-}
-
-</style>
-
 </body>
 </html>

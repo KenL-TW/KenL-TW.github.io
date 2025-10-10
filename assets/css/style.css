@@ -893,3 +893,25 @@ section {
 .close-btn:hover {
   color: #ccc;
 }
+
+#latest-posts .blog-swiper { width:100%; padding: 32px 16px 56px; }
+  #latest-posts .swiper-slide { width: 320px; max-width: 86vw; }
+  #latest-posts .post-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 12px 32px rgba(0,0,0,.08); display:flex; flex-direction:column; height: 440px; }
+  #latest-posts .post-cover { height:200px; width:100%; object-fit:cover; display:block; }
+  #latest-posts .post-body { padding:16px; display:flex; flex-direction:column; gap:8px; }
+  #latest-posts .post-title { margin:0; font-size:1.05rem; line-height:1.35; }
+  #latest-posts .post-meta { color:#7a7a7a; font-size:.9rem; }
+  #latest-posts .post-excerpt { 
+    color:#444; 
+    margin:0; 
+    display:-webkit-box; 
+    -webkit-line-clamp:3; 
+    line-clamp:3; 
+    -webkit-box-orient:vertical; 
+    overflow:hidden; 
+  }
+  #latest-posts .badge { display:inline-block; background:#eef2ff; color:#223; border-radius:999px; padding:2px 8px; margin-right:6px; font-size:.8rem; }
+  #latest-posts .btn { margin-top:auto; display:inline-block; padding:8px 12px; border-radius:10px; border:1px solid #0b5fff; color:#0b5fff; text-decoration:none; transition:.2s; }
+  #latest-posts .btn:hover { background:#0b5fff; color:#fff; }
+  #latest-posts .swiper-button-prev, #latest-posts .swiper-button-next { color:#0b5fff; }
+  #latest-posts .swiper-pagination-bullet-active { background:#0b5fff; }

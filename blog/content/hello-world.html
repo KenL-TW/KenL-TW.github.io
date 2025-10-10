@@ -1,0 +1,24 @@
+<!-- 相對於 blog/post.html 被 iframe 載入 -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <title>hello-world</title>
+  <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style> body{padding:24px;} </style>
+</head>
+<body>
+  <article>
+    <h1>從零打造個人部落格（純前端架構）</h1>
+    <p class="text-muted">2025-10-08 · #blog #portfolio</p>
+    <hr>
+    <p>這是一篇示範文章，介紹如何以純前端技術在 GitHub Pages 上架設部落格系統。</p>
+    <h3>重點特色</h3>
+    <ul>
+      <li>所有文章是 <code>content/*.html</code> 片段檔。</li>
+      <li>索引頁與文章殼頁**不使用 fetch**，能直接在 file:// 下開啟。</li>
+      <li>文章殼頁用 <code>&lt;iframe&gt;</code> 載入片段，跨頁共用外觀容易。</li>
+    </ul>
+  </article>
+</body>
+</html>

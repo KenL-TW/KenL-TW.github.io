@@ -1,0 +1,65 @@
+[
+  {
+    "slug": "hello-world",
+    "title": "從零打造個人部落格（純前端架構）",
+    "date": "2025-10-08",
+    "tags": ["blog", "web", "portfolio"],
+    "excerpt": "純 HTML + JS + GitHub Pages，輕巧可維護。",
+    "cover": "assets/img/blog/hello-world.png",
+    "content": "blog/content/hello-world.html"
+  },
+  {
+    "slug": "system-analysis",
+    "title": "系統分析師的思維與方法論",
+    "date": "2025-09-25",
+    "tags": ["analysis", "career"],
+    "excerpt": "需求、架構與交付之間的平衡術。",
+    "cover": "assets/img/blog/system-analysis.png",
+    "content": "blog/content/awsThreeTier.html"
+  },
+  {
+    "slug": "network-attack",
+    "title": "網路攻擊視覺化分享",
+    "date": "2025-08-31",
+    "tags": ["tutorials", "security"],
+    "excerpt": "用動畫拆解 SQLi 與 XSS。",
+    "cover": "assets/img/blog/network-attack.png",
+    "content": "blog/content/networkAttack.html"
+  },
+  {
+    "slug": "aws-serverless",
+    "title": "AWS 架構視覺化：Serverless",
+    "date": "2025-08-25",
+    "tags": ["tutorials", "aws", "architecture"],
+    "excerpt": "事件驅動與雲端原生的設計心法。",
+    "cover": "assets/img/blog/aws-serverless.png",
+    "content": "blog/content/awsServerless.html"
+  },
+  {
+    "slug": "api",
+    "title": "API 設計與 OSI 的對位",
+    "date": "2025-08-15",
+    "tags": ["tutorials", "api", "networking"],
+    "excerpt": "從用例到契約，從層到責任。",
+    "cover": "assets/img/blog/api.png",
+    "content": "blog/content/api.html"
+  },
+  {
+    "slug": "ai-modal",
+    "title": "AI 模型與提示工程：實用上手",
+    "date": "2025-08-10",
+    "tags": ["ai", "prompting", "tutorials"],
+    "excerpt": "以專案視角快速導入 AI 能力。",
+    "cover": "assets/img/blog/ai-modal.png",
+    "content": "blog/content/aiModal.html"
+  },
+  {
+    "slug": "ngrok",
+    "title": "用 ngrok 快速公開本地服務",
+    "date": "2025-08-01",
+    "tags": ["devtool", "networking", "tutorials"],
+    "excerpt": "本地端開發對外展示、Webhooks 測試超方便。",
+    "cover": "assets/img/blog/ngrok.png",
+    "content": "blog/content/ngrok.html"
+  }
+]

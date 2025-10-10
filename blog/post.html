@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>文章 | Ken Liao</title>
+  <meta name="description" content="Ken Liao 的部落格文章內頁。">
+  <link id="canonical" rel="canonical" href="https://kenl-tw.github.io/blog/post.html" />
+
+  <!-- 基本 OG（載入後會動態覆寫） -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="文章 | Ken Liao">
+  <meta property="og:description" content="Ken Liao 的部落格文章內頁。">
+  <meta property="og:image" content="https://kenl-tw.github.io/assets/img/profile-img.png">
+  <meta property="og:url" content="https://kenl-tw.github.io/blog/post.html">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <style>
+    :root{--c:#0b5fff}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Noto Sans',sans-serif;margin:0;background:#fafafa;color:#222}
+    .container{max-width:860px;margin:0 auto;padding:24px 16px}
+    .nav{display:flex;gap:8px;align-items:center;margin:8px 0 16px}
+    .nav a{color:#2563eb;text-decoration:none}
+    .nav a:hover{text-decoration:underline}
+    .hero{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+    .cover{width:100%;height:300px;object-fit:cover;background:#f2f3f5;display:block}
+    .post{padding:18px}
+    .title{margin:8px 0 6px;font-size:28px;line-height:1.25}
+    .meta{color:#666;font-size:14px;margin-bottom:10px}
+    .tags{margin:8px 0 16px}
+    .badge{display:inline-block;background:#eef2ff;color:#223;border-radius:999px;padding:2px 8px;margin-right:6px;font-size:12px}
+    .content{line-height:1.8}
+    .content h2{margin-top:1.25em}
+    .content pre{background:#0e0f12;color:#eaeaea;padding:12px;border-radius:10px;overflow:auto}
+    .divider{height:1px;background:#eee;margin:24px 0}
+    .pager{display:flex;justify-content:space-between;gap:8px}
+    .pager a{flex:1;display:inline-block;text-decoration:none;border:1px solid #e1e1e1;background:#fff;border-radius:12px;padding:12px 14px}
+    .pager a:hover{border-color:#bbb}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav" aria-label="麵包屑">
+      <a href="../index.html">首頁</a>
+      <span>›</span>
+      <a href="./blog.html">部落格</a>
+    </nav>
+
+    <article id="article" class="hero" itemscope itemtype="https://schema.org/BlogPosting" hidden>
+      <img id="cover" class="cover" alt="文章封面" loading="lazy" width="1200" height="630" itemprop="image">
+      <div class="post">
+        <h1 id="title" class="title" itemprop="headline"></h1>
+        <div class="meta">
+          <time id="date" itemprop="datePublished"></time>
+        </div>
+        <div id="tags" class="tags"></div>
+        <div id="content" class="content" itemprop="articleBody"></div>
+        <div class="divider"></div>
+        <div class="pager" id="pager"></div>
+      </div>
+    </article>
+
+    <div id="not-found" class="hero" style="padding:18px;display:none">
+      <h2 style="margin:0 0 8px">找不到文章</h2>
+      <p>這個連結的 <code>slug</code> 可能有誤，或文章尚未發佈。</p>
+      <p><a href="./blog.html">回到部落格列表</a></p>
+    </div>
+  </div>
+
+  <script>
+    const IN_BLOG = location.pathname.toLowerCase().includes('/blog/');
+    function resolveCover(url){
+      if(!url) return '';
+      const u = String(url);
+      if(/^https?:\/\//i.test(u) || /^\/\//.test(u)) return u;
+      if(u.startsWith('/')) return u;
+      return (IN_BLOG ? '../' : '') + u;
+    }
+
+    const USE_FETCH = location.protocol !== 'file:';
+    const POSTS_INLINE = [
+      {
+        slug:"hello-world",
+        title:"從零打造個人部落格（純前端架構）",
+        date:"2025-10-08",
+        tags:["blog","web","portfolio"],
+        excerpt:"純 HTML + JS + GitHub Pages，輕巧可維護。",
+        cover:"assets/img/blog/hello-world.png",
+        contentHtml:"<p>這篇示範如何在 GitHub Pages 上用純前端打造可全文搜尋與 SEO 的部落格。</p><h2>重點</h2><ul><li>單檔 blog.html 與 post.html</li><li>Fuse.js 全文搜尋</li><li>JSON-LD 與 OG 自動化</li></ul><p>把本範例直接貼到你的 GitHub Pages，即可運作。</p>"
+      },
+      {
+        slug:"system-analysis",
+        title:"系統分析師的思維與方法論",
+        date:"2025-09-25",
+        tags:["analysis","career"],
+        excerpt:"需求、架構與交付之間的平衡術。",
+        cover:"assets/img/blog/system-analysis.png",
+        contentHtml:"<p>系統分析師需要在商業與技術之間取得平衡。本文分享需求拆解、資料/流程建模、風險管理與協作。</p><h2>綱要</h2><ol><li>需求訪談與界定</li><li>系統邊界與責任分工</li><li>資料流與介面契約</li><li>交付節點與驗收</li></ol>"
+      },
+      {
+        slug:"network-attack",
+        title:"網路攻擊視覺化分享",
+        date:"2025-08-31",
+        tags:["tutorials","security"],
+        excerpt:"用動畫拆解 SQLi 與 XSS。",
+        cover:"assets/img/blog/network-attack.png",
+        contentHtml:"<p>用可視化方式解構常見 Web 攻擊手法（SQL Injection / XSS），並示範安全防護觀念。</p><h2>你會學到</h2><ul><li>攻擊思路與觀測點</li><li>輸入驗證與輸出編碼</li><li>最小權限與防呆</li></ul>"
+      }
+    ];
+
+    async function loadPosts(){
+      if(!USE_FETCH) return POSTS_INLINE;
+      try{
+        const r = await fetch('./posts.json',{cache:'no-store'});
+        if(!r.ok) throw new Error(r.status);
+        return await r.json();
+      }catch{
+        return POSTS_INLINE;
+      }
+    }
+
+    (async function init(){
+      const params = new URL(location.href).searchParams;
+      const slug = params.get('slug');
+      const posts = (await loadPosts())
+        .filter(p=>p?.slug && p?.title)
+        .sort((a,b)=> String(b.date).localeCompare(String(a.date)));
+
+      const idx = posts.findIndex(p => p.slug === slug);
+      if(idx === -1){
+        document.getElementById('not-found').style.display='block';
+        return;
+      }
+      const post = posts[idx];
+      render(post, posts[idx-1], posts[idx+1]);
+      updateSEO(post);
+    })();
+
+    function render(post, prev, next){
+      const el = (id)=>document.getElementById(id);
+
+      el('cover').src = resolveCover(post.cover);
+      el('cover').alt = (post.title||'') + ' 封面';
+
+      el('title').textContent = post.title;
+      el('date').textContent = post.date;
+      el('date').setAttribute('datetime', post.date);
+
+      el('tags').innerHTML = (post.tags||[]).map(t=>`<span class="badge">#${escapeHtml(t)}</span>`).join('');
+      el('content').innerHTML = post.contentHtml || '<p class="muted">本文建置中…</p>';
+
+      // 上/下一篇
+      const pager = document.getElementById('pager');
+      pager.innerHTML = `
+        ${prev ? `<a href="./post.html?slug=${encodeURIComponent(prev.slug)}" aria-label="上一篇：${escapeHtml(prev.title)}">← 上一篇：${escapeHtml(prev.title)}</a>` : '<span></span>'}
+        ${next ? `<a href="./post.html?slug=${encodeURIComponent(next.slug)}" aria-label="下一篇：${escapeHtml(next.title)}">下一篇：${escapeHtml(next.title)} →</a>` : '<span></span>'}
+      `;
+
+      document.getElementById('article').hidden = false;
+      document.title = `${post.title} | Ken Liao`;
+    }
+
+    function updateSEO(post){
+      const set = (sel, attr, val) => {
+        let n = document.querySelector(sel);
+        if(!n){ n = document.createElement('meta');
+          const k = sel.match(/\[(.+?)=/)[1]; const v = sel.match(/="(.+?)"]/)[1];
+          n.setAttribute(k, v); document.head.appendChild(n);
+        }
+        n.setAttribute(attr, val);
+      };
+      const absUrl = (path) => {
+        if(/^https?:\/\//i.test(path)) return path;
+        const base = location.origin || '';
+        if(path && path.startsWith('/')) return base + path;
+        return base + '/' + path.replace(/^\.?\//,'');
+      };
+      const url = `${location.origin}/blog/post.html?slug=${encodeURIComponent(post.slug)}`;
+      const img = absUrl(post.cover || '/assets/img/profile-img.png');
+
+      // Canonical
+      const can = document.getElementById('canonical');
+      if(can) can.setAttribute('href', url);
+
+      // Open Graph
+      set('meta[property="og:title"]','content', post.title);
+      set('meta[property="og:description"]','content', post.excerpt || '');
+      set('meta[property="og:image"]','content', img);
+      set('meta[property="og:url"]','content', url);
+
+      // Twitter
+      set('meta[name="twitter:card"]','content','summary_large_image');
+      set('meta[name="twitter:title"]','content', post.title);
+      set('meta[name="twitter:description"]','content', post.excerpt || '');
+      set('meta[name="twitter:image"]','content', img);
+
+      // JSON-LD
+      document.querySelectorAll('script[data-ld=article]').forEach(n=>n.remove());
+      const ld = {
+        "@context":"https://schema.org",
+        "@type":"BlogPosting",
+        "headline": post.title,
+        "datePublished": post.date,
+        "image": img,
+        "description": post.excerpt || '',
+        "mainEntityOfPage": url
+      };
+      const s = document.createElement('script');
+      s.type='application/ld+json';
+      s.dataset.ld='article';
+      s.textContent = JSON.stringify(ld);
+      document.head.appendChild(s);
+    }
+
+    function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  </script>
+</body>
+</html>
