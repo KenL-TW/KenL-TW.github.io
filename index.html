@@ -513,64 +513,59 @@
 
       <!-- ======= Contact Section ======= -->
       <section id="contact" class="contact" data-section="contact">
-        <div class="container">
-
-        <div class="section-title">
-          <h2>Contact</h2>
-          <p>如果您對我的專業能力感興趣，或想進一步了解我的經驗，歡迎與我聯繫。</p>
+  <div class="container">
+    <div class="section-title">
+      <h2>Contact</h2>
+      <p>如果您對我的專業能力感興趣，或想進一步了解我的經驗，歡迎與我聯繫。</p>
+    </div>
+    <div class="row" data-aos="fade-in">
+      <div class="col-lg-5 d-flex align-items-stretch">
+        <div class="info">
+          <div class="address">
+            <i class="bi bi-geo-alt"></i>
+            <h4>Location:</h4>
+            <p>新北市三重區</p>
+          </div>
+          <div class="email">
+            <i class="bi bi-envelope"></i>
+            <h4>Email:</h4>
+            <p>kenliao.applicant@gmail.com</p>
+          </div>
         </div>
-
-        <div class="row" data-aos="fade-in">
-          <div class="col-lg-5 d-flex align-items-stretch">
-            <div class="info">
-              <div class="address">
-                <i class="bi bi-geo-alt"></i>
-                <h4>Location:</h4>
-                <p>新北市三重區</p>
-              </div>
-
-              <div class="email">
-                <i class="bi bi-envelope"></i>
-                <h4>Email:</h4>
-                <p>kenliao.applicant@gmail.com</p>
-              </div>
+      </div>
+      <div class="col-lg-7 mt-5 mt-lg-0 d-flex align-items-stretch">
+        <form id="contact-form" action="https://formspree.io/f/xblyjogo" method="POST" class="contact-form w-100">
+          <div class="row">
+            <div class="form-group col-md-6 position-relative">
+              <input type="text" name="name" class="form-control" id="name" required>
+              <label for="name">Your Name</label>
+            </div>
+            <div class="form-group col-md-6 position-relative">
+              <input type="email" class="form-control" name="email" id="email" required>
+              <label for="email">Your Email</label>
             </div>
           </div>
-
-          <div class="col-lg-7 mt-5 mt-lg-0 d-flex align-items-stretch">
-            <form action="https://formspree.io/f/xblyjogo" method="POST" class="contact-form w-100">
-              <div class="row">
-                <div class="form-group col-md-6 position-relative">
-                  <input type="text" name="name" class="form-control" id="name" required>
-                  <label for="name">Your Name</label>
-                </div>
-                <div class="form-group col-md-6 position-relative">
-                  <input type="email" class="form-control" name="email" id="email" required>
-                  <label for="email">Your Email</label>
-                </div>
-              </div>
-              <div class="form-group position-relative">
-                <input type="text" class="form-control" name="subject" id="subject" required>
-                <label for="subject">Subject</label>
-              </div>
-              <div class="form-group position-relative">
-                <textarea class="form-control" name="message" rows="10" required></textarea>
-                <label for="message">Message</label>
-              </div>
-              <div class="my-3">
-                <div class="loading">Sending message...</div>
-                <div class="error-message">Something went wrong. Please try again.</div>
-                <div class="sent-message">Your message has been sent successfully!</div>
-              </div>
-              <div class="text-center">
-                <button type="submit">Send Message <i class="bi bi-send ms-2"></i></button>
-              </div>
-            </form>
+          <div class="form-group position-relative">
+            <input type="text" class="form-control" name="subject" id="subject" required>
+            <label for="subject">Subject</label>
           </div>
-        </div>
-
-        </div>
-      </section><!-- End Contact Section -->
+          <div class="form-group position-relative">
+            <textarea class="form-control" name="message" rows="10" required></textarea>
+            <label for="message">Message</label>
+          </div>
+          <div class="my-3">
+            <div id="form-loading" style="display:none;" class="loading">Sending message...</div>
+            <div id="form-error" style="display:none;" class="error-message text-danger">Something went wrong. Please try again.</div>
+            <div id="form-success" style="display:none;" class="sent-message text-success">Your message has been sent successfully!</div>
+          </div>
+          <div class="text-center">
+            <button type="submit" id="contact-submit">Send Message <i class="bi bi-send ms-2"></i></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section><!-- End Contact Section -->
 
       <!-- ======= Global Components ======= -->
       <!-- Portfolio Modal -->
@@ -773,6 +768,54 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeCertificateModal() {
     document.getElementById('certificateModal').style.display = 'none';
   }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('contact-form');
+  const loading = document.getElementById('form-loading');
+  const error = document.getElementById('form-error');
+  const success = document.getElementById('form-success');
+  const submitBtn = document.getElementById('contact-submit');
+
+  if (!form) return;
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    loading.style.display = 'block';
+    error.style.display = 'none';
+    success.style.display = 'none';
+    submitBtn.disabled = true;
+
+    const data = new FormData(form);
+
+    fetch(form.action, {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(response => {
+      loading.style.display = 'none';
+      submitBtn.disabled = false;
+      if (response.ok) {
+        success.style.display = 'block';
+        form.reset();
+      } else {
+        response.json().then(data => {
+          error.textContent = data.error || "Something went wrong. Please try again.";
+          error.style.display = 'block';
+        }).catch(() => {
+          error.style.display = 'block';
+        });
+      }
+    })
+    .catch(() => {
+      loading.style.display = 'none';
+      submitBtn.disabled = false;
+      error.style.display = 'block';
+    });
+  });
+});
 </script>
 
 <script>
