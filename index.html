@@ -147,7 +147,11 @@
                   <li><i class="bi bi-chevron-right"></i> <strong>Birthday:</strong> <span>27 Sep 1996</span></li>
                   <li><i class="bi bi-chevron-right"></i> <strong>City:</strong> <span>New Taipei</span></li>
                   <li><i class="bi bi-chevron-right"></i> <strong>Fun Fact:</strong> <span class="certificate-link" onclick="showCertificateModal()">合格的國家桌球C級教練</span></li>
-                  <li><i class="bi bi-chevron-right"></i> <strong>Age:</strong> <span>28</span></li>
+                  <li>
+                    <i class="bi bi-chevron-right"></i>
+                    <strong>Age:</strong>
+                    <span id="age" data-birthdate="1996-09-27"></span>
+                  </li>
                   <li><i class="bi bi-chevron-right"></i> <strong>Degree:</strong> <span>大學</span></li>
                   <li><i class="bi bi-chevron-right"></i> <strong>Freelance:</strong> <span>一頁式網站建立、SEO優化、小工具製作</span></li>
                   <li><i class="bi bi-chevron-right"></i> <strong>語言:</strong> <span>TOEIC 935 - 聽說讀寫/精通</span></li>
@@ -752,6 +756,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
   })();
+
+  // 計算年齡用 以 UTC 計算，避免時區造成「少一天」的 off-by-one
+  function calcAge(isoBirthday, now = new Date()) {
+    const [y, m, d] = isoBirthday.split('-').map(Number);
+    const b = new Date(Date.UTC(y, m - 1, d));
+    const t = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+
+    let age = t.getUTCFullYear() - b.getUTCFullYear();
+    const hasHadBirthdayThisYear =
+      t.getUTCMonth() > b.getUTCMonth() ||
+      (t.getUTCMonth() === b.getUTCMonth() && t.getUTCDate() >= b.getUTCDate());
+
+    if (!hasHadBirthdayThisYear) age--;
+    return age;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const ageEl = document.getElementById('age');
+    const dob = ageEl?.dataset.birthdate;
+    if (dob) ageEl.textContent = calcAge(dob);
+  });
 </script>
 
 
