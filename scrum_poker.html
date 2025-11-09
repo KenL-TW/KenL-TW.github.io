@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scrum-poker">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scrum Poker 規劃工具</title>
+    <link rel="stylesheet" href="assets/css/scrum-poker.css" />
+  </head>
+  <body class="scrum-poker">
+    <header class="sp-card" style="max-width: 1200px; margin: 1.5rem auto 0;">
+      <h1>Scrum Poker 規劃工具</h1>
+      <p class="sp-muted-text">
+        依循 SDD 架構打造的輕量 Scrum Poker 介面，支援多種牌組、共識揭示與回合歷史記錄，協助團隊在 Refinement 中快速取得共識。
+      </p>
+      <div class="sp-inline-actions">
+        <a class="sp-button secondary" href="/">回首頁</a>
+        <a class="sp-button secondary" href="assets/docs/scrum-poker-sdd.md" target="_blank" rel="noopener">檢視 SDD 文件</a>
+      </div>
+    </header>
+
+    <main class="sp-layout" data-scrum-poker-root>
+      <section class="sp-card">
+        <div class="sp-section-title">
+          <h2>回合設定</h2>
+        </div>
+        <div class="sp-form-group">
+          <label for="storyTitle">需求 / User Story</label>
+          <input id="storyTitle" class="sp-input" type="text" placeholder="例如：作為使用者，我想要..." data-story-title />
+        </div>
+        <div class="sp-form-group">
+          <label for="deckSelect">牌組類型</label>
+          <select id="deckSelect" class="sp-select" data-deck-select></select>
+          <div data-deck-metadata class="sp-muted-text"></div>
+        </div>
+
+        <div class="sp-form-group" style="margin-top: 1.5rem;">
+          <form data-add-participant-form class="sp-grid">
+            <div class="sp-form-group" style="margin-bottom: 0;">
+              <label for="participantName">新增成員</label>
+              <div class="sp-inline-field">
+                <input
+                  id="participantName"
+                  class="sp-input"
+                  type="text"
+                  placeholder="輸入成員名稱"
+                  required
+                  data-add-participant-input
+                />
+                <button type="submit" class="sp-button">加入</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="sp-divider"></div>
+
+        <div class="sp-button-group">
+          <button class="sp-button" data-reveal-button>揭示投票</button>
+          <button class="sp-button secondary" data-reset-button>清除選擇</button>
+          <button class="sp-button secondary" data-archive-button>保存回合紀錄</button>
+        </div>
+      </section>
+
+      <section class="sp-card" style="display: grid; gap: 1.5rem;">
+        <div>
+          <div class="sp-section-title">
+            <h2>團隊成員</h2>
+          </div>
+          <div data-participant-list class="sp-grid"></div>
+        </div>
+
+        <div>
+          <div class="sp-section-title">
+            <h3>團隊洞察</h3>
+          </div>
+          <div data-insights></div>
+        </div>
+
+        <div>
+          <div class="sp-section-title">
+            <h3>回合歷史</h3>
+          </div>
+          <div data-history-empty class="sp-empty-state">尚無歷史紀錄，揭示投票後將自動保存。</div>
+          <div data-history-list class="sp-history-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="assets/js/scrum-poker/controller.js"></script>
+  </body>
+</html>
