@@ -277,61 +277,64 @@
   }
 
   function renderMarket(market) {
-    const tbody = document.getElementById("market-tbody");
-    const cagrSpan = document.getElementById("market-cagr");
-    const segSpan  = document.getElementById("market-segments");
-    const drvSpan  = document.getElementById("market-drivers");
-    const riskSpan = document.getElementById("market-risks");
+  const tbody = document.getElementById("market-tbody");
+  const cagrSpan = document.getElementById("market-cagr");
+  const segSpan  = document.getElementById("market-segments");
+  const drvSpan  = document.getElementById("market-drivers");
+  const riskSpan = document.getElementById("market-risks");
 
-    tbody.innerHTML = "";
-    const sizeSeries = market && Array.isArray(market.size_series) ? market.size_series : [];
-    const currency   = (market && market.currency) || "單位";
+  tbody.innerHTML = "";
+  const sizeSeries = market && Array.isArray(market.size_series) ? market.size_series : [];
+  const currency   = (market && market.currency) || "TWD";
+  const sizeUnit   = (market && market.size_unit) || ""; // 例如「億」
 
-    sizeSeries.forEach(row => {
-      const trYear = row.year || "";
-      const trVal  = row.value || "";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="border px-2 py-1">${trYear}</td>
-        <td class="border px-2 py-1 text-right">${trVal} ${currency}</td>
-      `;
-      tbody.appendChild(tr);
+  sizeSeries.forEach(row => {
+    const trYear = row.year || "";
+    const trVal  = row.value || "";
+    const tr = document.createElement("tr");
+    const unitText = [sizeUnit, currency].filter(Boolean).join(" ");
+    tr.innerHTML = `
+      <td class="border px-2 py-1">${trYear}</td>
+      <td class="border px-2 py-1 text-right">${trVal} ${unitText}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const cagr = market && typeof market.cagr === "number"
+    ? (market.cagr * 100).toFixed(1) + "%"
+    : "—";
+  cagrSpan.textContent = cagr;
+  segSpan.textContent  = (market && market.segments || []).join("、") || "—";
+  drvSpan.textContent  = (market && market.drivers  || []).join("、") || "—";
+  riskSpan.textContent = (market && market.risks    || []).join("、") || "—";
+
+  // Chart.js
+  const ctx = document.getElementById("market-chart").getContext("2d");
+  const labels = sizeSeries.map(r => r.year);
+  const values = sizeSeries.map(r => r.value);
+
+  if (chartInstance) chartInstance.destroy();
+
+  if (labels.length > 0) {
+    const unitLabel = [sizeUnit, currency].filter(Boolean).join(" ");
+    chartInstance = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "市場規模 (" + unitLabel + ")", // e.g. 市場規模 (億 TWD)
+          data: values,
+          fill: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: true } },
+        scales: { y: { beginAtZero: false } }
+      }
     });
-
-    const cagr = market && typeof market.cagr === "number"
-      ? (market.cagr * 100).toFixed(1) + "%"
-      : "—";
-    cagrSpan.textContent = cagr;
-    segSpan.textContent  = (market && market.segments || []).join("、") || "—";
-    drvSpan.textContent  = (market && market.drivers  || []).join("、") || "—";
-    riskSpan.textContent = (market && market.risks    || []).join("、") || "—";
-
-    // Chart.js
-    const ctx = document.getElementById("market-chart").getContext("2d");
-    const labels = sizeSeries.map(r => r.year);
-    const values = sizeSeries.map(r => r.value);
-
-    if (chartInstance) chartInstance.destroy();
-
-    if (labels.length > 0) {
-      chartInstance = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [{
-            label: "市場規模 (" + currency + ")",
-            data: values,
-            fill: false,
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: true } },
-          scales: { y: { beginAtZero: false } }
-        }
-      });
-    }
   }
+}
 
   function renderCompetitors(list) {
     const tbody = document.getElementById("competitor-tbody");
