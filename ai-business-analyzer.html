@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Business Analyzer｜市場與 AI 應用分析工具</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .dot { width: 0.5rem; height: 0.5rem; border-radius: 9999px; display:inline-block; }
+    .dot:nth-child(1) { animation: bounce 1.2s infinite ease-in-out; }
+    .dot:nth-child(2) { animation: bounce 1.2s infinite ease-in-out 0.2s; }
+    .dot:nth-child(3) { animation: bounce 1.2s infinite ease-in-out 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    pre { white-space: pre-wrap; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div class="min-h-screen max-w-6xl mx-auto px-4 py-8">
+    <!-- Portfolio Card 樣式 -->
+    <div class="portfolio-item" data-category="web">
+      <div class="portfolio-wrap bg-white rounded-2xl shadow p-6 md:p-8">
+        <div class="flex flex-col md:flex-row md:space-x-6">
+          <img src="assets/img/portfolio/ai_market_analyzer_exe.png" 
+               alt="AI Business Analyzer"
+               class="w-full md:w-64 h-40 object-cover rounded-xl mb-4 md:mb-0 border" />
+          <div class="portfolio-info flex-1">
+            <!-- 進行中動畫 -->
+            <div class="flex items-center mb-2 space-x-2">
+              <div class="flex space-x-1">
+                <span class="dot bg-emerald-500"></span>
+                <span class="dot bg-emerald-500"></span>
+                <span class="dot bg-emerald-500"></span>
+              </div>
+              <span id="status-label" class="text-xs font-medium text-emerald-600">待分析</span>
+            </div>
+
+            <h1 class="text-2xl font-bold mb-1">AI Business Analyzer</h1>
+            <p class="text-sm text-slate-600 mb-3">
+              透過 API Gateway + Lambda + OpenAI + SNS 的微服務架構，快速產出
+              <span class="font-semibold">產業市場分析、競品盤點、AI 應用點子與 SWOT</span>，
+              用於創業構想驗證、Side Project 商機評估與 Pitch Deck 構思。
+            </p>
+
+            <!-- 技術 Stack -->
+            <div class="tech-stack mt-2 text-xs text-slate-500 space-x-3">
+              <span class="inline-block px-2 py-1 bg-slate-100 rounded-full">API Gateway</span>
+              <span class="inline-block px-2 py-1 bg-slate-100 rounded-full">AWS Lambda</span>
+              <span class="inline-block px-2 py-1 bg-slate-100 rounded-full">Secrets Manager</span>
+              <span class="inline-block px-2 py-1 bg-slate-100 rounded-full">OpenAI (JSON Analysis)</span>
+              <span class="inline-block px-2 py-1 bg-slate-100 rounded-full">Chart.js</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 查詢表單 -->
+        <div class="mt-6 border-t pt-6">
+          <h2 class="text-lg font-semibold mb-3">輸入想要分析的市場</h2>
+          <form id="analyze-form" class="grid md:grid-cols-4 gap-3 items-end">
+            <div>
+              <label class="block text-xs font-medium mb-1">產業 / 題目（industry）</label>
+              <input id="industry" type="text"
+                     class="w-full border rounded-lg px-3 py-2 text-sm"
+                     placeholder="例：台灣早午餐市場、B2B SaaS CRM、兒童線上學習" required />
+            </div>
+            <div>
+              <label class="block text-xs font-medium mb-1">市場區域（region）</label>
+              <input id="region" type="text"
+                     class="w-full border rounded-lg px-3 py-2 text-sm"
+                     placeholder="例：台灣、東南亞、全球" value="台灣" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium mb-1">年份範圍（year）</label>
+              <input id="year" type="text"
+                     class="w-full border rounded-lg px-3 py-2 text-sm"
+                     placeholder="例：2024–2026" value="2024–2025" />
+            </div>
+            <div class="flex space-x-2">
+              <button id="submit-btn" type="submit"
+                      class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+                開始分析
+              </button>
+              <button type="button" id="clear-btn"
+                      class="px-3 py-2 text-xs border rounded-lg text-slate-600 hover:bg-slate-100">
+                清除
+              </button>
+            </div>
+          </form>
+
+          <!-- 錯誤訊息 -->
+          <p id="error-msg" class="mt-2 text-xs text-red-600 hidden"></p>
+        </div>
+
+        <!-- 分析結果 -->
+        <div id="result-section" class="mt-8 hidden">
+          <!-- 概要 -->
+          <section class="mb-6">
+            <h2 class="text-lg font-semibold mb-2">① 市場概要 Summary</h2>
+            <p id="summary" class="text-sm leading-relaxed bg-slate-50 border rounded-lg p-3 whitespace-pre-wrap"></p>
+            <p id="meta-info" class="mt-2 text-xs text-slate-500"></p>
+          </section>
+
+          <!-- 市場數據 + Chart -->
+          <section class="mb-6 grid md:grid-cols-2 gap-4">
+            <div>
+              <h2 class="text-lg font-semibold mb-2">② 市場數據與細分</h2>
+              <table class="w-full text-xs border rounded-lg overflow-hidden">
+                <thead class="bg-slate-100">
+                  <tr>
+                    <th class="border px-2 py-1 text-left">年份</th>
+                    <th class="border px-2 py-1 text-right">市場規模</th>
+                  </tr>
+                </thead>
+                <tbody id="market-tbody"></tbody>
+              </table>
+              <div class="mt-2 text-xs text-slate-600">
+                <span class="font-semibold">CAGR：</span><span id="market-cagr"></span><br/>
+                <span class="font-semibold">主要細分賽道：</span><span id="market-segments"></span><br/>
+                <span class="font-semibold">主要驅動：</span><span id="market-drivers"></span><br/>
+                <span class="font-semibold">風險因素：</span><span id="market-risks"></span>
+              </div>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold mb-2">③ 市場成長趨勢（Chart.js）</h2>
+              <canvas id="market-chart" class="bg-white border rounded-lg"></canvas>
+            </div>
+          </section>
+
+          <!-- SWOT -->
+          <section class="mb-6">
+            <h2 class="text-lg font-semibold mb-2">④ SWOT 分析</h2>
+            <div class="grid md:grid-cols-2 gap-3 text-xs">
+              <table class="w-full border rounded-lg">
+                <thead class="bg-emerald-50">
+                  <tr><th class="border px-2 py-1 text-left">Strengths（優勢）</th></tr>
+                </thead>
+                <tbody id="swot-strengths"></tbody>
+              </table>
+              <table class="w-full border rounded-lg">
+                <thead class="bg-amber-50">
+                  <tr><th class="border px-2 py-1 text-left">Weaknesses（劣勢）</th></tr>
+                </thead>
+                <tbody id="swot-weaknesses"></tbody>
+              </table>
+              <table class="w-full border rounded-lg">
+                <thead class="bg-sky-50">
+                  <tr><th class="border px-2 py-1 text-left">Opportunities（機會）</th></tr>
+                </thead>
+                <tbody id="swot-opportunities"></tbody>
+              </table>
+              <table class="w-full border rounded-lg">
+                <thead class="bg-rose-50">
+                  <tr><th class="border px-2 py-1 text-left">Threats（威脅）</th></tr>
+                </thead>
+                <tbody id="swot-threats"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 競品與 AI 應用 -->
+          <section class="mb-6 grid md:grid-cols-2 gap-4 text-xs">
+            <div>
+              <h2 class="text-lg font-semibold mb-2">⑤ 競品 / IP 案例盤點</h2>
+              <table class="w-full border rounded-lg">
+                <thead class="bg-slate-100">
+                  <tr>
+                    <th class="border px-2 py-1 text-left">品牌 / 產品</th>
+                    <th class="border px-2 py-1 text-left">產品形式</th>
+                    <th class="border px-2 py-1 text-left">收費模式</th>
+                    <th class="border px-2 py-1 text-left">差異化亮點</th>
+                  </tr>
+                </thead>
+                <tbody id="competitor-tbody"></tbody>
+              </table>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold mb-2">⑥ AI 應用構想</h2>
+              <div class="space-y-2">
+                <div>
+                  <h3 class="font-semibold text-slate-700 mb-1">內容創作節點</h3>
+                  <ul id="ai-content" class="list-disc ml-5 space-y-1"></ul>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-slate-700 mb-1">用戶互動節點</h3>
+                  <ul id="ai-interaction" class="list-disc ml-5 space-y-1"></ul>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-slate-700 mb-1">商業變現節點</h3>
+                  <ul id="ai-monetization" class="list-disc ml-5 space-y-1"></ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 原始資料 fallback -->
+          <section id="raw-section" class="mb-4 hidden">
+            <h2 class="text-sm font-semibold mb-1">原始分析內容（JSON / Text）</h2>
+            <pre id="raw-output" class="text-xs bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto"></pre>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ======= 設定區：請換成你的 API Gateway Endpoint & API Key =======
+  const API_URL = "https://ukc5c7oi3k.execute-api.ap-northeast-1.amazonaws.com/prod/analyze"; // 你的 REST API URL
+  const API_KEY = "6HCuJVLwzt9OkEKVmBHuhXq1d4T2mTP3ApHbpMr6"; // Usage Plan 產出的 API Key
+
+  const form = document.getElementById("analyze-form");
+  const statusLabel = document.getElementById("status-label");
+  const submitBtn = document.getElementById("submit-btn");
+  const clearBtn = document.getElementById("clear-btn");
+  const errorMsg = document.getElementById("error-msg");
+  const resultSection = document.getElementById("result-section");
+
+  let chartInstance = null;
+
+  function setLoading(isLoading) {
+    if (isLoading) {
+      statusLabel.textContent = "分析中...";
+      statusLabel.classList.remove("text-emerald-600");
+      statusLabel.classList.add("text-amber-600");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "分析中...";
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "開始分析";
+    }
+  }
+
+  function setError(message) {
+    if (message) {
+      errorMsg.textContent = message;
+      errorMsg.classList.remove("hidden");
+    } else {
+      errorMsg.classList.add("hidden");
+      errorMsg.textContent = "";
+    }
+  }
+
+  function renderList(list, container) {
+    container.innerHTML = "";
+    if (!Array.isArray(list) || list.length === 0) return;
+    list.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      container.appendChild(li);
+    });
+  }
+
+  function renderSwot(swot) {
+    const map = {
+      strengths: "swot-strengths",
+      weaknesses: "swot-weaknesses",
+      opportunities: "swot-opportunities",
+      threats: "swot-threats",
+    };
+    Object.keys(map).forEach(key => {
+      const tbody = document.getElementById(map[key]);
+      tbody.innerHTML = "";
+      const arr = swot && Array.isArray(swot[key]) ? swot[key] : [];
+      arr.forEach(text => {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.className = "border px-2 py-1 align-top";
+        td.textContent = text;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      });
+    });
+  }
+
+  function renderMarket(market) {
+    const tbody = document.getElementById("market-tbody");
+    const cagrSpan = document.getElementById("market-cagr");
+    const segSpan  = document.getElementById("market-segments");
+    const drvSpan  = document.getElementById("market-drivers");
+    const riskSpan = document.getElementById("market-risks");
+
+    tbody.innerHTML = "";
+    const sizeSeries = market && Array.isArray(market.size_series) ? market.size_series : [];
+    const currency   = (market && market.currency) || "單位";
+
+    sizeSeries.forEach(row => {
+      const trYear = row.year || "";
+      const trVal  = row.value || "";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="border px-2 py-1">${trYear}</td>
+        <td class="border px-2 py-1 text-right">${trVal} ${currency}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const cagr = market && typeof market.cagr === "number"
+      ? (market.cagr * 100).toFixed(1) + "%"
+      : "—";
+    cagrSpan.textContent = cagr;
+    segSpan.textContent  = (market && market.segments || []).join("、") || "—";
+    drvSpan.textContent  = (market && market.drivers  || []).join("、") || "—";
+    riskSpan.textContent = (market && market.risks    || []).join("、") || "—";
+
+    // Chart.js
+    const ctx = document.getElementById("market-chart").getContext("2d");
+    const labels = sizeSeries.map(r => r.year);
+    const values = sizeSeries.map(r => r.value);
+
+    if (chartInstance) chartInstance.destroy();
+
+    if (labels.length > 0) {
+      chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "市場規模 (" + currency + ")",
+            data: values,
+            fill: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true } },
+          scales: { y: { beginAtZero: false } }
+        }
+      });
+    }
+  }
+
+  function renderCompetitors(list) {
+    const tbody = document.getElementById("competitor-tbody");
+    tbody.innerHTML = "";
+    if (!Array.isArray(list)) return;
+    list.forEach(c => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="border px-2 py-1">${c.name || ""}</td>
+        <td class="border px-2 py-1">${c.product || ""}</td>
+        <td class="border px-2 py-1">${c.pricing || ""}</td>
+        <td class="border px-2 py-1">${c.differentiation || ""}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderAnalysis(data) {
+    const summaryEl = document.getElementById("summary");
+    const metaInfo  = document.getElementById("meta-info");
+    const rawSection = document.getElementById("raw-section");
+    const rawOutput  = document.getElementById("raw-output");
+
+    const analysis = data.analysis || {};
+    summaryEl.textContent = analysis.summary || "（模型未提供 summary）";
+
+    const elapsed = typeof data.elapsed === "number" ? data.elapsed.toFixed(1) : "—";
+    metaInfo.textContent =
+      `產業：${data.industry}｜區域：${data.region}｜年份：${data.year}｜生成時間：約 ${elapsed} 秒`;
+
+    renderMarket(analysis.market || {});
+    renderSwot(analysis.swot || {});
+    renderCompetitors(analysis.competitors || []);
+
+    const aiIdeas = analysis.ai_ideas || {};
+    renderList(aiIdeas.content || [], document.getElementById("ai-content"));
+    renderList(aiIdeas.interaction || [], document.getElementById("ai-interaction"));
+    renderList(aiIdeas.monetization || [], document.getElementById("ai-monetization"));
+
+    // 若有 raw，就顯示原始 JSON 方便 Debug
+    if (analysis.raw) {
+      rawSection.classList.remove("hidden");
+      const rawVal = typeof analysis.raw === "string"
+        ? analysis.raw
+        : JSON.stringify(analysis.raw, null, 2);
+      rawOutput.textContent = rawVal;
+    } else {
+      rawSection.classList.add("hidden");
+      rawOutput.textContent = "";
+    }
+
+    resultSection.classList.remove("hidden");
+    statusLabel.textContent = "分析完成";
+    statusLabel.classList.remove("text-amber-600");
+    statusLabel.classList.remove("text-red-600");
+    statusLabel.classList.add("text-emerald-600");
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const industry = document.getElementById("industry").value.trim();
+    const region   = document.getElementById("region").value.trim() || "未指定地區";
+    const year     = document.getElementById("year").value.trim() || "2024–2025";
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": API_KEY
+        },
+        body: JSON.stringify({
+          mode: "analyze",
+          industry,
+          region,
+          year
+        })
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`API 錯誤 (${res.status}): ${text}`);
+      }
+
+      const data = await res.json();
+
+      if (!data || data.ok === false || data.error) {
+        throw new Error(data.error || "API 回傳格式異常");
+      }
+
+      renderAnalysis(data);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "呼叫 API 失敗，請稍後再試。");
+      statusLabel.textContent = "發生錯誤";
+      statusLabel.classList.remove("text-emerald-600");
+      statusLabel.classList.remove("text-amber-600");
+      statusLabel.classList.add("text-red-600");
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  clearBtn.addEventListener("click", () => {
+    document.getElementById("industry").value = "";
+    resultSection.classList.add("hidden");
+    setError("");
+    statusLabel.textContent = "待分析";
+    statusLabel.classList.remove("text-red-600");
+    statusLabel.classList.remove("text-amber-600");
+    statusLabel.classList.add("text-emerald-600");
+  });
+</script>
+</body>
+</html>

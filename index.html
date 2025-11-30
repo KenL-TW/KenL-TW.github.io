@@ -43,6 +43,26 @@
   <link href="assets/css/style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
   <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
+
+  <!-- Simple spacing & ratio for portfolio images -->
+  <style>
+    /* 控制 portfolio 元件上下間距與圖片顯示（簡單版） */
+    .portfolio-wrap {
+      padding-top: 18px;
+      padding-bottom: 18px;
+    }
+    .portfolio-wrap img {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin: 0 auto;
+      object-fit: cover;
+      border-radius: 8px; /* 可選：讓圖片邊角較柔和 */
+    }
+    @media (min-width: 992px) {
+      .portfolio-wrap { padding-top: 28px; padding-bottom: 28px; }
+    }
+  </style>
   <!-- =======================================================
   * Template Name: iPortfolio
   * Template URL: https://bootstrapmade.com/iportfolio-bootstrap-portfolio-websites-template/
@@ -266,36 +286,47 @@
         </div>
 
         <div class="row portfolio-container">
-        <!-- SEO 分析工具 -->
+        <!-- AI 市場分析系統 -->
         <div class="portfolio-item" data-category="web">
-          <div class="portfolio-wrap">
-            <img src="assets/img/portfolio/seo_tool.jpg" alt="SEO 分析工具">
-            <div class="portfolio-info">
-              <!-- 進行中動畫 -->
-              <div class="flex items-center mb-2 space-x-2">
-                <!-- 三個跳動圓點 -->
-                <div class="flex space-x-1">
-                  <span class="dot bg-green-500"></span>
-                  <span class="dot bg-green-500 delay-150"></span>
-                  <span class="dot bg-green-500 delay-300"></span>
-                </div>
-                <span class="text-xs font-medium text-green-600">進行中</span>
-              </div>
+  <div class="portfolio-wrap">
+    <img src="assets/img/portfolio/ai_market_analyzer.png" 
+        alt="AI 市場分析系統"
+        loading="lazy"
+        width="1200" height="1675">
 
-              <h4 class="text-xl font-bold">SEO 分析工具</h4>
-              <p>使用 Python爬蟲 和 TailwindCSS 和 vue.js 開發的 SEO 分析工具，提供完整的網站優化建議與報告功能。</p>
-              <div class="tech-stack mt-2 space-x-2 text-sm text-gray-500">
-                <span>TailwindCSS</span><br>
-                <span>vue.js</span><br>
-                <span>Crawler</span><br>
-                <span>LLM Integration</span><br>
-              </div>
-            </div>
-          </div>
+    <div class="portfolio-info">
+
+      <!-- 進行中動畫 -->
+      <div class="flex items-center mb-2 space-x-2">
+        <div class="flex space-x-1">
+          <span class="dot bg-green-500"></span>
+          <span class="dot bg-green-500 delay-150"></span>
+          <span class="dot bg-green-500 delay-300"></span>
         </div>
-        </div>
+        <span class="text-xs font-medium text-green-600">進行中</span>
       </div>
-        <div class="row portfolio-container">
+
+      <h4 class="text-xl font-bold">AI 市場分析系統</h4>
+
+      <p>
+        以 GitHub Pages 與 AWS Serverless 架構打造的即時 AI 市場研究平台。  
+        前端整合 Chart.js，後端由 API Gateway + Lambda 組成，並透過 
+        AWS Secrets Manager 安全管理 OpenAI API Key。  
+        使用者可直接在網頁上輸入任意產業，即時取得 AI 產生的市場規模、SWOT、競品版圖與成長曲線的動態可視化分析。
+      </p>
+
+      <div class="tech-stack mt-2 space-x-2 text-sm text-gray-500">
+        <span>GitHub Pages</span><br>
+        <span>AWS API Gateway</span><br>
+        <span>AWS Lambda（Python）</span><br>
+        <span>Secrets Manager（OpenAI Key）</span><br>
+        <span>OpenAI GPT-4o-mini</span><br>
+        <span>Chart.js</span><br>
+        <span>TailwindCSS</span><br>
+      </div>
+    </div>
+  </div>
+</div>
   <!-- CTSS 在台導入專案 — 技術顧問 / 在地化支持 -->
   <div class="portfolio-item" data-category="consulting">
     <div class="portfolio-wrap">
@@ -324,7 +355,6 @@
         </div>
     </div>
   </div>
-</div>
 </section><!-- End Portfolio Section -->
     <!-- ======= Resume Section ======= -->
       <section id="resume" class="resume" data-section="resume">
