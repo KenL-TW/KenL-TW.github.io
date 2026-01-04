@@ -1,0 +1,2122 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>STRATOS PM (SPA)</title>
+
+    <!-- React (UMD) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      /* App baseline + scrollbar */
+      html, body { height: 100%; }
+      body { margin: 0; background: #f8fafc; }
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+
+      @keyframes pulse-subtle {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.95; transform: scale(1.005); }
+      }
+      .animate-pulse-subtle { animation: pulse-subtle 2s infinite ease-in-out; }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+        background: white; cursor: pointer; border: 4px solid #4f46e5;
+      }
+      input[type="range"]::-moz-range-thumb {
+        height: 20px; width: 20px; border-radius: 50%;
+        background: white; cursor: pointer; border: 4px solid #4f46e5;
+      }
+
+      /* better selection UX on drag */
+      .noselect { user-select: none; -webkit-user-select: none; }
+
+      /* subtle focus ring for keyboard users */
+      :focus-visible { outline: 2px solid rgba(79,70,229,.45); outline-offset: 2px; border-radius: 10px; }
+    </style>
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <script>
+      const { useCallback, useEffect, useMemo, useReducer, useRef, useState } = React;
+
+      // -----------------------------
+      // Minimal Icon Set (inline SVG)
+      // -----------------------------
+      function Icon({ name, size = 18, className = "" }) {
+        const common = {
+          width: size,
+          height: size,
+          viewBox: "0 0 24 24",
+          fill: "none",
+          xmlns: "http://www.w3.org/2000/svg",
+          className,
+        };
+
+        const Stroke = (props) =>
+          React.createElement("path", {
+            stroke: "currentColor",
+            strokeWidth: 2,
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          });
+
+        switch (name) {
+          case "layout":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M3 3h18v18H3z" }),
+              React.createElement(Stroke, { d: "M3 9h18" }),
+              React.createElement(Stroke, { d: "M9 21V9" })
+            );
+          case "plus":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M12 5v14" }),
+              React.createElement(Stroke, { d: "M5 12h14" })
+            );
+          case "x":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M18 6L6 18" }),
+              React.createElement(Stroke, { d: "M6 6l12 12" })
+            );
+          case "users":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" }),
+              React.createElement(Stroke, { d: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" }),
+              React.createElement(Stroke, { d: "M23 21v-2a4 4 0 0 0-3-3.87" }),
+              React.createElement(Stroke, { d: "M16 3.13a4 4 0 0 1 0 7.75" })
+            );
+          case "shield":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" }),
+              React.createElement(Stroke, { d: "M12 8v4" }),
+              React.createElement(Stroke, { d: "M12 16h.01" })
+            );
+          case "trash":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M3 6h18" }),
+              React.createElement(Stroke, { d: "M8 6V4h8v2" }),
+              React.createElement(Stroke, { d: "M19 6l-1 14H6L5 6" }),
+              React.createElement(Stroke, { d: "M10 11v6" }),
+              React.createElement(Stroke, { d: "M14 11v6" })
+            );
+          case "download":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }),
+              React.createElement(Stroke, { d: "M7 10l5 5 5-5" }),
+              React.createElement(Stroke, { d: "M12 15V3" })
+            );
+          case "upload":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }),
+              React.createElement(Stroke, { d: "M7 8l5-5 5 5" }),
+              React.createElement(Stroke, { d: "M12 3v12" })
+            );
+          case "search":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M21 21l-4.3-4.3" }),
+              React.createElement(Stroke, { d: "M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" })
+            );
+          case "undo":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M3 7v6h6" }),
+              React.createElement(Stroke, { d: "M21 17a9 9 0 0 0-9-9H3" })
+            );
+          case "redo":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M21 7v6h-6" }),
+              React.createElement(Stroke, { d: "M3 17a9 9 0 0 1 9-9h9" })
+            );
+          case "calendar":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M8 2v4" }),
+              React.createElement(Stroke, { d: "M16 2v4" }),
+              React.createElement(Stroke, { d: "M3 10h18" }),
+              React.createElement(Stroke, { d: "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" })
+            );
+          case "milestone":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M7 22V2" }),
+              React.createElement(Stroke, { d: "M7 4h10l-2 3 2 3H7" })
+            );
+          case "link":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M10 13a5 5 0 0 1 0-7l1-1a5 5 0 0 1 7 7l-1 1" }),
+              React.createElement(Stroke, { d: "M14 11a5 5 0 0 1 0 7l-1 1a5 5 0 0 1-7-7l1-1" })
+            );
+          case "alert":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0Z" }),
+              React.createElement(Stroke, { d: "M12 9v4" }),
+              React.createElement(Stroke, { d: "M12 17h.01" })
+            );
+          case "bar":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M3 3v18h18" }),
+              React.createElement(Stroke, { d: "M7 15v4" }),
+              React.createElement(Stroke, { d: "M11 11v8" }),
+              React.createElement(Stroke, { d: "M15 7v12" }),
+              React.createElement(Stroke, { d: "M19 5v14" })
+            );
+          case "message":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" })
+            );
+          case "todo":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M9 6h12" }),
+              React.createElement(Stroke, { d: "M9 12h12" }),
+              React.createElement(Stroke, { d: "M9 18h12" }),
+              React.createElement(Stroke, { d: "M3 6h.01" }),
+              React.createElement(Stroke, { d: "M3 12h.01" }),
+              React.createElement(Stroke, { d: "M3 18h.01" })
+            );
+          case "swap":
+            return React.createElement(
+              "svg",
+              common,
+              React.createElement(Stroke, { d: "M7 16l-4 4 4 4" }),
+              React.createElement(Stroke, { d: "M3 20h14a4 4 0 0 0 4-4V4" }),
+              React.createElement(Stroke, { d: "M17 8l4-4-4-4" }),
+              React.createElement(Stroke, { d: "M21 4H7a4 4 0 0 0-4 4v4" })
+            );
+          default:
+            return React.createElement("span", { className: "inline-block", style: { width: size, height: size } });
+        }
+      }
+
+      // -----------------------------
+      // Utils
+      // -----------------------------
+      const STORAGE_KEY = "stratos_pm_spa_github_pages_v1";
+      const ROW_HEIGHT = 60;
+      const DEFAULT_PROJECT_START = "2025-01-01";
+      const DEFAULT_HORIZON_DAYS = 60;
+
+      // ✅ 修復：左右（矩陣/甘特）任務條的垂直對齊統一常數
+      // Left matrix card uses: top-3 and height 11 => visual center around 18px
+      // Right gantt bar should match same top value
+      const BAR_TOP = 12;      // px
+      const BAR_HEIGHT = 44;   // px (h-11)
+
+      const PRIORITIES = [
+        { id: "high", label: "高 (High)", badge: "bg-red-50 text-red-600 ring-red-200" },
+        { id: "medium", label: "中 (Medium)", badge: "bg-orange-50 text-orange-600 ring-orange-200" },
+        { id: "low", label: "低 (Low)", badge: "bg-blue-50 text-blue-600 ring-blue-200" },
+      ];
+      const CATEGORIES = ["需求分析", "設計", "開發", "測試", "上線", "維運"];
+      const uid = () => `t${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
+      const addDays = (date, days) => {
+        const d = date instanceof Date ? new Date(date) : new Date(date);
+        d.setDate(d.getDate() + days);
+        return d;
+      };
+      const formatDate = (date) => {
+        const d = date instanceof Date ? date : new Date(date);
+        if (Number.isNaN(d.getTime())) return "Invalid";
+        return d.toISOString().split("T")[0];
+      };
+      const diffDays = (d1, d2) => {
+        const t1 = new Date(d1);
+        const t2 = new Date(d2);
+        t1.setHours(0, 0, 0, 0);
+        t2.setHours(0, 0, 0, 0);
+        return Math.round((t2 - t1) / 86400000);
+      };
+      const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+      // ✅ cycle detect
+      const hasCycle = (tasks) => {
+        const next = new Map(tasks.map((t) => [t.id, t.dependency]));
+        const seenGlobal = new Set();
+        for (const t of tasks) {
+          if (seenGlobal.has(t.id)) continue;
+          const seenPath = new Set();
+          let cur = t.id;
+          while (cur) {
+            if (seenPath.has(cur)) return true;
+            if (seenGlobal.has(cur)) break;
+            seenPath.add(cur);
+            cur = next.get(cur) || null;
+          }
+          for (const id of seenPath) seenGlobal.add(id);
+        }
+        return false;
+      };
+
+      // ✅ auto schedule
+      const autoScheduleTasks = (tasks) => {
+        const byId = new Map(tasks.map((t) => [t.id, { ...t }]));
+        const getEnd = (t) => {
+          const s = new Date(t.startDate);
+          return addDays(s, Math.max(1, Number(t.duration) || 1) - 1);
+        };
+
+        let changed = true;
+        let guard = 0;
+        while (changed && guard < 20) {
+          changed = false;
+          guard += 1;
+          for (const t of byId.values()) {
+            if (!t.dependency) continue;
+            const dep = byId.get(t.dependency);
+            if (!dep) continue;
+            const depEnd = getEnd(dep);
+            const minStart = addDays(depEnd, 1);
+            const curStart = new Date(t.startDate);
+            if (curStart < minStart) {
+              t.startDate = formatDate(minStart);
+              changed = true;
+            }
+          }
+        }
+        return Array.from(byId.values());
+      };
+
+      // ✅ undo/redo
+      const initialHistory = (present) => ({ past: [], present, future: [] });
+      function historyReducer(state, action) {
+        switch (action.type) {
+          case "SET":
+            return { past: [...state.past, state.present], present: action.present, future: [] };
+          case "UNDO": {
+            if (state.past.length === 0) return state;
+            const previous = state.past[state.past.length - 1];
+            const past = state.past.slice(0, -1);
+            return { past, present: previous, future: [state.present, ...state.future] };
+          }
+          case "REDO": {
+            if (state.future.length === 0) return state;
+            const next = state.future[0];
+            const future = state.future.slice(1);
+            return { past: [...state.past, state.present], present: next, future };
+          }
+          case "RESET":
+            return initialHistory(action.present);
+          default:
+            return state;
+        }
+      }
+
+      // -----------------------------
+      // default data
+      // -----------------------------
+      const defaultState = {
+        projectStartDate: DEFAULT_PROJECT_START,
+        horizonDays: DEFAULT_HORIZON_DAYS,
+        zoom: 60,
+        viewMode: "day", // day, week, month
+        autoSchedule: true,
+        collapsedDepts: [], // collapsed department IDs
+        departments: [
+          { id: "RD", name: "研發部", color: "bg-indigo-600", members: ["Alex", "Mike", "Ken", "主管-老張"] },
+          { id: "DES", name: "設計部", color: "bg-fuchsia-600", members: ["Sarah", "Lily", "主管-小美"] },
+        ],
+        tasks: [
+          {
+            id: "t1",
+            title: "核心架構設計",
+            startDate: "2025-01-01",
+            duration: 7,
+            dept: "RD",
+            assignee: "Alex",
+            verifier: "主管-老張",
+            progress: 100,
+            priority: "high",
+            category: "需求分析",
+            history: [{ date: "2025-01-01 10:00", text: "架構初步校對完成", author: "PM" }],
+            dependency: null,
+          },
+          {
+            id: "t2",
+            title: "API 接口開發",
+            startDate: "2025-01-08",
+            duration: 10,
+            dept: "RD",
+            assignee: "Mike",
+            verifier: "主管-老張",
+            progress: 30,
+            priority: "medium",
+            category: "開發",
+            history: [],
+            dependency: "t1",
+          },
+        ],
+        checkpoints: [{ id: 1, name: "Q1 審核點", date: "2025-01-15" }],
+      };
+
+      // ✅ localStorage load/save
+      const loadState = () => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return defaultState;
+          const parsed = JSON.parse(raw);
+          return {
+            ...defaultState,
+            ...parsed,
+            departments: parsed.departments?.length ? parsed.departments : defaultState.departments,
+            tasks: parsed.tasks?.length ? parsed.tasks : defaultState.tasks,
+            checkpoints: parsed.checkpoints?.length ? parsed.checkpoints : defaultState.checkpoints,
+            autoSchedule: typeof parsed.autoSchedule === "boolean" ? parsed.autoSchedule : defaultState.autoSchedule,
+            viewMode: parsed.viewMode || defaultState.viewMode,
+            collapsedDepts: parsed.collapsedDepts || defaultState.collapsedDepts,
+          };
+        } catch {
+          return defaultState;
+        }
+      };
+
+      const saveState = (state) => {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+      };
+
+      // -----------------------------
+      // App
+      // -----------------------------
+      function App() {
+        const [hist, dispatch] = useReducer(historyReducer, undefined, () => initialHistory(loadState()));
+        const state = hist.present;
+
+        const { departments, tasks, checkpoints, projectStartDate, zoom, horizonDays, autoSchedule, viewMode, collapsedDepts } = state;
+
+        // UI
+        const [activeTab, setActiveTab] = useState("tasks");
+        const [selectedTaskId, setSelectedTaskId] = useState(null);
+        const [tempTask, setTempTask] = useState(null);
+        const [showRiskOnly, setShowRiskOnly] = useState(false);
+        const [newComment, setNewComment] = useState("");
+        const [newCp, setNewCp] = useState({ name: "", date: formatDate(new Date()) });
+
+        // search / sort
+        const [q, setQ] = useState("");
+        const [sortKey, setSortKey] = useState("startDate");
+        const [sortDir, setSortDir] = useState("asc");
+
+        // team
+        const [newDeptName, setNewDeptName] = useState("");
+        const [newMemberByDept, setNewMemberByDept] = useState({});
+
+        // ✅ 左右同步滾動與垂直對齊
+        const leftPaneRef = useRef(null);
+        const rightPaneRef = useRef(null);
+        const tasksHeaderRef = useRef(null);
+        const isSyncing = useRef(false);
+        const [ganttOffset, setGanttOffset] = useState(0);
+
+        // import/export
+        const fileRef = useRef(null);
+
+        // drag / resize
+        const [drag, setDrag] = useState(null);
+
+        // ✅ autosave
+        useEffect(() => saveState(state), [state]);
+
+        // keyboard shortcuts
+        useEffect(() => {
+          const onKeyDown = (e) => {
+            const isMac = navigator.platform.toLowerCase().includes("mac");
+            const mod = isMac ? e.metaKey : e.ctrlKey;
+
+            if (mod && e.key.toLowerCase() === "z" && !e.shiftKey) {
+              e.preventDefault();
+              dispatch({ type: "UNDO" });
+            }
+            if ((mod && e.key.toLowerCase() === "z" && e.shiftKey) || (mod && e.key.toLowerCase() === "y")) {
+              e.preventDefault();
+              dispatch({ type: "REDO" });
+            }
+            if (e.key === "Escape") setSelectedTaskId(null);
+          };
+          window.addEventListener("keydown", onKeyDown);
+          return () => window.removeEventListener("keydown", onKeyDown);
+        }, []);
+
+        // ✅ 同步滾動邏輯
+        useEffect(() => {
+          const leftEl = leftPaneRef.current;
+          const rightEl = rightPaneRef.current;
+          if (!leftEl || !rightEl) return;
+
+          const syncScroll = (from, to) => {
+            if (isSyncing.current) return;
+            isSyncing.current = true;
+            to.scrollTop = from.scrollTop;
+            setTimeout(() => {
+              isSyncing.current = false;
+            }, 16);
+          };
+
+          const handleLeftScroll = () => syncScroll(leftEl, rightEl);
+          const handleRightScroll = () => syncScroll(rightEl, leftEl);
+
+          leftEl.addEventListener("scroll", handleLeftScroll);
+          rightEl.addEventListener("scroll", handleRightScroll);
+
+          return () => {
+            leftEl.removeEventListener("scroll", handleLeftScroll);
+            rightEl.removeEventListener("scroll", handleRightScroll);
+          };
+        }, []);
+
+        const setState = useCallback((next) => dispatch({ type: "SET", present: next }), []);
+
+        // risk logic - 增強風險檢測
+        const getTaskDetails = useCallback(
+          (task) => {
+            const start = new Date(task.startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = addDays(start, Math.max(1, Number(task.duration) || 1) - 1);
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const depTask = task.dependency ? tasks.find((t) => t.id === task.dependency) : null;
+            const depNotMet = depTask && depTask.progress < 100;
+
+            let isRisk = false;
+            let riskReason = "";
+            let isBlocked = false;
+            let isDelay = false;
+            let riskLevel = "none"; // none, low, medium, high, critical
+
+            if (task.progress < 100 && end < today) {
+              isRisk = true;
+              isDelay = true;
+              riskReason = "已逾期 (Overdue)";
+              riskLevel = "critical";
+            } else if (depNotMet) {
+              isRisk = true;
+              isBlocked = true;
+              riskReason = `依賴項未完成 (${depTask.title}: ${depTask.progress}%)`;
+              riskLevel = "high";
+            } else if (today >= start && task.progress === 0 && task.progress < 100) {
+              isRisk = true;
+              const daysLate = diffDays(start, today);
+              riskReason = `已過開始日期 ${daysLate} 天但未啟動`;
+              riskLevel = daysLate > 3 ? "high" : "medium";
+            } else if (today >= start && today <= end && task.progress < 100) {
+              const totalDays = Math.max(1, Number(task.duration) || 1);
+              const daysPassed = diffDays(start, today) + 1;
+              const expectedProgress = Math.min(100, (daysPassed / totalDays) * 100);
+              const progressGap = expectedProgress - task.progress;
+
+              if (progressGap > 20) {
+                isRisk = true;
+                riskReason = `進度落後 ${Math.round(progressGap)}% (預期: ${Math.round(expectedProgress)}%)`;
+                riskLevel = progressGap > 40 ? "high" : "medium";
+              }
+            } else if (task.priority === "high" && task.progress < 20 && task.progress < 100) {
+              const daysFromStart = diffDays(start, today);
+              if (daysFromStart > 3) {
+                isRisk = true;
+                riskReason = "高優先級任務停滯";
+                riskLevel = "medium";
+              }
+            } else if (task.progress < 80 && task.progress < 100) {
+              const daysUntilEnd = diffDays(today, end);
+              if (daysUntilEnd >= 0 && daysUntilEnd <= 3) {
+                isRisk = true;
+                riskReason = `即將到期 (${daysUntilEnd}天後) 進度僅${task.progress}%`;
+                riskLevel = "low";
+              }
+            }
+
+            return { start, end, isRisk, riskReason, isBlocked, depTask, isDelay, riskLevel };
+          },
+          [tasks]
+        );
+
+        // selected -> tempTask
+        useEffect(() => {
+          if (!selectedTaskId) return setTempTask(null);
+          const t = tasks.find((x) => x.id === selectedTaskId);
+          if (!t) return setTempTask(null);
+          setTempTask(JSON.parse(JSON.stringify(t)));
+        }, [selectedTaskId, tasks]);
+
+        // ✅ commit tasks (cycle guard + optional reschedule)
+        const commitTasks = useCallback(
+          (nextTasks, { reschedule = false } = {}) => {
+            let finalTasks = nextTasks;
+            if (hasCycle(finalTasks)) {
+              alert("偵測到 dependency cycle，已拒絕此次更新。");
+              return;
+            }
+            if (autoSchedule && reschedule) {
+              finalTasks = autoScheduleTasks(finalTasks);
+            }
+            setState({ ...state, tasks: finalTasks });
+          },
+          [autoSchedule, setState, state]
+        );
+
+        const toggleAutoSchedule = useCallback(() => {
+          const nextAuto = !autoSchedule;
+          const nextState = { ...state, autoSchedule: nextAuto };
+          if (nextAuto) {
+            const scheduled = autoScheduleTasks(state.tasks);
+            dispatch({ type: "SET", present: { ...nextState, tasks: scheduled } });
+          } else {
+            dispatch({ type: "SET", present: nextState });
+          }
+        }, [autoSchedule, state]);
+
+        const runAutoScheduleNow = useCallback(() => {
+          if (hasCycle(tasks)) return alert("存在 dependency cycle，無法排程。");
+          const next = autoScheduleTasks(tasks);
+          commitTasks(next, { reschedule: false });
+        }, [tasks, commitTasks]);
+
+        // create/delete/save
+        const createTask = useCallback(() => {
+          const dept = departments[0]?.id || "RD";
+          const firstMember = departments.find((d) => d.id === dept)?.members?.[0] || "Alex";
+
+          const newTask = {
+            id: uid(),
+            title: "新任務項目",
+            startDate: formatDate(new Date()),
+            duration: 5,
+            dept,
+            assignee: firstMember,
+            verifier: departments.find((d) => d.id === dept)?.members?.find((m) => m.includes("主管")) || firstMember,
+            progress: 0,
+            priority: "medium",
+            category: "開發",
+            history: [],
+            dependency: null,
+          };
+
+          const next = [...tasks, newTask];
+          commitTasks(next, { reschedule: true });
+          setSelectedTaskId(newTask.id);
+          setActiveTab("tasks");
+        }, [departments, tasks, commitTasks]);
+
+        const handleDeleteTask = useCallback(
+          (id) => {
+            const hasDependents = tasks.some((t) => t.dependency === id);
+            if (hasDependents) {
+              const ok = confirm("有其他任務依賴此任務，刪除後將自動解除它們的 dependency。確定要刪除？");
+              if (!ok) return;
+            }
+            const next = tasks
+              .filter((t) => t.id !== id)
+              .map((t) => (t.dependency === id ? { ...t, dependency: null } : t));
+            commitTasks(next, { reschedule: true });
+            setSelectedTaskId(null);
+          },
+          [tasks, commitTasks]
+        );
+
+        const handleSave = useCallback(() => {
+          if (!tempTask) return;
+
+          const cleaned = {
+            ...tempTask,
+            title: (tempTask.title || "").trim() || "未命名任務",
+            duration: Math.max(1, Number(tempTask.duration) || 1),
+            progress: clamp(Number(tempTask.progress) || 0, 0, 100),
+            startDate: formatDate(tempTask.startDate),
+          };
+          if (cleaned.startDate === "Invalid") return alert("起始日期不合法。");
+
+          const nextTasks = tasks.map((t) => (t.id === cleaned.id ? cleaned : t));
+          if (hasCycle(nextTasks)) return alert("依賴關係會形成循環（Cycle）。請調整 dependency。");
+
+          let merged = nextTasks;
+          if (autoSchedule) merged = autoScheduleTasks(merged);
+
+          commitTasks(merged, { reschedule: false });
+          setSelectedTaskId(null);
+        }, [tempTask, tasks, autoSchedule, commitTasks]);
+
+        // ✅ export / import
+        const exportJSON = useCallback(() => {
+          const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `stratos_pm_snapshot_${formatDate(new Date())}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }, [state]);
+
+        const importJSON = useCallback(async (file) => {
+          try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            const next = {
+              ...defaultState,
+              ...parsed,
+              departments: parsed.departments?.length ? parsed.departments : defaultState.departments,
+              tasks: parsed.tasks?.length ? parsed.tasks : defaultState.tasks,
+              checkpoints: parsed.checkpoints?.length ? parsed.checkpoints : defaultState.checkpoints,
+              autoSchedule: typeof parsed.autoSchedule === "boolean" ? parsed.autoSchedule : defaultState.autoSchedule,
+            };
+            if (hasCycle(next.tasks)) {
+              alert("匯入失敗：資料存在 dependency cycle。");
+              return;
+            }
+            const tasksFinal = next.autoSchedule ? autoScheduleTasks(next.tasks) : next.tasks;
+            dispatch({ type: "RESET", present: { ...next, tasks: tasksFinal } });
+            setSelectedTaskId(null);
+            alert("匯入成功，已還原快照。");
+          } catch {
+            alert("匯入失敗：檔案不是合法 JSON 或格式不相容。");
+          }
+        }, []);
+
+        // team mgmt
+        const toggleDeptCollapse = useCallback((deptId) => {
+          const isCollapsed = collapsedDepts.includes(deptId);
+          const nextCollapsed = isCollapsed
+            ? collapsedDepts.filter(id => id !== deptId)
+            : [...collapsedDepts, deptId];
+          setState({ ...state, collapsedDepts: nextCollapsed });
+        }, [collapsedDepts, setState, state]);
+
+        const changeViewMode = useCallback((mode) => {
+          setState({ ...state, viewMode: mode });
+        }, [setState, state]);
+
+        const addDepartment = useCallback(() => {
+          const name = newDeptName.trim();
+          if (!name) return;
+          const id = name.toUpperCase().replace(/\s+/g, "_").slice(0, 8);
+          if (departments.some((d) => d.id === id)) return alert("部門代碼重複，請換個名稱。");
+          const colors = ["bg-indigo-600", "bg-fuchsia-600", "bg-emerald-600", "bg-sky-600", "bg-amber-600", "bg-rose-600"];
+          const color = colors[departments.length % colors.length];
+          setState({ ...state, departments: [...departments, { id, name, color, members: ["主管-待補"] }] });
+          setNewDeptName("");
+        }, [newDeptName, departments, setState, state]);
+
+        const removeDepartment = useCallback(
+          (deptId) => {
+            const deptTasks = tasks.filter(t => t.dept === deptId);
+            if (deptTasks.length > 0) {
+              const ok = confirm(`此部門有 ${deptTasks.length} 個任務，刪除後這些任務將無法顯示。確定要刪除？`);
+              if (!ok) return;
+            }
+            const nextDepartments = departments.filter((d) => d.id !== deptId);
+            const nextTasks = tasks.filter((t) => t.dept !== deptId);
+            const nextCollapsed = collapsedDepts.filter(id => id !== deptId);
+            setState({ ...state, departments: nextDepartments, tasks: nextTasks, collapsedDepts: nextCollapsed });
+          },
+          [departments, tasks, collapsedDepts, setState, state]
+        );
+
+        const addMember = useCallback(
+          (deptId) => {
+            const name = (newMemberByDept[deptId] || "").trim();
+            if (!name) return;
+            const nextDepartments = departments.map((d) => {
+              if (d.id !== deptId) return d;
+              if (d.members.includes(name)) return d;
+              return { ...d, members: [...d.members, name] };
+            });
+            setState({ ...state, departments: nextDepartments });
+            setNewMemberByDept((m) => ({ ...m, [deptId]: "" }));
+          },
+          [newMemberByDept, departments, setState, state]
+        );
+
+        const removeMember = useCallback(
+          (deptId, member) => {
+            const nextDepartments = departments.map((d) => {
+              if (d.id !== deptId) return d;
+              return { ...d, members: d.members.filter((m) => m !== member) };
+            });
+            const fallback = nextDepartments.find((d) => d.id === deptId)?.members?.[0] || "未指派";
+            const nextTasks = tasks.map((t) => {
+              if (t.dept !== deptId) return t;
+              if (t.assignee !== member) return t;
+              return { ...t, assignee: fallback };
+            });
+            commitTasks(nextTasks, { reschedule: true });
+            setState({ ...state, departments: nextDepartments, tasks: nextTasks });
+          },
+          [departments, tasks, setState, state, commitTasks]
+        );
+
+        // sort/filter
+        const toggleSort = (key) => {
+          if (sortKey !== key) {
+            setSortKey(key);
+            setSortDir("asc");
+          } else {
+            setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+          }
+        };
+
+        const filteredSortedTasks = useMemo(() => {
+          const qLower = q.trim().toLowerCase();
+          let list = tasks;
+
+          if (showRiskOnly) list = list.filter((t) => getTaskDetails(t).isRisk);
+
+          if (qLower) {
+            list = list.filter((t) => {
+              const dep = t.dependency ? tasks.find((x) => x.id === t.dependency)?.title : "";
+              return (
+                (t.title || "").toLowerCase().includes(qLower) ||
+                (t.assignee || "").toLowerCase().includes(qLower) ||
+                (t.verifier || "").toLowerCase().includes(qLower) ||
+                (t.category || "").toLowerCase().includes(qLower) ||
+                (t.dept || "").toLowerCase().includes(qLower) ||
+                (dep || "").toLowerCase().includes(qLower)
+              );
+            });
+          }
+
+          const priorityRank = { high: 3, medium: 2, low: 1 };
+          const getVal = (t) => {
+            const { end } = getTaskDetails(t);
+            switch (sortKey) {
+              case "startDate": return new Date(t.startDate).getTime();
+              case "endDate": return end.getTime();
+              case "progress": return Number(t.progress) || 0;
+              case "priority": return priorityRank[t.priority] || 0;
+              default: return new Date(t.startDate).getTime();
+            }
+          };
+
+          list = [...list].sort((a, b) => {
+            const av = getVal(a);
+            const bv = getVal(b);
+            const delta = av > bv ? 1 : av < bv ? -1 : 0;
+            return sortDir === "asc" ? delta : -delta;
+          });
+
+          return list;
+        }, [tasks, q, showRiskOnly, sortKey, sortDir, getTaskDetails]);
+
+        // ✅ visualRows includes dept placeholders; right side must not render bars for dept rows
+        const visualRows = useMemo(() => {
+          const rows = [];
+          departments.forEach((dept) => {
+            const deptTasks = filteredSortedTasks.filter((t) => t.dept === dept.id);
+            const isCollapsed = collapsedDepts.includes(dept.id);
+            rows.push({ type: "dept", id: `dept-${dept.id}`, data: dept, isCollapsed, taskCount: deptTasks.length });
+            if (!isCollapsed) {
+              deptTasks.forEach((task) => rows.push({ type: "task", id: task.id, data: task }));
+            }
+          });
+          return rows;
+        }, [filteredSortedTasks, departments, collapsedDepts]);
+
+        const avgProgress = useMemo(() => {
+          const base = tasks.length || 1;
+          return Math.round(tasks.reduce((acc, t) => acc + (Number(t.progress) || 0), 0) / base);
+        }, [tasks]);
+        const riskCount = useMemo(() => tasks.filter((t) => getTaskDetails(t).isRisk).length, [tasks, getTaskDetails]);
+        const totalHeadcount = useMemo(() => departments.reduce((acc, d) => acc + d.members.length, 0), [departments]);
+        const todayOffset = useMemo(() => diffDays(projectStartDate, formatDate(new Date())), [projectStartDate]);
+
+        // ✅ dependency lines（以 visualRows 為基準，部門列一樣佔行高，但不畫任務）
+        const depLines = useMemo(() => {
+          const rowIndex = new Map();
+          let idx = 0;
+          for (const row of visualRows) {
+            if (row.type === "task") rowIndex.set(row.data.id, idx);
+            idx += 1;
+          }
+
+          const lines = [];
+          for (const row of visualRows) {
+            if (row.type !== "task") continue;
+            const t = row.data;
+            if (!t.dependency) continue;
+            const dep = tasks.find((x) => x.id === t.dependency);
+            if (!dep) continue;
+
+            const fromIdx = rowIndex.get(dep.id);
+            const toIdx = rowIndex.get(t.id);
+            if (fromIdx == null || toIdx == null) continue;
+
+            const depStart = new Date(dep.startDate);
+            const depEnd = addDays(depStart, Math.max(1, Number(dep.duration) || 1) - 1);
+
+            const tStart = new Date(t.startDate);
+
+            const x1 = (diffDays(projectStartDate, depEnd) + 1) * zoom;
+            const x2 = diffDays(projectStartDate, tStart) * zoom;
+
+            // ✅ y座標對齊任務條中心點：行高位置 + BAR_TOP + 條高度的一半
+            const y1 = fromIdx * ROW_HEIGHT + BAR_TOP + BAR_HEIGHT / 2;
+            const y2 = toIdx * ROW_HEIGHT + BAR_TOP + BAR_HEIGHT / 2;
+
+            lines.push({
+              id: `${dep.id}->${t.id}`,
+              x1, y1, x2, y2,
+              blocked: (Number(dep.progress) || 0) < 100,
+            });
+          }
+          return lines;
+        }, [visualRows, tasks, projectStartDate, zoom]);
+
+        // ✅ 直接量測左側「任務矩陣」標題區塊的實際高度，作為右側甘特圖任務列的統一 offset
+        // 這樣每一列的起點都是：headerHeight + rowIndex * ROW_HEIGHT，左右完全一致，不需要動態抓任務列
+        useEffect(() => {
+          if (activeTab !== "tasks") return;
+          const container = leftPaneRef.current;
+          const header = tasksHeaderRef.current;
+          if (!container || !header) return;
+
+          const rect = header.getBoundingClientRect();
+          const headerHeight = rect.height;
+          if (!Number.isNaN(headerHeight)) {
+            setGanttOffset(headerHeight);
+          }
+        }, [activeTab]);
+
+        // -----------------------------
+        // Drag / Resize on Gantt
+        // -----------------------------
+        const beginDrag = (e, task, mode) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setSelectedTaskId(task.id);
+
+          setDrag({
+            taskId: task.id,
+            mode, // move | resize-l | resize-r
+            startX: e.clientX,
+            originStartDate: task.startDate,
+            originDuration: Math.max(1, Number(task.duration) || 1),
+          });
+        };
+
+        const applyDrag = useCallback(
+          (clientX) => {
+            if (!drag) return;
+            const dx = clientX - drag.startX;
+            const deltaDays = Math.round(dx / zoom);
+            if (deltaDays === 0) return;
+
+            const t = tasks.find((x) => x.id === drag.taskId);
+            if (!t) return;
+
+            const originStart = new Date(drag.originStartDate);
+            const originDur = drag.originDuration;
+
+            let nextStart = originStart;
+            let nextDur = originDur;
+
+            if (drag.mode === "move") nextStart = addDays(originStart, deltaDays);
+            if (drag.mode === "resize-r") nextDur = Math.max(1, originDur + deltaDays);
+
+            if (drag.mode === "resize-l") {
+              const proposedStart = addDays(originStart, deltaDays);
+              const proposedDur = originDur - deltaDays;
+              if (proposedDur < 1) {
+                const fixDelta = originDur - 1;
+                nextStart = addDays(originStart, fixDelta);
+                nextDur = 1;
+              } else {
+                nextStart = proposedStart;
+                nextDur = proposedDur;
+              }
+            }
+
+            const updated = tasks.map((x) =>
+              x.id === drag.taskId ? { ...x, startDate: formatDate(nextStart), duration: nextDur } : x
+            );
+
+            // ✅ drag changes should respect autoSchedule when ON
+            commitTasks(updated, { reschedule: true });
+          },
+          [drag, zoom, tasks, commitTasks]
+        );
+
+        useEffect(() => {
+          if (!drag) return;
+          const onMove = (e) => applyDrag(e.clientX);
+          const onUp = () => setDrag(null);
+          window.addEventListener("mousemove", onMove);
+          window.addEventListener("mouseup", onUp);
+          return () => {
+            window.removeEventListener("mousemove", onMove);
+            window.removeEventListener("mouseup", onUp);
+          };
+        }, [drag, applyDrag]);
+
+        // -----------------------------
+        // Render
+        // -----------------------------
+        return React.createElement(
+          "div",
+          { className: "flex flex-col h-screen bg-[#f8fafc] text-slate-800 font-sans overflow-hidden" },
+
+          // Header
+          React.createElement(
+            "header",
+            { className: "bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm z-30" },
+            React.createElement(
+              "div",
+              { className: "flex items-center gap-6" },
+              React.createElement(
+                "div",
+                { className: "flex items-center gap-2" },
+                React.createElement("div", { className: "bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-200" }, React.createElement(Icon, { name: "layout", size: 20 })),
+                React.createElement("h1", { className: "text-xl font-black text-slate-900 tracking-tighter italic" }, "STRATOS ", React.createElement("span", { className: "text-indigo-600" }, "PM"))
+              ),
+              React.createElement("div", { className: "h-6 w-px bg-slate-200 mx-2" }),
+              React.createElement(
+                "div",
+                { className: "flex bg-slate-100 p-1 rounded-xl" },
+                React.createElement(
+                  "button",
+                  {
+                    onClick: () => { setShowRiskOnly(false); setActiveTab("tasks"); },
+                    className: `px-4 py-1.5 rounded-lg text-xs font-black transition-all ${!showRiskOnly && activeTab === "tasks" ? "bg-white text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-600"}`
+                  },
+                  "全盤掃描"
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    onClick: () => { setShowRiskOnly(true); setActiveTab("tasks"); },
+                    className: `px-4 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-2 ${showRiskOnly ? "bg-red-600 text-white shadow-md" : "text-slate-400 hover:text-slate-600"}`
+                  },
+                  React.createElement(Icon, { name: "shield", size: 14 }),
+                  `檢視風險 (${riskCount})`
+                )
+              ),
+              React.createElement(
+                "div",
+                { className: "hidden lg:flex items-center gap-2 bg-slate-50 ring-1 ring-slate-200 rounded-xl px-3 py-2 w-[340px]" },
+                React.createElement(Icon, { name: "search", size: 16, className: "text-slate-400" }),
+                React.createElement("input", {
+                  value: q,
+                  onChange: (e) => setQ(e.target.value),
+                  placeholder: "搜尋任務 / 人員 / 類別 / 依賴...",
+                  className: "bg-transparent outline-none text-xs font-bold text-slate-700 w-full"
+                }),
+                q ? React.createElement("button", { onClick: () => setQ(""), className: "text-slate-400 hover:text-slate-600" }, React.createElement(Icon, { name: "x", size: 16 })) : null
+              )
+            ),
+
+            React.createElement(
+              "div",
+              { className: "flex items-center gap-3" },
+
+              React.createElement(
+                "button",
+                { onClick: exportJSON, className: "hidden md:flex items-center gap-2 bg-white ring-1 ring-slate-200 px-4 py-2 rounded-xl text-xs font-black text-slate-700 hover:bg-slate-50 transition-all", title: "下載快照（JSON）" },
+                React.createElement(Icon, { name: "download", size: 16 }),
+                "下載快照"
+              ),
+              React.createElement(
+                "button",
+                { onClick: () => fileRef.current && fileRef.current.click(), className: "hidden md:flex items-center gap-2 bg-white ring-1 ring-slate-200 px-4 py-2 rounded-xl text-xs font-black text-slate-700 hover:bg-slate-50 transition-all", title: "上傳快照（JSON）還原" },
+                React.createElement(Icon, { name: "upload", size: 16 }),
+                "上傳還原"
+              ),
+              React.createElement("input", {
+                ref: fileRef,
+                type: "file",
+                accept: "application/json",
+                className: "hidden",
+                onChange: (e) => {
+                  const f = e.target.files && e.target.files[0];
+                  if (f) importJSON(f);
+                  e.target.value = "";
+                }
+              }),
+
+              React.createElement(
+                "div",
+                { className: "hidden lg:flex items-center gap-2 bg-slate-50 ring-1 ring-slate-200 rounded-xl px-2 py-2" },
+                React.createElement(
+                  "button",
+                  {
+                    onClick: toggleAutoSchedule,
+                    className: `px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${autoSchedule ? "bg-indigo-600 text-white shadow-sm" : "bg-white text-slate-600 ring-1 ring-slate-200"}`
+                  },
+                  `Auto Schedule: ${autoSchedule ? "ON" : "OFF"}`
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    onClick: runAutoScheduleNow,
+                    className: "px-3 py-1.5 rounded-lg text-[10px] font-black bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100 transition-all flex items-center gap-2",
+                    title: "立即重新排程"
+                  },
+                  React.createElement(Icon, { name: "swap", size: 14 }),
+                  "排程"
+                )
+              ),
+
+              React.createElement(
+                "div",
+                { className: "flex items-center gap-2" },
+                React.createElement(
+                  "button",
+                  {
+                    onClick: () => dispatch({ type: "UNDO" }),
+                    disabled: hist.past.length === 0,
+                    className: `p-2 rounded-xl ring-1 transition-all ${hist.past.length === 0 ? "bg-slate-50 text-slate-300 ring-slate-200" : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50"}`
+                  },
+                  React.createElement(Icon, { name: "undo", size: 16 })
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    onClick: () => dispatch({ type: "REDO" }),
+                    disabled: hist.future.length === 0,
+                    className: `p-2 rounded-xl ring-1 transition-all ${hist.future.length === 0 ? "bg-slate-50 text-slate-300 ring-slate-200" : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50"}`
+                  },
+                  React.createElement(Icon, { name: "redo", size: 16 })
+                )
+              ),
+
+              React.createElement(
+                "div",
+                { className: "flex bg-slate-100 p-1 rounded-xl" },
+                React.createElement(
+                  "button",
+                  { onClick: () => changeViewMode("day"), className: `px-3 py-1.5 text-[10px] font-black rounded-lg ${viewMode === "day" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400"}` },
+                  "日"
+                ),
+                React.createElement(
+                  "button",
+                  { onClick: () => changeViewMode("week"), className: `px-3 py-1.5 text-[10px] font-black rounded-lg ${viewMode === "week" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400"}` },
+                  "週"
+                ),
+                React.createElement(
+                  "button",
+                  { onClick: () => changeViewMode("month"), className: `px-3 py-1.5 text-[10px] font-black rounded-lg ${viewMode === "month" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400"}` },
+                  "月"
+                )
+              ),
+              React.createElement(
+                "div",
+                { className: "flex bg-slate-100 p-1 rounded-xl" },
+                React.createElement(
+                  "button",
+                  { onClick: () => setState({ ...state, zoom: 60 }), className: `px-4 py-1.5 text-[10px] font-black rounded-lg ${zoom === 60 ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400"}` },
+                  "標準"
+                ),
+                React.createElement(
+                  "button",
+                  { onClick: () => setState({ ...state, zoom: 30 }), className: `px-4 py-1.5 text-[10px] font-black rounded-lg ${zoom === 30 ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400"}` },
+                  "緊湊"
+                )
+              ),
+
+              React.createElement(
+                "button",
+                { onClick: createTask, className: "bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-100 flex items-center gap-2 text-sm font-black transition-all active:scale-95" },
+                React.createElement(Icon, { name: "plus", size: 18 }),
+                "建立任務"
+              )
+            )
+          ),
+
+          // Body
+          React.createElement(
+            "div",
+            { className: "flex flex-1 overflow-hidden" },
+
+            // Left panel
+            React.createElement(
+              "div",
+              { className: "w-[420px] flex-shrink-0 bg-white border-r border-slate-200 flex flex-col z-20 shadow-2xl shadow-slate-200/50" },
+
+              React.createElement(
+                "div",
+                { className: "grid grid-cols-3 border-b border-slate-100" },
+                React.createElement(
+                  "button",
+                  { onClick: () => setActiveTab("tasks"), className: `py-4 flex flex-col items-center gap-1 transition-all ${activeTab === "tasks" ? "text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/30" : "text-slate-400"}` },
+                  React.createElement(Icon, { name: "todo", size: 18 }),
+                  React.createElement("span", { className: "text-[10px] font-black uppercase" }, "任務矩陣")
+                ),
+                React.createElement(
+                  "button",
+                  { onClick: () => setActiveTab("team"), className: `py-4 flex flex-col items-center gap-1 transition-all ${activeTab === "team" ? "text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/30" : "text-slate-400"}` },
+                  React.createElement(Icon, { name: "users", size: 18 }),
+                  React.createElement("span", { className: "text-[10px] font-black uppercase" }, "團隊管理")
+                ),
+                React.createElement(
+                  "button",
+                  { onClick: () => setActiveTab("actions"), className: `py-4 flex flex-col items-center gap-1 transition-all ${activeTab === "actions" ? "text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/30" : "text-slate-400"}` },
+                  React.createElement(Icon, { name: "swap", size: 18 }),
+                  React.createElement("span", { className: "text-[10px] font-black uppercase" }, "專案控制")
+                )
+              ),
+
+              React.createElement(
+                "div",
+                { ref: leftPaneRef, className: "flex-1 overflow-y-auto custom-scrollbar" },
+
+                // tasks tab
+                activeTab === "tasks"
+                  ? React.createElement(
+                      React.Fragment,
+                      null,
+                        React.createElement(
+                          "div",
+                          { ref: tasksHeaderRef, className: "px-6 py-4 border-b border-slate-100 bg-slate-50/50 space-y-3" },
+                        React.createElement(
+                          "div",
+                          { className: "flex justify-between items-center" },
+                          React.createElement("span", { className: "text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]" }, "專案工作分解 (WBS)"),
+                          React.createElement("span", { className: "bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-black" }, `${tasks.length} 總項`)
+                        ),
+                        React.createElement(
+                          "div",
+                          { className: "flex items-center gap-2" },
+                          React.createElement(
+                            "button",
+                            { onClick: () => toggleSort("startDate"), className: `text-[10px] font-black px-2 py-1 rounded-lg ring-1 ${sortKey === "startDate" ? "bg-white ring-indigo-200 text-indigo-700" : "bg-slate-50 ring-slate-200 text-slate-500"}` },
+                            "依開始日"
+                          ),
+                          React.createElement(
+                            "button",
+                            { onClick: () => toggleSort("endDate"), className: `text-[10px] font-black px-2 py-1 rounded-lg ring-1 ${sortKey === "endDate" ? "bg-white ring-indigo-200 text-indigo-700" : "bg-slate-50 ring-slate-200 text-slate-500"}` },
+                            "依結束日"
+                          ),
+                          React.createElement(
+                            "button",
+                            { onClick: () => toggleSort("progress"), className: `text-[10px] font-black px-2 py-1 rounded-lg ring-1 ${sortKey === "progress" ? "bg-white ring-indigo-200 text-indigo-700" : "bg-slate-50 ring-slate-200 text-slate-500"}` },
+                            "依進度"
+                          ),
+                          React.createElement(
+                            "button",
+                            { onClick: () => toggleSort("priority"), className: `text-[10px] font-black px-2 py-1 rounded-lg ring-1 ${sortKey === "priority" ? "bg-white ring-indigo-200 text-indigo-700" : "bg-slate-50 ring-slate-200 text-slate-500"}` },
+                            "依優先"
+                          )
+                        ),
+                        React.createElement(
+                          "div",
+                          { className: "text-[10px] font-bold text-slate-400" },
+                          "提示：右側甘特圖可拖曳移動任務、拉左右邊 resize 調起訖（以天為單位）。"
+                        )
+                      ),
+
+                      visualRows.map((row, rowIndex) => {
+                        if (row.type === "dept") {
+                          return React.createElement(
+                            "div",
+                            {
+                              key: row.id,
+                              "data-row-index": rowIndex,
+                              "data-row-kind": "dept",
+                              className: "flex items-center px-6 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-all",
+                              style: { height: `${ROW_HEIGHT}px` },
+                              onClick: () => toggleDeptCollapse(row.data.id)
+                            },
+                            React.createElement(
+                              "div",
+                              { className: "flex items-center gap-2 flex-1" },
+                              React.createElement(
+                                "button",
+                                { className: "text-slate-400 hover:text-slate-600 transition-all", tabIndex: -1 },
+                                React.createElement(
+                                  "svg",
+                                  { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg", className: `transition-transform ${row.isCollapsed ? "" : "rotate-90"}` },
+                                  React.createElement("path", { d: "M9 18l6-6-6-6", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" })
+                                )
+                              ),
+                              React.createElement("div", { className: `w-1.5 h-4 rounded-full ${row.data.color} mr-2` }),
+                              React.createElement("span", { className: "text-xs font-black text-slate-600" }, row.data.name),
+                              React.createElement(
+                                "span",
+                                { className: "ml-2 bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-[9px] font-black" },
+                                `${row.taskCount} 項`
+                              )
+                            )
+                          );
+                        }
+
+                        const t = row.data;
+                        const { isRisk, riskReason, end, isBlocked, depTask, riskLevel } = getTaskDetails(t);
+                        const isSelected = selectedTaskId === t.id;
+
+                        let borderStyle = "";
+                        if (isSelected) {
+                          borderStyle = "border-l-4 border-l-indigo-600";
+                        } else if (isRisk) {
+                          if (riskLevel === 'critical') borderStyle = "border-l-4 border-l-red-500";
+                          else if (riskLevel === 'high') borderStyle = "border-l-3 border-l-orange-500";
+                          else if (riskLevel === 'medium') borderStyle = "border-l-2 border-l-yellow-500";
+                          else borderStyle = "border-l-2 border-l-blue-400";
+                        }
+
+                        return React.createElement(
+                          "div",
+                          {
+                            key: row.id,
+                            "data-row-index": rowIndex,
+                            "data-row-kind": "task",
+                            "data-task-id": t.id,
+                            onClick: () => setSelectedTaskId(t.id),
+                            className: `relative hover:bg-slate-50 cursor-pointer transition-all ${borderStyle} ${isSelected ? "bg-indigo-50/30 shadow-inner" : ""}`,
+                            style: { height: `${ROW_HEIGHT}px` }
+                          },
+                          React.createElement(
+                            "div",
+                            { className: "absolute left-6 right-6 flex flex-col justify-between", style: { top: `${BAR_TOP}px`, height: `${BAR_HEIGHT}px` } },
+                            React.createElement(
+                              "div",
+                              { className: "flex items-center justify-between" },
+                              React.createElement("span", { className: `text-sm font-black truncate max-w-[240px] ${isRisk ? "text-red-600" : "text-slate-800"}` }, t.title),
+                              React.createElement("span", { className: "text-[10px] font-mono text-slate-400 flex-shrink-0 ml-2" }, formatDate(end))
+                            ),
+                            React.createElement(
+                              "div",
+                              { className: "flex items-center justify-between" },
+                              React.createElement(
+                                "div",
+                                { className: "flex items-center gap-2 flex-wrap" },
+                                React.createElement("span", { className: "flex items-center gap-1 text-[10px] font-bold text-slate-500" }, React.createElement(Icon, { name: "users", size: 12 }), t.assignee),
+                                React.createElement(
+                                  "span",
+                                  { className: "inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600" },
+                                  t.priority.toUpperCase()
+                                ),
+                                t.dependency
+                                  ? React.createElement(
+                                      "span",
+                                      {
+                                        className: "flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600",
+                                        title: depTask ? `依賴：${depTask.title} (${depTask.progress}%)` : "依賴項"
+                                      },
+                                      React.createElement(Icon, { name: "link", size: 10 }),
+                                      "依賴"
+                                    )
+                                  : null,
+                                isRisk
+                                  ? React.createElement(
+                                      "span",
+                                      { className: "flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600", title: riskReason },
+                                      React.createElement(Icon, { name: "alert", size: 10 }),
+                                      "風險"
+                                    )
+                                  : null
+                              ),
+                              React.createElement(
+                                "div",
+                                { className: "flex items-center gap-2 flex-shrink-0" },
+                                React.createElement(
+                                  "div",
+                                  { className: "w-14 h-1 bg-slate-100 rounded-full overflow-hidden" },
+                                  React.createElement("div", { className: `h-full ${isRisk ? "bg-red-500" : "bg-indigo-600"}`, style: { width: `${t.progress}%` } })
+                                ),
+                                React.createElement("span", { className: `text-[10px] font-black ${isRisk ? "text-red-500" : "text-slate-600"}` }, `${t.progress}%`)
+                              )
+                            )
+                          )
+                        );
+                      })
+                    )
+                  : null,
+
+                // team tab
+                activeTab === "team"
+                  ? React.createElement(
+                      "div",
+                      { className: "p-6 space-y-6" },
+                      React.createElement("h4", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2" }, "團隊部門與成員"),
+
+                      React.createElement(
+                        "div",
+                        { className: "bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 space-y-3" },
+                        React.createElement("div", { className: "flex items-center gap-2 text-indigo-700" }, React.createElement(Icon, { name: "plus", size: 16 }), React.createElement("span", { className: "text-xs font-black" }, "新增部門")),
+                        React.createElement(
+                          "div",
+                          { className: "flex gap-2" },
+                          React.createElement("input", {
+                            value: newDeptName,
+                            onChange: (e) => setNewDeptName(e.target.value),
+                            placeholder: "例如：行銷部",
+                            className: "flex-1 bg-white px-3 py-2 rounded-xl text-xs font-bold outline-none ring-1 ring-indigo-200"
+                          }),
+                          React.createElement(
+                            "button",
+                            { onClick: addDepartment, className: "bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg" },
+                            "新增"
+                          )
+                        )
+                      ),
+
+                      departments.map((dept) =>
+                        React.createElement(
+                          "div",
+                          { key: dept.id, className: "bg-slate-50 rounded-2xl p-4 border border-slate-100" },
+                          React.createElement(
+                            "div",
+                            { className: "flex items-center justify-between mb-3" },
+                            React.createElement(
+                              "div",
+                              { className: "flex items-center gap-2" },
+                              React.createElement("div", { className: `w-3 h-3 rounded-full ${dept.color}` }),
+                              React.createElement(
+                                "div",
+                                null,
+                                React.createElement("span", { className: "text-sm font-black" }, dept.name),
+                                React.createElement("div", { className: "text-[10px] font-mono text-slate-400" }, `ID: ${dept.id}`)
+                              )
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                onClick: () => removeDepartment(dept.id),
+                                className: "text-slate-300 hover:text-red-500 transition-all p-1",
+                                title: "移除部門"
+                              },
+                              React.createElement(Icon, { name: "trash", size: 16 })
+                            )
+                          ),
+
+                          React.createElement(
+                            "div",
+                            { className: "flex gap-2 mb-3" },
+                            React.createElement("input", {
+                              value: newMemberByDept[dept.id] || "",
+                              onChange: (e) => setNewMemberByDept((m) => ({ ...m, [dept.id]: e.target.value })),
+                              placeholder: "新增成員，例如：Jason",
+                              className: "flex-1 bg-white px-3 py-2 rounded-xl text-xs font-bold outline-none ring-1 ring-slate-200"
+                            }),
+                            React.createElement(
+                              "button",
+                              { onClick: () => addMember(dept.id), className: "bg-slate-900 text-white px-3 py-2 rounded-xl text-xs font-black" },
+                              "加入"
+                            )
+                          ),
+
+                          React.createElement(
+                            "div",
+                            { className: "flex flex-wrap gap-2" },
+                            dept.members.map((member) =>
+                              React.createElement(
+                                "span",
+                                { key: member, className: "group bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-[11px] font-bold shadow-sm inline-flex items-center gap-2" },
+                                member,
+                                React.createElement(
+                                  "button",
+                                  { onClick: () => removeMember(dept.id, member), className: "opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-all", title: "移除" },
+                                  React.createElement(Icon, { name: "trash", size: 14 })
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  : null,
+
+                // actions tab
+                activeTab === "actions"
+                  ? React.createElement(
+                      "div",
+                      { className: "p-6 space-y-8" },
+
+                      React.createElement(
+                        "section",
+                        { className: "space-y-4" },
+                        React.createElement("h4", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2" },
+                          React.createElement(Icon, { name: "calendar", size: 14 }),
+                          "專案時間軸設定"
+                        ),
+                        React.createElement(
+                          "div",
+                          { className: "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-5 border border-indigo-100 space-y-4" },
+                          React.createElement(
+                            "div",
+                            { className: "space-y-2" },
+                            React.createElement("label", { className: "text-[10px] font-black text-indigo-700 uppercase tracking-widest flex items-center gap-2" },
+                              React.createElement(Icon, { name: "calendar", size: 12 }),
+                              "專案開始日期"
+                            ),
+                            React.createElement("input", {
+                              type: "date",
+                              value: projectStartDate,
+                              onChange: (e) => setState({ ...state, projectStartDate: e.target.value }),
+                              className: "w-full bg-white px-4 py-3 rounded-xl text-sm font-bold outline-none ring-2 ring-indigo-200 focus:ring-indigo-500 transition-all"
+                            }),
+                            React.createElement("p", { className: "text-[9px] text-indigo-600 font-bold" }, "設定甘特圖的起始日期基準點")
+                          ),
+                          React.createElement(
+                            "div",
+                            { className: "space-y-2" },
+                            React.createElement("label", { className: "text-[10px] font-black text-indigo-700 uppercase tracking-widest flex items-center gap-2 justify-between" },
+                              React.createElement("span", { className: "flex items-center gap-2" },
+                                React.createElement(Icon, { name: "bar", size: 12 }),
+                                "時間範圍（天數）"
+                              ),
+                              React.createElement("span", { className: "bg-indigo-600 text-white px-3 py-1 rounded-lg text-xs" }, `${horizonDays} 天`)
+                            ),
+                            React.createElement("input", {
+                              type: "range",
+                              min: 30,
+                              max: 180,
+                              step: 10,
+                              value: horizonDays,
+                              onChange: (e) => setState({ ...state, horizonDays: parseInt(e.target.value, 10) }),
+                              className: "w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer"
+                            }),
+                            React.createElement(
+                              "div",
+                              { className: "flex justify-between text-[9px] text-indigo-600 font-bold" },
+                              React.createElement("span", null, "30天"),
+                              React.createElement("span", null, "90天"),
+                              React.createElement("span", null, "180天")
+                            ),
+                            React.createElement("p", { className: "text-[9px] text-indigo-600 font-bold" }, "控制甘特圖顯示的總天數範圍")
+                          ),
+                          React.createElement(
+                            "div",
+                            { className: "bg-white/60 rounded-xl p-3 flex items-start gap-3 border border-indigo-200" },
+                            React.createElement("div", { className: "bg-indigo-100 p-2 rounded-lg text-indigo-600 flex-shrink-0" }, React.createElement(Icon, { name: "alert", size: 16 })),
+                            React.createElement("div", null,
+                              React.createElement("p", { className: "text-[10px] font-black text-indigo-900 mb-1" }, "時間軸提示"),
+                              React.createElement("p", { className: "text-[9px] text-indigo-700 leading-relaxed font-bold" }, "調整開始日期會重新定位整個時間軸，請確保所有任務都在新的時間範圍內。")
+                            )
+                          )
+                        )
+                      ),
+
+                      React.createElement(
+                        "section",
+                        null,
+                        React.createElement("h4", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4" }, "專案檢核點 (Milestones)"),
+                        React.createElement(
+                          "div",
+                          { className: "space-y-3" },
+                          checkpoints.map((cp) =>
+                            React.createElement(
+                              "div",
+                              { key: cp.id, className: "flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm" },
+                              React.createElement(
+                                "div",
+                                { className: "flex items-center gap-3" },
+                                React.createElement("div", { className: "bg-red-100 p-2 rounded-lg text-red-600" }, React.createElement(Icon, { name: "milestone", size: 16 })),
+                                React.createElement(
+                                  "div",
+                                  null,
+                                  React.createElement("p", { className: "text-xs font-black" }, cp.name),
+                                  React.createElement("p", { className: "text-[10px] font-mono text-slate-400" }, cp.date)
+                                )
+                              ),
+                              React.createElement(
+                                "button",
+                                { onClick: () => setState({ ...state, checkpoints: checkpoints.filter((c) => c.id !== cp.id) }), className: "text-slate-300 hover:text-red-500 transition-all" },
+                                React.createElement(Icon, { name: "trash", size: 14 })
+                              )
+                            )
+                          ),
+
+                          React.createElement(
+                            "div",
+                            { className: "bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 space-y-3 mt-4" },
+                            React.createElement("input", {
+                              value: newCp.name,
+                              onChange: (e) => setNewCp({ ...newCp, name: e.target.value }),
+                              placeholder: "檢核點名稱...",
+                              className: "w-full bg-white px-3 py-2 rounded-lg text-xs font-bold outline-none border border-indigo-100"
+                            }),
+                            React.createElement("input", {
+                              type: "date",
+                              value: newCp.date,
+                              onChange: (e) => setNewCp({ ...newCp, date: e.target.value }),
+                              className: "w-full bg-white px-3 py-2 rounded-lg text-xs font-bold outline-none border border-indigo-100"
+                            }),
+                            React.createElement(
+                              "button",
+                              {
+                                onClick: () => {
+                                  if (!newCp.name) return;
+                                  setState({ ...state, checkpoints: [...checkpoints, { id: Date.now(), ...newCp }] });
+                                  setNewCp({ name: "", date: formatDate(new Date()) });
+                                },
+                                className: "w-full bg-indigo-600 text-white py-2 rounded-lg text-[11px] font-black shadow-lg"
+                              },
+                              "新增檢核點"
+                            )
+                          )
+                        )
+                      ),
+
+                      React.createElement(
+                        "section",
+                        null,
+                        React.createElement("h4", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4" }, "專案狀態快照"),
+                        React.createElement(
+                          "div",
+                          { className: "grid grid-cols-2 gap-4" },
+                          React.createElement(
+                            "div",
+                            { className: "bg-slate-900 text-white p-4 rounded-2xl shadow-xl" },
+                            React.createElement("p", { className: "text-[10px] font-black opacity-40 uppercase" }, "平均進度"),
+                            React.createElement("p", { className: "text-2xl font-black mt-1" }, `${avgProgress}%`)
+                          ),
+                          React.createElement(
+                            "div",
+                            { className: "bg-white border border-slate-200 p-4 rounded-2xl shadow-sm" },
+                            React.createElement("p", { className: "text-[10px] font-black text-slate-400 uppercase" }, "總投入人力"),
+                            React.createElement("p", { className: "text-2xl font-black mt-1 text-slate-700" }, `${totalHeadcount}`)
+                          )
+                        )
+                      ),
+
+                      React.createElement(
+                        "section",
+                        { className: "space-y-3" },
+                        React.createElement("h4", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "資料快照"),
+                        React.createElement(
+                          "div",
+                          { className: "grid grid-cols-2 gap-3" },
+                          React.createElement(
+                            "button",
+                            { onClick: exportJSON, className: "bg-white border border-slate-200 rounded-2xl p-4 text-left hover:bg-slate-50 transition-all" },
+                            React.createElement("div", { className: "flex items-center gap-2 text-slate-800" }, React.createElement(Icon, { name: "download", size: 16 }), React.createElement("span", { className: "text-xs font-black" }, "下載 JSON")),
+                            React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 font-bold" }, "備份/同步/還原")
+                          ),
+                          React.createElement(
+                            "button",
+                            { onClick: () => fileRef.current && fileRef.current.click(), className: "bg-white border border-slate-200 rounded-2xl p-4 text-left hover:bg-slate-50 transition-all" },
+                            React.createElement("div", { className: "flex items-center gap-2 text-slate-800" }, React.createElement(Icon, { name: "upload", size: 16 }), React.createElement("span", { className: "text-xs font-black" }, "上傳還原")),
+                            React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 font-bold" }, "localStorage 清掉也不怕")
+                          )
+                        ),
+
+                        React.createElement(
+                          "button",
+                          {
+                            onClick: () => {
+                              const ok = confirm("這會清空本機保存的資料並重置為預設。確定？");
+                              if (!ok) return;
+                              dispatch({ type: "RESET", present: defaultState });
+                              setSelectedTaskId(null);
+                            },
+                            className: "w-full text-red-600 bg-red-50 ring-1 ring-red-200 rounded-2xl py-3 text-xs font-black hover:bg-red-100 transition-all flex items-center justify-center gap-2"
+                          },
+                          React.createElement(Icon, { name: "trash", size: 16 }),
+                          "重置為預設專案"
+                        )
+                      )
+                    )
+                  : null
+              )
+            ),
+
+            // Right gantt
+            React.createElement(
+              "div",
+              { ref: rightPaneRef, className: "flex-1 overflow-auto bg-[#f1f5f9] relative flex flex-col custom-scrollbar" },
+
+              // calendar header
+              React.createElement(
+                "div",
+                { className: "flex h-12 border-b border-slate-200 bg-white sticky top-0 z-20 min-w-max" },
+                (() => {
+                  if (viewMode === "day") {
+                    return Array.from({ length: horizonDays }).map((_, i) => {
+                      const date = addDays(new Date(projectStartDate), i);
+                      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                      return React.createElement(
+                        "div",
+                        {
+                          key: i,
+                          className: `flex-shrink-0 border-r border-slate-100 flex flex-col items-center justify-center select-none ${isWeekend ? "bg-slate-50" : ""}`,
+                          style: { width: zoom }
+                        },
+                        React.createElement("span", { className: "text-[9px] text-slate-400 font-black uppercase" }, ["S", "M", "T", "W", "T", "F", "S"][date.getDay()]),
+                        React.createElement("span", { className: `text-xs font-black ${isWeekend ? "text-red-400" : "text-slate-700"}` }, date.getDate())
+                      );
+                    });
+                  } else if (viewMode === "week") {
+                    const weeks = Math.ceil(horizonDays / 7);
+                    return Array.from({ length: weeks }).map((_, i) => {
+                      const weekStart = addDays(new Date(projectStartDate), i * 7);
+                      return React.createElement(
+                        "div",
+                        {
+                          key: i,
+                          className: "flex-shrink-0 border-r border-slate-100 flex flex-col items-center justify-center select-none",
+                          style: { width: zoom * 7 }
+                        },
+                        React.createElement("span", { className: "text-[9px] text-slate-400 font-black uppercase" }, `W${i + 1}`),
+                        React.createElement("span", { className: "text-xs font-black text-slate-700" }, `${weekStart.getMonth()+1}/${weekStart.getDate()}`)
+                      );
+                    });
+                  } else {
+                    const months = [];
+                    const start = new Date(projectStartDate);
+                    const end = addDays(start, horizonDays);
+                    let current = new Date(start.getFullYear(), start.getMonth(), 1);
+                    while (current <= end) {
+                      months.push(new Date(current));
+                      current.setMonth(current.getMonth() + 1);
+                    }
+                    return months.map((monthDate, i) => {
+                      const monthName = monthDate.toLocaleDateString('zh-TW', { month: 'short' });
+                      return React.createElement(
+                        "div",
+                        {
+                          key: i,
+                          className: "flex-shrink-0 border-r border-slate-100 flex flex-col items-center justify-center select-none",
+                          style: { width: zoom * 30 }
+                        },
+                        React.createElement("span", { className: "text-[9px] text-slate-400 font-black uppercase" }, monthDate.getFullYear()),
+                        React.createElement("span", { className: "text-xs font-black text-slate-700" }, monthName)
+                      );
+                    });
+                  }
+                })()
+              ),
+
+              React.createElement(
+                "div",
+                { className: "relative min-w-max pb-20" },
+
+                // grid（部門列 + 任務列），與左側 visualRows 完全對齊
+                React.createElement(
+                  "div",
+                  { className: "absolute pointer-events-none", style: { top: ganttOffset, left: 0, right: 0 } },
+                  visualRows.map((_, i) => React.createElement("div", { key: i, className: "w-full border-b border-slate-200/40", style: { height: ROW_HEIGHT } }))
+                ),
+
+                // today line
+                todayOffset >= 0 && todayOffset <= horizonDays
+                  ? React.createElement(
+                      "div",
+                      { className: "absolute z-20 pointer-events-none", style: { left: todayOffset * zoom, top: ganttOffset, height: `${visualRows.length * ROW_HEIGHT}px` } },
+                      React.createElement("div", { className: "h-full border-l-2 border-indigo-600 opacity-40" }),
+                      React.createElement("div", { className: "absolute top-4 left-0 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-black px-2 py-1 rounded shadow-lg whitespace-nowrap" }, "TODAY")
+                    )
+                  : null,
+
+                // checkpoints
+                checkpoints.map((cp) => {
+                  const offset = diffDays(projectStartDate, cp.date);
+                  if (offset < 0 || offset > horizonDays) return null;
+                  return React.createElement(
+                    "div",
+                    { key: cp.id, className: "absolute z-10 pointer-events-none", style: { left: offset * zoom, top: ganttOffset, height: `${visualRows.length * ROW_HEIGHT}px` } },
+                    React.createElement("div", { className: "h-full border-l-2 border-red-500 border-dashed opacity-40" }),
+                    React.createElement("div", { className: "absolute top-4 left-0 -translate-x-1/2 bg-red-600 text-white text-[9px] font-black px-2 py-1 rounded shadow-lg whitespace-nowrap flex items-center gap-1" }, React.createElement(Icon, { name: "milestone", size: 12 }), cp.name)
+                  );
+                }),
+
+                // bars區域包含dependency lines和任務條
+                React.createElement(
+                  "div",
+                  { className: "relative z-[10]", style: { marginTop: ganttOffset } },
+                  
+                  // dependency lines - 簡潔清晰（高度覆蓋所有 visualRows）
+                  React.createElement(
+                    "svg",
+                    { className: "absolute z-[9] pointer-events-none", style: { top: 0, left: 0, width: "100%", height: visualRows.length * ROW_HEIGHT } },
+                    React.createElement(
+                      "defs",
+                      null,
+                      React.createElement(
+                        "marker",
+                        { id: "arrow-normal", markerWidth: "8", markerHeight: "8", refX: "7", refY: "3", orient: "auto" },
+                        React.createElement("path", { d: "M0,0 L0,6 L7,3 z", fill: "#94a3b8" })
+                      ),
+                      React.createElement(
+                        "marker",
+                        { id: "arrow-blocked", markerWidth: "8", markerHeight: "8", refX: "7", refY: "3", orient: "auto" },
+                        React.createElement("path", { d: "M0,0 L0,6 L7,3 z", fill: "#ef4444" })
+                      )
+                    ),
+                    depLines.map((l) =>
+                      React.createElement("path", {
+                        key: l.id,
+                        d: `M ${l.x1} ${l.y1} C ${l.x1 + 25} ${l.y1}, ${l.x2 - 25} ${l.y2}, ${l.x2} ${l.y2}`,
+                        fill: "none",
+                        stroke: l.blocked ? "#ef4444" : "#94a3b8",
+                        strokeWidth: "2",
+                        opacity: l.blocked ? "0.9" : "0.5",
+                        strokeDasharray: l.blocked ? "6,3" : "none",
+                        markerEnd: l.blocked ? "url(#arrow-blocked)" : "url(#arrow-normal)"
+                      })
+                    )
+                  ),
+
+                  visualRows.map((row, rowIndex) => {
+                    // 部門列：僅佔高度，不畫任務條
+                    if (row.type === "dept") return React.createElement("div", { key: row.id, "data-gantt-row-index": rowIndex, "data-gantt-row-kind": "dept", style: { height: ROW_HEIGHT } });
+
+                    const task = row.data;
+                    const { start, isRisk, isBlocked, depTask, riskLevel } = getTaskDetails(task);
+
+                    const offset = diffDays(projectStartDate, start);
+                    const dept = departments.find((d) => d.id === task.dept);
+                    const isSelected = selectedTaskId === task.id;
+
+                    const left = offset * zoom;
+                    const width = Math.max(1, Number(task.duration) || 1) * zoom;
+                    const barTop = BAR_TOP; // 使用常數確保對齊
+
+                    return React.createElement(
+                      "div",
+                      { key: task.id, "data-gantt-row-index": rowIndex, "data-gantt-row-kind": "task", "data-gantt-task-id": task.id, className: "w-full relative", style: { height: `${ROW_HEIGHT}px` } },
+                      React.createElement(
+                        "div",
+                        {
+                          className:
+                            "absolute rounded-xl shadow-lg text-white flex flex-col justify-between px-4 cursor-grab transition-all select-none noselect " +
+                            (dept?.color || "bg-slate-500") +
+                            " " +
+                            (isSelected ? "ring-4 ring-indigo-500/30 scale-[1.02] z-10 shadow-indigo-200 " : "hover:scale-[1.01] ") +
+                            (riskLevel === 'critical' ? "ring-4 ring-red-500 animate-pulse-subtle shadow-red-300 " :
+                             riskLevel === 'high' ? "ring-3 ring-orange-400 shadow-orange-200 " :
+                             riskLevel === 'medium' ? "ring-2 ring-yellow-400 shadow-yellow-100 " :
+                             isRisk ? "ring-2 ring-blue-300 " : "") +
+                            (drag && drag.taskId === task.id ? "cursor-grabbing " : ""),
+                          style: { left: `${left}px`, width: `${width}px`, top: `${BAR_TOP}px`, height: `${BAR_HEIGHT}px` },
+                          onMouseDown: (e) => beginDrag(e, task, "move"),
+                          onClick: () => setSelectedTaskId(task.id),
+                          title: isBlocked && depTask ? `Blocked by: ${depTask.title} (${depTask.progress}%)` : `${task.title} (${task.progress}%)`
+                        },
+
+                        // resize handles
+                        React.createElement("div", {
+                          className: "absolute left-0 top-0 h-full w-2 rounded-l-xl bg-white/20 hover:bg-white/30 cursor-ew-resize",
+                          onMouseDown: (e) => beginDrag(e, task, "resize-l"),
+                          title: "Resize start"
+                        }),
+                        React.createElement("div", {
+                          className: "absolute right-0 top-0 h-full w-2 rounded-r-xl bg-white/20 hover:bg-white/30 cursor-ew-resize",
+                          onMouseDown: (e) => beginDrag(e, task, "resize-r"),
+                          title: "Resize end"
+                        }),
+
+                        React.createElement(
+                          "div",
+                          { className: "flex items-center justify-between w-full" },
+                          React.createElement("span", { className: "text-[11px] font-black truncate drop-shadow-md" }, task.title),
+                          task.dependency ? React.createElement("span", { className: isBlocked ? "text-red-200" : "text-white/60" }, React.createElement(Icon, { name: "link", size: 12 })) : null
+                        ),
+                        React.createElement(
+                          "div",
+                          { className: "flex items-center justify-between w-full mt-1" },
+                          React.createElement("span", { className: "text-[9px] font-mono opacity-80" }, task.startDate),
+                          React.createElement("span", { className: "text-[9px] font-black" }, `${task.progress}%`)
+                        ),
+                        React.createElement("div", { className: "absolute bottom-0 left-0 h-1 bg-black/10 w-full rounded-b-xl overflow-hidden" },
+                          React.createElement("div", { className: "h-full bg-white/40", style: { width: `${task.progress}%` } })
+                        )
+                      )
+                    );
+                  })
+                )
+              )
+            )
+          ),
+
+          // Drawer
+          tempTask
+            ? React.createElement(
+                "div",
+                { className: "fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-end backdrop-blur-sm" },
+                React.createElement(
+                  "div",
+                  { className: "bg-white h-full w-[540px] shadow-2xl flex flex-col" },
+
+                  React.createElement(
+                    "div",
+                    { className: "p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/80" },
+                    React.createElement(
+                      "div",
+                      null,
+                      React.createElement("h3", { className: "text-xl font-black text-slate-800 tracking-tighter" }, "任務戰略調整"),
+                      React.createElement("div", { className: "flex items-center gap-2 mt-1" },
+                        React.createElement("span", { className: "text-[10px] font-black text-slate-400 uppercase" }, `ID: ${tempTask.id}`),
+                        getTaskDetails(tempTask).isRisk
+                          ? React.createElement("span", { className: "bg-red-100 text-red-600 px-2 py-0.5 rounded text-[9px] font-black flex items-center gap-1" },
+                              React.createElement(Icon, { name: "alert", size: 12 }),
+                              "風險偵測中"
+                            )
+                          : null
+                      )
+                    ),
+                    React.createElement(
+                      "button",
+                      { onClick: () => setSelectedTaskId(null), className: "p-2 hover:bg-slate-200 rounded-full transition-all text-slate-400 hover:text-slate-600" },
+                      React.createElement(Icon, { name: "x", size: 18 })
+                    )
+                  ),
+
+                  React.createElement(
+                    "div",
+                    { className: "flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar" },
+
+                    React.createElement(
+                      "section",
+                      { className: "space-y-6" },
+                      React.createElement("div", { className: "space-y-2" },
+                        React.createElement("label", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "任務標題名稱"),
+                        React.createElement("input", {
+                          value: tempTask.title,
+                          onChange: (e) => setTempTask({ ...tempTask, title: e.target.value }),
+                          className: "w-full text-2xl font-black bg-transparent border-b-2 border-slate-100 focus:border-indigo-600 p-0 transition-all outline-none"
+                        })
+                      ),
+
+                      React.createElement(
+                        "div",
+                        { className: "grid grid-cols-2 gap-6" },
+                        React.createElement("div", { className: "space-y-2" },
+                          React.createElement("label", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "起始日期"),
+                          React.createElement("div", { className: "relative" },
+                            React.createElement("input", {
+                              type: "date",
+                              value: tempTask.startDate,
+                              onChange: (e) => setTempTask({ ...tempTask, startDate: e.target.value }),
+                              className: "w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all"
+                            }),
+                            React.createElement("div", { className: "absolute right-3 top-3 text-slate-300 pointer-events-none" }, React.createElement(Icon, { name: "calendar", size: 18 }))
+                          )
+                        ),
+                        React.createElement("div", { className: "space-y-2" },
+                          React.createElement("label", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "執行週期 (天)"),
+                          React.createElement("input", {
+                            type: "number",
+                            min: 1,
+                            value: tempTask.duration,
+                            onChange: (e) => setTempTask({ ...tempTask, duration: parseInt(e.target.value, 10) || 1 }),
+                            className: "w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all"
+                          })
+                        )
+                      ),
+
+                      React.createElement(
+                        "div",
+                        { className: "grid grid-cols-2 gap-6" },
+                        React.createElement("div", { className: "space-y-2" },
+                          React.createElement("label", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "類別"),
+                          React.createElement(
+                            "select",
+                            { value: tempTask.category || "開發", onChange: (e) => setTempTask({ ...tempTask, category: e.target.value }), className: "w-full bg-slate-100 border-none rounded-xl p-3 text-sm font-bold" },
+                            CATEGORIES.map((c) => React.createElement("option", { key: c, value: c }, c))
+                          )
+                        ),
+                        React.createElement("div", { className: "space-y-2" },
+                          React.createElement("label", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "優先級"),
+                          React.createElement(
+                            "select",
+                            { value: tempTask.priority, onChange: (e) => setTempTask({ ...tempTask, priority: e.target.value }), className: "w-full bg-slate-100 border-none rounded-xl p-3 text-sm font-bold" },
+                            PRIORITIES.map((p) => React.createElement("option", { key: p.id, value: p.id }, p.label))
+                          )
+                        )
+                      ),
+
+                      React.createElement("div", { className: "space-y-2" },
+                        React.createElement("label", { className: "text-[10px] font-black text-indigo-500 uppercase tracking-widest flex items-center gap-2" }, React.createElement(Icon, { name: "link", size: 12 }), "任務依賴鏈路 (Dependency)"),
+                        React.createElement(
+                          "select",
+                          {
+                            value: tempTask.dependency || "",
+                            onChange: (e) => {
+                              const dep = e.target.value || null;
+                              const nextTasks = tasks.map((t) => (t.id === tempTask.id ? { ...t, dependency: dep } : t));
+                              if (hasCycle(nextTasks)) {
+                                alert("此依賴設定會造成循環（Cycle），已拒絕。");
+                                return;
+                              }
+                              setTempTask({ ...tempTask, dependency: dep });
+                            },
+                            className: "w-full bg-indigo-50 border-none rounded-xl p-3 text-sm font-bold text-indigo-700 outline-none ring-1 ring-indigo-200 focus:ring-2 focus:ring-indigo-500 transition-all appearance-none cursor-pointer"
+                          },
+                          React.createElement("option", { value: "" }, "-- 無依賴對象 --"),
+                          tasks.filter((t) => t.id !== tempTask.id).map((t) => React.createElement("option", { key: t.id, value: t.id }, `${t.title} (${t.progress}%)`))
+                        )
+                      )
+                    ),
+
+                    React.createElement(
+                      "section",
+                      { className: "grid grid-cols-2 gap-6" },
+                      React.createElement("div", { className: "space-y-2" },
+                        React.createElement("label", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "負責團隊"),
+                        React.createElement(
+                          "select",
+                          {
+                            value: tempTask.dept,
+                            onChange: (e) => {
+                              const deptId = e.target.value;
+                              const first = (departments.find((d) => d.id === deptId)?.members || [])[0] || "未指派";
+                              setTempTask({ ...tempTask, dept: deptId, assignee: first });
+                            },
+                            className: "w-full bg-slate-100 border-none rounded-xl p-3 text-sm font-bold"
+                          },
+                          departments.map((d) => React.createElement("option", { key: d.id, value: d.id }, d.name))
+                        )
+                      ),
+                      React.createElement("div", { className: "space-y-2" },
+                        React.createElement("label", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "執行人"),
+                        React.createElement(
+                          "select",
+                          { value: tempTask.assignee, onChange: (e) => setTempTask({ ...tempTask, assignee: e.target.value }), className: "w-full bg-slate-100 border-none rounded-xl p-3 text-sm font-bold" },
+                          (departments.find((d) => d.id === tempTask.dept)?.members || []).map((m) => React.createElement("option", { key: m, value: m }, m))
+                        )
+                      )
+                    ),
+
+                    React.createElement(
+                      "section",
+                      { className: "bg-slate-900 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden" },
+                      React.createElement("div", { className: "absolute top-0 right-0 p-4 opacity-10" }, React.createElement(Icon, { name: "bar", size: 80 })),
+                      React.createElement("div", { className: "relative z-1" },
+                        React.createElement("div", { className: "flex justify-between items-end mb-4" },
+                          React.createElement("h4", { className: "text-4xl font-black" }, `${tempTask.progress}%`),
+                          React.createElement("span", { className: "text-xs font-bold opacity-40 uppercase" }, "任務完成度")
+                        ),
+                        React.createElement("input", {
+                          type: "range",
+                          min: 0,
+                          max: 100,
+                          value: tempTask.progress,
+                          onChange: (e) => setTempTask({ ...tempTask, progress: parseInt(e.target.value, 10) }),
+                          className: "w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white mb-6"
+                        }),
+                        React.createElement("div", { className: "flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10" },
+                          React.createElement("div", { className: "bg-white/10 p-2 rounded-lg" }, React.createElement(Icon, { name: "users", size: 20, className: "text-indigo-300" })),
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-black opacity-40 uppercase" }, "品質驗收人"),
+                            React.createElement("input", {
+                              value: tempTask.verifier,
+                              onChange: (e) => setTempTask({ ...tempTask, verifier: e.target.value }),
+                              className: "mt-1 w-full bg-white/10 ring-1 ring-white/10 rounded-xl px-3 py-2 text-sm font-bold outline-none",
+                              placeholder: "例如：主管-老張"
+                            })
+                          )
+                        )
+                      )
+                    ),
+
+                    React.createElement(
+                      "section",
+                      { className: "space-y-4 pb-10" },
+                      React.createElement("h4", { className: "text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2" }, React.createElement(Icon, { name: "message", size: 14 }), "會議備註與決策日誌"),
+                      React.createElement(
+                        "div",
+                        { className: "flex gap-2" },
+                        React.createElement("input", {
+                          value: newComment,
+                          onChange: (e) => setNewComment(e.target.value),
+                          placeholder: "輸入會議關鍵決策...",
+                          className: "flex-1 text-xs p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-100"
+                        }),
+                        React.createElement(
+                          "button",
+                          {
+                            onClick: () => {
+                              if (!newComment) return;
+                              setTempTask({
+                                ...tempTask,
+                                history: [{ date: new Date().toLocaleString(), text: newComment, author: "PM" }, ...(tempTask.history || [])]
+                              });
+                              setNewComment("");
+                            },
+                            className: "bg-indigo-600 text-white p-4 rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-90"
+                          },
+                          React.createElement(Icon, { name: "plus", size: 18 })
+                        )
+                      ),
+                      React.createElement(
+                        "div",
+                        { className: "space-y-3" },
+                        (tempTask.history || []).map((h, i) =>
+                          React.createElement(
+                            "div",
+                            { key: i, className: "bg-white p-4 rounded-2xl border border-slate-100 shadow-sm" },
+                            React.createElement("div", { className: "flex justify-between text-[9px] font-black text-slate-300 mb-2" },
+                              React.createElement("span", null, h.author),
+                              React.createElement("span", null, h.date)
+                            ),
+                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed font-bold" }, h.text)
+                          )
+                        )
+                      )
+                    )
+                  ),
+
+                  React.createElement(
+                    "div",
+                    { className: "p-8 border-t border-slate-100 flex items-center justify-between bg-white z-10 sticky bottom-0 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]" },
+                    React.createElement(
+                      "button",
+                      {
+                        onClick: () => {
+                          if (confirm("撤銷後數據將永久消失，確認撤銷？")) handleDeleteTask(tempTask.id);
+                        },
+                        className: "text-red-400 hover:text-red-600 text-xs font-black flex items-center gap-2 px-4 py-2 hover:bg-red-50 rounded-lg transition-all"
+                      },
+                      React.createElement(Icon, { name: "trash", size: 16 }),
+                      "撤銷此任務"
+                    ),
+                    React.createElement(
+                      "div",
+                      { className: "flex gap-4" },
+                      React.createElement("button", { onClick: () => setSelectedTaskId(null), className: "px-6 py-2 text-slate-400 text-sm font-black" }, "取消"),
+                      React.createElement("button", { onClick: handleSave, className: "bg-slate-900 text-white px-10 py-3 rounded-2xl font-black shadow-xl shadow-slate-200 hover:bg-black transition-all active:scale-95" }, "更新戰略佈局")
+                    )
+                  )
+                )
+              )
+            : null
+        );
+      }
+
+      // Mount
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(React.createElement(App));
+    </script>
+  </body>
+</html>
