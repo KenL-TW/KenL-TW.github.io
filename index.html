@@ -689,13 +689,14 @@
   <footer id="footer">
     <div class="container">
       <div class="copyright text-center">
-        &copy; 2025 Ken Liao Portfolio. All Rights Reserved.
+        &copy; 2026 Ken Liao Portfolio. All Rights Reserved.
         <div>訪問次數：<span id="visit-count">--</span></div>
       </div>
     </div>
   </footer><!-- End  Footer -->
 
-  <!-- ======= Back To Top Trigger ======= -->
+
+    <!-- ======= Back To Top Trigger ======= -->
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   </div><!-- End Site Layout Wrapper -->
@@ -934,5 +935,61 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(() => { document.getElementById("visit-count").textContent = "N/A"; });
 </script>
+
+<!-- Chatbot Configuration & Widget -->
+  <script>
+    // 初始化 Chatbot 配置（必須在 chatbot-widget.js 之前）
+    window.ChatbotConfig = {
+      CHAT_API_URL: "https://cszbu6uuyg.execute-api.ap-northeast-1.amazonaws.com/default/digitools-chat",
+
+      BRAND_NAME: "Digitools Assistant",
+      SUBTITLE: "Repo-based Answers Only",
+
+      // 你的 repo（用於 sources 生成連結）
+      GITHUB_REPO_URL: "https://github.com/KenL-TW/KenL-TW.github.io",
+
+      // sources 連結模式：github=repo頁 / raw=raw內容 / pages=GitHub Pages（若你有對應路徑）
+      SOURCE_LINK_MODE: "raw",
+
+      TOP_ACTIONS: [
+        { icon: "🧭", title: "快速開始", desc: "3步驟上手", payload: { type: "text", message: "快速開始：請用最短步驟介紹這個系統如何使用。" } },
+      { icon: "📚", title: "FAQ", desc: "常見問題", payload: { type: "text", message: "請列出最常見的 FAQ，並用條列簡短回答。" } },
+      { icon: "🧾", title: "技術分享", desc: "專案/技術", payload: { type: "text", message: "請針對有興趣的專案或技術進行發問。" } }
+      ],
+
+      QUICK_CHIPS: [
+        "快速開始是什麼？",
+        "KB-only 原則是什麼？",
+        "知識庫的內容有什麼？"
+      ],
+
+      THEME: "auto",
+      REQUEST_TIMEOUT_MS: 30000
+    };
+  </script>
+  <!-- Chatbot Widget 會在此配置後加載，並自動初始化對話框 -->
+  <script src="./assets/chatbot-widget.js"></script>
+  <script>
+  // 頁面 render 完成後自動打開 chatbot
+  (function autoOpenChatbot(){
+    const tryOpen = () => {
+      if (window.DTZ_CHATBOT && typeof window.DTZ_CHATBOT.open === 'function') {
+        window.DTZ_CHATBOT.open();
+        return true;
+      }
+      return false;
+    };
+
+    // 1) 先用 microtask / timeout 讓 widget 完成初始化
+    if (tryOpen()) return;
+
+    let n = 0;
+    const t = setInterval(() => {
+      n++;
+      if (tryOpen() || n > 50) clearInterval(t); // 最多等 ~5s
+    }, 100);
+  })();
+</script>
+
 </body>
 </html>
