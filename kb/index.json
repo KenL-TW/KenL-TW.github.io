@@ -1,0 +1,17 @@
+{
+  "version": "2026-01-29",
+  "chunks": [
+    {
+      "chunk_id": "overview#0001",
+      "path": "kb/docs/overview.md",
+      "title": "快速開始",
+      "text": "快速開始：1) 點右下角開啟聊天 2) 輸入你的問題 3) 系統只會引用 GitHub repo 的 KB 內容回答並附 citations。"
+    },
+    {
+      "chunk_id": "faq#0001",
+      "path": "kb/docs/faq.md",
+      "title": "KB-only 原則",
+      "text": "本助手不會猜測。若知識庫沒有資料，會回覆『Repo 中沒有足夠資訊』並要求你提供文件路徑或關鍵字。"
+    }
+  ]
+}
