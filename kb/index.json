@@ -2,16 +2,22 @@
   "version": "2026-01-29",
   "chunks": [
     {
-      "chunk_id": "overview#0001",
-      "path": "kb/docs/overview.md",
+      "chunk_id": "quickstart#0001",
+      "path": "kb/docs/quickstart.md",
       "title": "快速開始",
-      "text": "快速開始：1) 點右下角開啟聊天 2) 輸入你的問題 3) 系統只會引用 GitHub repo 的 KB 內容回答並附 citations。"
+      "text": "快速開始：點擊右下角聊天按鈕，輸入問題，系統將只根據 GitHub Repo 的知識庫內容回答，並附上引用來源。"
+    },
+    {
+      "chunk_id": "kb_policy#0001",
+      "path": "kb/docs/kb_policy.md",
+      "title": "KB-only 原則",
+      "text": "本聊天機器人僅依據 GitHub Repo 中的知識庫內容回答，不會猜測或補完不存在的資訊。若資料不足，會明確告知。"
     },
     {
       "chunk_id": "faq#0001",
       "path": "kb/docs/faq.md",
-      "title": "KB-only 原則",
-      "text": "本助手不會猜測。若知識庫沒有資料，會回覆『Repo 中沒有足夠資訊』並要求你提供文件路徑或關鍵字。"
+      "title": "知識庫 FAQ",
+      "text": "知識庫位於 GitHub Repo 的 kb 資料夾中。若問題找不到答案，系統會要求提供文件名稱或關鍵字。"
     }
   ]
 }
