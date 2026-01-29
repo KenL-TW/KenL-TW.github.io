@@ -12,7 +12,7 @@
     TOP_ACTIONS: [
       { icon: "🧭", title: "快速開始", desc: "3步驟上手", payload: { type: "text", message: "快速開始：請用最短步驟介紹這個系統如何使用。" } },
       { icon: "📚", title: "FAQ", desc: "常見問題", payload: { type: "text", message: "請列出最常見的 FAQ，並用條列簡短回答。" } },
-      { icon: "🧾", title: "技術分享", desc: "專案/技術", payload: { type: "text", message: "請針對有興趣的專案或技術進行發問。" } }
+      { icon: "🧾", title: "技術分享", desc: "專案/技術", payload: { type: "action", action_id: "show_projects" } }
     ],
     QUICK_CHIPS: [
       "請用一句話說明產品定位",
@@ -23,6 +23,8 @@
     ],
     REQUEST_TIMEOUT_MS: 30000,
     DEMO_MODE: false
+    ,AUTO_OPEN: true,
+    KB_INDEX_PATH: "kb/index.json"
   };
 
   const userConfig = (window.ChatbotConfig && typeof window.ChatbotConfig === "object")
@@ -385,11 +387,19 @@
   @media (max-width: 520px){
     .dt-panel{
       right: 12px; bottom: 78px;
-      width: calc(100vw - 24px);
-      height: calc(100vh - 130px);
+      /* slightly smaller on mobile for proportional sizing */
+      width: calc(100vw - 36px);
+      height: calc(100vh - 160px);
+      transform: translateY(6px) scale(.95);
+      transform-origin: bottom right;
     }
     .dt-chatbot{ right: 12px; bottom: 12px; }
+    .dt-bubble{ font-size:13px; }
+    .dt-avatar{ width:32px; height:32px; }
+    .dt-fab{ width:48px; height:48px; }
   }
+
+
   `;
 
   const styleId = "dt-chatbot-style";
@@ -415,6 +425,7 @@
         </div>
         <div class="dt-actions">
           <button class="dt-iconbtn" type="button" data-action="clear" title="Clear">🧹</button>
+          <button class="dt-iconbtn" type="button" data-action="kb" title="KB">📚</button>
           <button class="dt-iconbtn" type="button" data-action="close" title="Close">✕</button>
         </div>
       </div>
@@ -501,6 +512,53 @@
   renderTopActions();
   renderChips();
 
+  // Fetch KB index and extract projects list
+  async function loadKBProjects() {
+    try {
+      const res = await fetch(CFG.KB_INDEX_PATH || "kb/index.json", { cache: "no-store" });
+      if (res && res.ok) {
+        const data = await res.json();
+        const chunks = Array.isArray(data.chunks) ? data.chunks : [];
+        // Extract unique project titles from KB chunks
+        const projects = chunks.filter(c => /project|專案|detail|電商|協作|推薦|應用|架構/i.test((c.path || "") + " " + (c.title || "")));
+        return projects.length ? projects : [];
+      }
+    } catch (e) {
+      console.error("Failed to load KB projects", e);
+    }
+    return [];
+  }
+
+  function showProjectsList() {
+    loadKBProjects().then(projects => {
+      if (!projects.length) {
+        sendText("知識庫中未找到專案資訊。");
+        return;
+      }
+      const list = projects.map(p => `• ${p.title || p.path}`).join("\n");
+      const msg = `📌 **知識庫專案清單:**\n\n${list}\n\n請選擇上方的專案名稱深入瞭解詳情。`;
+      addMessage("assistant", msg, []);
+      scrollBottom();
+    });
+  }
+
+  function downloadKBSample(){
+    const sample = {
+      meta: { title: "Sample KB", created: new Date().toISOString() },
+      chunks: [
+        { path: "kb/docs/example.md", title: "示範文件", chunk_id: "ex-1", text: "這是一個示範的知識庫內容，請用於測試 RAG 回答。" }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'kb-sample.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
   function openPanel() {
     isOpen = true;
     panel.classList.add("open");
@@ -544,6 +602,7 @@
 
     if (act === "close") closePanel();
     if (act === "clear") seed();
+    if (act === "kb") downloadKBSample();
     if (act === "send") {
       const q = input.value.trim();
       input.value = "";
@@ -661,6 +720,13 @@
 
   function handleActionPayload(payload) {
     if (!payload) return;
+    
+    // Handle special action: show_projects
+    if (payload.type === "action" && payload.action_id === "show_projects") {
+      showProjectsList();
+      return;
+    }
+    
     if (payload.type === "action") {
       sendPayload({ type: "action", action_id: payload.action_id, args: payload.args || {} });
       return;
@@ -713,9 +779,13 @@
   }
 
   async function demoAnswer(message) {
+    // Accept either a payload object or a message string
+    if (message && typeof message === 'object') {
+      message = message.message || message.action_id || '';
+    }
     // Attempt to read local kb index to pick two random entries for a realistic RAG demo
     try {
-      const res = await fetch("kb/index.json", { cache: "no-store" });
+      const res = await fetch(CFG.KB_INDEX_PATH || "kb/index.json", { cache: "no-store" });
       if (res && res.ok) {
         const jd = await res.json();
         const chunks = Array.isArray(jd.chunks) ? jd.chunks.slice() : [];
@@ -753,7 +823,7 @@
       "2) 若 KB 沒有內容，會明確回覆不足，不會猜。\n\n" +
       "建議下一步：\n" +
       "• 直接提供你要查的功能/頁面/錯誤訊息\n" +
-      "• 或點上方三個按鈕（快速開始 / FAQ / API）\n\n" +
+      "• 或點上方三個按鈕（快速開始 / FAQ / 技術分享）\n\n" +
       "你的輸入： " + message;
 
     return {
@@ -784,7 +854,7 @@
       const useDemo = CFG.DEMO_MODE || !CFG.CHAT_API_URL;
       if (useDemo) {
         await sleep(420);
-        data = await demoAnswer(payload.type === "action" ? payload.action_id : payload.message);
+        data = await demoAnswer(payload);
       } else {
         data = await sendToApi(payload);
       }
@@ -823,6 +893,14 @@
     updateJumpVisibility();
   }
   seed();
+  // Desktop-only auto-open when enabled in config
+  try {
+    if (CFG.AUTO_OPEN && window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
+      openPanel();
+    }
+  } catch (e) {
+    // ignore
+  }
 
   window.DTZ_CHATBOT = { open: openPanel, close: closePanel, sendText, seed, config: CFG };
 })();

@@ -1,5 +1,5 @@
 {
-  "version": "2026-01-29",
+  "version": "2026-01-30",
   "chunks": [
     {
       "chunk_id": "quickstart#0001",
@@ -18,6 +18,72 @@
       "path": "kb/docs/faq.md",
       "title": "知識庫 FAQ",
       "text": "知識庫位於 GitHub Repo 的 kb 資料夾中。若問題找不到答案，系統會要求提供文件名稱或關鍵字。"
+    },
+    {
+      "chunk_id": "projects-overview#0001",
+      "path": "kb/docs/projects-overview.md",
+      "title": "專案總覽",
+      "text": "本知識庫涵蓋本人的核心專案與技術實踐。主要專案類別包括全棧 Web 應用、DevOps & 基礎設施、資料處理 & 分析、AI / ML 應用。可選擇上方「專案」主題深入瞭解。"
+    },
+    {
+      "chunk_id": "projects-detail#ecommerce",
+      "path": "kb/docs/projects-detail.md",
+      "title": "電商平台專案",
+      "text": "全棧電商系統，包含商品管理、購物車、訂單處理、支付整合。技術棧：React 18 + Redux、Node.js + Express + MongoDB、Stripe / 綠界科技、Docker + AWS ECS。首屏載入 < 2s，轉換率提升 +35%。"
+    },
+    {
+      "chunk_id": "projects-detail#collaboration",
+      "path": "kb/docs/projects-detail.md",
+      "title": "即時協作工具專案",
+      "text": "多人同步編輯的文件協作平台，類似 Google Docs。技術棧：Vue 3 + Pinia、Node.js + Socket.io + PostgreSQL、OT / CRDT 衝突解決、AWS S3 CDN。核心功能：即時編輯、評論、版本控制、許可權管理。"
+    },
+    {
+      "chunk_id": "projects-detail#ml-engine",
+      "path": "kb/docs/projects-detail.md",
+      "title": "機器學習推薦引擎",
+      "text": "推薦系統，基於用戶行為與物品特徵進行個性化推薦。技術：PyTorch、Spark SQL、Airflow DAG、SageMaker FastAPI。算法：協同過濾、內容過濾、LightGBM、Faiss 向量搜尋。CTR +28%、Precision@10: 0.85、延遲 < 100ms。"
+    },
+    {
+      "chunk_id": "tech-stack#frontend",
+      "path": "kb/docs/tech-stack.md",
+      "title": "前端技術棧",
+      "text": "JavaScript 框架：React 18、Vue 3、Next.js。樣式：Tailwind CSS、SCSS、CSS-in-JS。狀態管理：Redux Toolkit、Zustand、Pinia、TanStack Query。UI 組件：Ant Design、Material-UI、Shadcn/ui。"
+    },
+    {
+      "chunk_id": "tech-stack#backend",
+      "path": "kb/docs/tech-stack.md",
+      "title": "後端技術棧",
+      "text": "Runtime：Node.js + Express、Python + FastAPI、Fastify。資料庫：PostgreSQL、MongoDB、Redis、Elasticsearch。API：REST、GraphQL、JWT 認證、OAuth 2.0。"
+    },
+    {
+      "chunk_id": "tech-stack#devops",
+      "path": "kb/docs/tech-stack.md",
+      "title": "DevOps & 部署技術",
+      "text": "容器化：Docker、Docker Compose、Kubernetes。CI/CD：GitHub Actions、GitLab CI、Jenkins。雲端：AWS (EC2/ECS/Lambda/RDS/S3/CloudFront)、Vercel、Azure。"
+    },
+    {
+      "chunk_id": "tech-stack#data-ai",
+      "path": "kb/docs/tech-stack.md",
+      "title": "資料 & AI 技術",
+      "text": "資料處理：Apache Spark、Airflow、Pandas。機器學習：PyTorch、TensorFlow、Scikit-learn、LightGBM、XGBoost。向量資料庫：Faiss、Milvus、Pinecone。"
+    },
+    {
+      "chunk_id": "faq-extended#about-projects",
+      "path": "kb/docs/faq-extended.md",
+      "title": "關於專案常問",
+      "text": "Q: 最擅長的開發領域？A: 全棧 Web 應用開發。Q: 開發經驗多少年？A: 5+ 年。Q: 遠端工作？A: 支援遠端，時區靈活。"
+    },
+    {
+      "chunk_id": "faq-extended#tech-qa",
+      "path": "kb/docs/faq-extended.md",
+      "title": "技術選擇常問",
+      "text": "React vs Vue：各有優勢。TypeScript：強烈建議。SQL vs NoSQL：取決於資料特性。DevOps 學習順序：Git → Docker → CI/CD → Kubernetes → 雲端。"
+    },
+    {
+      "chunk_id": "faq-extended#deployment",
+      "path": "kb/docs/faq-extended.md",
+      "title": "部署與性能常問",
+      "text": "部署選擇：Vercel (前端) / Render 或 Railway (後端)。高可用：負載均衡、多區域、自動故障轉移、監控告警。性能優化：代碼分割、圖片優化、CDN、緩存策略、DB 優化。"
     }
   ]
 }
