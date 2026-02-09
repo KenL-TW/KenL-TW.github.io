@@ -221,40 +221,40 @@
   }
 
   .dt-topActions{
-    padding: 10px 14px 10px;
+    padding: 6px 12px;
     border-bottom: 1px solid var(--line);
     background: var(--card);
-    display:flex; gap: 10px;
+    display:flex; gap: 8px;
   }
   .dt-actBtn{
     flex: 1 1 0;
     min-width: 0;
     border: 1px solid var(--line);
     background: var(--chip);
-    border-radius: 14px;
-    padding: 10px;
+    border-radius: 12px;
+    padding: 8px;
     cursor:pointer;
-    display:flex; gap:10px; align-items:center;
+    display:flex; gap:8px; align-items:center;
     transition: transform .12s ease, background .12s ease;
     user-select:none;
   }
   .dt-actBtn:hover{ background: var(--chipHover); transform: translateY(-1px); }
   .dt-actIcon{
-    width: 32px; height: 32px;
-    border-radius: 12px;
+    width: 26px; height: 26px;
+    border-radius: 10px;
     border: 1px solid var(--line);
     background: ${THEME === "dark" ? "rgba(255,255,255,.06)" : "#fff"};
     display:grid; place-items:center;
-    font-size: 16px;
+    font-size: 13px;
     flex: 0 0 auto;
   }
   .dt-actText{ min-width:0; display:flex; flex-direction:column; gap:2px; }
-  .dt-actText strong{ font-size:12px; font-weight: 900; color: var(--text); }
-  .dt-actText span{ font-size:11px; color: var(--muted); white-space: nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dt-actText strong{ font-size:11px; font-weight: 900; color: var(--text); }
+  .dt-actText span{ font-size:10px; color: var(--muted); white-space: nowrap; overflow:hidden; text-overflow:ellipsis; }
 
   .dt-body{
     flex: 1 1 auto;
-    padding: 14px;
+    padding: 12px;
     overflow:auto;
     background: var(--soft);
     position: relative;
@@ -380,42 +380,6 @@
     white-space: nowrap;
   }
 
-  .dt-quickWrap{ background: var(--card); border-top: 1px solid var(--line); }
-  .dt-quickHeader{
-    padding: 8px 14px;
-    display:flex; align-items:center; justify-content:space-between;
-    gap: 10px;
-    color: var(--muted);
-    font-size: 12px;
-  }
-  .dt-quickToggle{
-    border: 1px solid var(--line);
-    background: var(--chip);
-    border-radius: 999px;
-    padding: 5px 10px;
-    cursor:pointer;
-    font-size: 12px;
-    font-weight: 900;
-    color: var(--muted);
-    user-select:none;
-  }
-  .dt-quick{ padding: 0 14px 10px; display:none; }
-  .dt-quick.open{ display:block; }
-  .dt-chips{ display:flex; gap:8px; overflow:auto; padding-bottom: 2px; scrollbar-width: thin; }
-  .dt-chip{
-    flex: 0 0 auto;
-    border: 1px solid var(--line);
-    background: var(--chip);
-    color: var(--muted);
-    padding: 7px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 900;
-    cursor:pointer;
-    user-select:none;
-    white-space: nowrap;
-  }
-  .dt-chip:hover{ background: var(--chipHover); }
 
   .dt-footer{
     padding: 10px;
@@ -534,16 +498,6 @@
         <button class="dt-jump" type="button" data-action="jump">⤓ 回到最新</button>
       </div>
 
-      <div class="dt-quickWrap">
-        <div class="dt-quickHeader">
-          <span>建議提問（可選）</span>
-          <button class="dt-quickToggle" type="button" data-action="toggle-quick">展開</button>
-        </div>
-        <div class="dt-quick" data-slot="quick">
-          <div class="dt-chips" data-slot="chips"></div>
-        </div>
-      </div>
-
       <div class="dt-footer">
         <div class="dt-inputWrap">
           <textarea class="dt-textarea" data-slot="input" rows="1" placeholder="輸入問題…（Enter 送出 / Shift+Enter 換行）"></textarea>
@@ -558,17 +512,13 @@
   const panel = root.querySelector(".dt-panel");
   const body = root.querySelector('[data-slot="body"]');
   const topActionsSlot = root.querySelector('[data-slot="top-actions"]');
-  const quick = root.querySelector('[data-slot="quick"]');
-  const chipsSlot = root.querySelector('[data-slot="chips"]');
   const input = root.querySelector('[data-slot="input"]');
   const sendBtn = root.querySelector('[data-action="send"]');
   const jumpBtn = root.querySelector('[data-action="jump"]');
-  const toggleQuickBtn = root.querySelector('[data-action="toggle-quick"]');
   const modeSelect = root.querySelector('[data-slot="mode"]');
 
   let isOpen = false;
   let isBusy = false;
-  let quickOpen = false;
   let lastScrollTop = 0;
   let typingEl = null;
 
@@ -605,22 +555,7 @@
     });
   }
 
-  function renderChips() {
-    chipsSlot.innerHTML = "";
-    const list = Array.isArray(CFG.QUICK_CHIPS) ? CFG.QUICK_CHIPS : [];
-    list.forEach((text) => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "dt-chip";
-      chip.textContent = text;
-      chip.addEventListener("click", () => sendText(text));
-      chipsSlot.appendChild(chip);
-    });
-  }
-
   renderTopActions();
-  renderChips();
-
   function openPanel() {
     isOpen = true;
     panel.classList.add("open");
@@ -635,12 +570,6 @@
     isOpen ? closePanel() : openPanel();
   }
   fab.addEventListener("click", togglePanel);
-
-  function toggleQuick() {
-    quickOpen = !quickOpen;
-    quick.classList.toggle("open", quickOpen);
-    toggleQuickBtn.textContent = quickOpen ? "收合" : "展開";
-  }
 
   function autoResize() {
     input.style.height = "auto";
@@ -679,7 +608,6 @@
       autoResize();
       sendText(q);
     }
-    if (act === "toggle-quick") toggleQuick();
     if (act === "jump") jumpToLatest();
   });
 
