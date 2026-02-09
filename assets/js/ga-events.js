@@ -150,6 +150,196 @@ function initializeTracking() {
             time_spent: Math.round((Date.now() - startTime) / 1000)
         });
     });
+
+    // 9. Chatbot 互動追蹤
+    initializeChatbotTracking();
+}
+
+// ========================================
+// Chatbot 追蹤相關函數
+// ========================================
+function initializeChatbotTracking() {
+    // 監測全局 Chatbot 對象的創建
+    if (window.DTZ_CHATBOT) {
+        const originalOpen = window.DTZ_CHATBOT.open;
+        const originalClose = window.DTZ_CHATBOT.close;
+        const originalSendMessage = window.DTZ_CHATBOT.send;
+        const originalClear = window.DTZ_CHATBOT.clear;
+        const originalSetMode = window.DTZ_CHATBOT.setMode;
+
+        let chatbotSessionStart = null;
+        let messageCount = 0;
+        let questionCount = 0;
+
+        // Override: Chatbot 打開
+        if (typeof originalOpen === 'function') {
+            window.DTZ_CHATBOT.open = function() {
+                trackEvent('chatbot_open', {
+                    timestamp: new Date().toISOString(),
+                    page_title: document.title
+                });
+                chatbotSessionStart = Date.now();
+                messageCount = 0;
+                return originalOpen.apply(this, arguments);
+            };
+        }
+
+        // Override: Chatbot 關閉
+        if (typeof originalClose === 'function') {
+            window.DTZ_CHATBOT.close = function() {
+                const sessionDuration = chatbotSessionStart ? Math.round((Date.now() - chatbotSessionStart) / 1000) : 0;
+                trackEvent('chatbot_close', {
+                    session_duration_seconds: sessionDuration,
+                    message_count: messageCount,
+                    page_title: document.title
+                });
+                chatbotSessionStart = null;
+                return originalClose.apply(this, arguments);
+            };
+        }
+
+        // Override: 用戶發送消息 & 取得回答
+        if (typeof originalSendMessage === 'function') {
+            window.DTZ_CHATBOT.send = function(message) {
+                const sendTimestamp = Date.now();
+                questionCount++;
+                messageCount++;
+
+                // 追蹤用戶提問
+                trackEvent('chatbot_user_message', {
+                    question: message.substring(0, 100), // 限制字數用於隱私
+                    message_length: message.length,
+                    message_count: messageCount,
+                    question_number: questionCount,
+                    current_mode: window.DTZ_CHATBOT?.getMode?.() || 'unknown'
+                });
+
+                // 等待回答並追蹤
+                Promise.resolve(originalSendMessage.apply(this, arguments)).then(() => {
+                    const responseTime = Math.round((Date.now() - sendTimestamp) / 1000);
+                    trackEvent('chatbot_response_received', {
+                        response_time_seconds: responseTime,
+                        message_number: messageCount,
+                        current_mode: window.DTZ_CHATBOT?.getMode?.() || 'unknown'
+                    });
+                }).catch(() => {
+                    trackEvent('chatbot_response_error', {
+                        response_time_seconds: Math.round((Date.now() - sendTimestamp) / 1000),
+                        message_number: messageCount
+                    });
+                });
+
+                return originalSendMessage.apply(this, arguments);
+            };
+        }
+
+        // Override: 清除對話
+        if (typeof originalClear === 'function') {
+            window.DTZ_CHATBOT.clear = function() {
+                trackEvent('chatbot_clear', {
+                    message_count_before_clear: messageCount,
+                    question_count_before_clear: questionCount
+                });
+                messageCount = 0;
+                questionCount = 0;
+                return originalClear.apply(this, arguments);
+            };
+        }
+
+        // Override: 切換模式
+        if (typeof originalSetMode === 'function') {
+            window.DTZ_CHATBOT.setMode = function(mode) {
+                trackEvent('chatbot_mode_change', {
+                    new_mode: mode,
+                    previous_mode: window.DTZ_CHATBOT?.getMode?.() || 'unknown',
+                    message_count: messageCount
+                });
+                return originalSetMode.apply(this, arguments);
+            };
+        }
+    }
+
+    // 監聽 DOM 中的 Chatbot 相關互動
+    setTimeout(() => {
+        const chatbotWidget = document.querySelector('.dt-chatbot');
+        if (!chatbotWidget) return;
+
+        // 追蹤建議提問點擊（如果存在）
+        const observer = new MutationObserver(() => {
+            const suggestedChips = chatbotWidget.querySelectorAll('.dt-chip');
+            suggestedChips.forEach(chip => {
+                if (!chip.dataset.tracked) {
+                    chip.addEventListener('click', () => {
+                        trackEvent('chatbot_suggestion_click', {
+                            suggestion_text: chip.textContent.substring(0, 100),
+                            suggestion_length: chip.textContent.length
+                        });
+                    });
+                    chip.dataset.tracked = 'true';
+                }
+            });
+
+            // 追蹤 Sources（引用來源）點擊
+            const sourceLinks = chatbotWidget.querySelectorAll('.dt-src');
+            sourceLinks.forEach(link => {
+                if (!link.dataset.tracked) {
+                    link.addEventListener('click', () => {
+                        trackEvent('chatbot_source_click', {
+                            source_label: link.textContent.substring(0, 100),
+                            source_url: link.href
+                        });
+                    });
+                    link.dataset.tracked = 'true';
+                }
+            });
+
+            // 追蹤快速切換模式按鈕
+            const modeSelect = chatbotWidget.querySelector('[data-slot="mode"]');
+            if (modeSelect && !modeSelect.dataset.tracked) {
+                modeSelect.addEventListener('change', () => {
+                    trackEvent('chatbot_quick_mode_switch', {
+                        selected_mode: modeSelect.value
+                    });
+                });
+                modeSelect.dataset.tracked = 'true';
+            }
+
+            // 追蹤清空按鈕
+            const clearBtn = chatbotWidget.querySelector('[data-action="clear"]');
+            if (clearBtn && !clearBtn.dataset.tracked) {
+                clearBtn.addEventListener('click', () => {
+                    trackEvent('chatbot_clear_button_click', {});
+                });
+                clearBtn.dataset.tracked = 'true';
+            }
+
+            // 追蹤關閉按鈕
+            const closeBtn = chatbotWidget.querySelector('[data-action="close"]');
+            if (closeBtn && !closeBtn.dataset.tracked) {
+                closeBtn.addEventListener('click', () => {
+                    trackEvent('chatbot_close_button_click', {});
+                });
+                closeBtn.dataset.tracked = 'true';
+            }
+        });
+
+        observer.observe(chatbotWidget, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+
+        // 追蹤 Chatbot FAB 按鈕點擊（打開/關閉）
+        const fab = chatbotWidget.querySelector('.dt-fab');
+        if (fab) {
+            fab.addEventListener('click', () => {
+                const isOpen = chatbotWidget.querySelector('.dt-panel')?.classList?.contains('open');
+                trackEvent('chatbot_fab_click', {
+                    action: isOpen ? 'close' : 'open'
+                });
+            });
+        }
+    }, 1000); // 延遲以等待 Chatbot 加載完成
 }
 
 // 當 DOM 載入完成後初始化所有追蹤

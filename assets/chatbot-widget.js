@@ -546,11 +546,15 @@
           <span>${escapeHtml(item.desc ?? "")}</span>
         </div>
       `;
-      btn.addEventListener("click", () =>
-        handleActionPayload(
-          item.payload || { type: "text", message: item.message || item.title }
-        )
-      );
+      btn.addEventListener("click", () => {
+        const payload = item.payload || { type: "text", message: item.message || item.title };
+        trackChatbotEvent('top_action_clicked', {
+          action_index: idx,
+          action_title: item.title || `Action ${idx + 1}`,
+          payload_type: payload.type || 'text'
+        });
+        handleActionPayload(payload);
+      });
       topActionsSlot.appendChild(btn);
     });
   }
@@ -569,7 +573,10 @@
   function togglePanel() {
     isOpen ? closePanel() : openPanel();
   }
-  fab.addEventListener("click", togglePanel);
+  fab.addEventListener("click", () => {
+    trackChatbotEvent('fab_button_clicked', {});
+    togglePanel();
+  });
 
   function autoResize() {
     input.style.height = "auto";
@@ -581,6 +588,11 @@
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       const q = input.value.trim();
+      if (q) {
+        trackChatbotEvent('message_sent_by_enter', {
+          message_length: q.length
+        });
+      }
       input.value = "";
       autoResize();
       sendText(q);
@@ -589,7 +601,12 @@
 
   if (modeSelect) {
     modeSelect.addEventListener("change", () => {
-      currentMode = (modeSelect.value || "GUIDE").toUpperCase();
+      const newMode = (modeSelect.value || "GUIDE").toUpperCase();
+      currentMode = newMode;
+      trackChatbotEvent('mode_changed', {
+        new_mode: newMode,
+        previous_mode: currentMode
+      });
       addMessage("assistant", `已切換模式：${currentMode}`, [], null);
     });
   }
@@ -600,15 +617,29 @@
     const act = t.getAttribute("data-action");
     if (!act) return;
 
-    if (act === "close") closePanel();
-    if (act === "clear") seed();
+    if (act === "close") {
+      trackChatbotEvent('close_button_clicked', {});
+      closePanel();
+    }
+    if (act === "clear") {
+      trackChatbotEvent('clear_button_clicked', {});
+      seed();
+    }
     if (act === "send") {
       const q = input.value.trim();
+      if (q) {
+        trackChatbotEvent('message_sent_by_button', {
+          message_length: q.length
+        });
+      }
       input.value = "";
       autoResize();
       sendText(q);
     }
-    if (act === "jump") jumpToLatest();
+    if (act === "jump") {
+      trackChatbotEvent('jump_to_latest_clicked', {});
+      jumpToLatest();
+    }
   });
 
   function scrollBottom() {
@@ -668,6 +699,20 @@
   }
 
   // -------------------------
+  // GA Event Tracking (Chatbot Analytics)
+  // -------------------------
+  function trackChatbotEvent(eventName, parameters = {}) {
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent(`chatbot_${eventName}`, {
+        ...parameters,
+        session_id: SID,
+        current_mode: currentMode,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  // -------------------------
   // Messages (with cards)
   // -------------------------
   function addMessage(role, text, citations, cards) {
@@ -681,6 +726,15 @@
     const bubble = document.createElement("div");
     bubble.className = "dt-bubble";
     bubble.textContent = text || "";
+
+    // Track message view
+    trackChatbotEvent('message_added', {
+      role: role,
+      text_length: (text || "").length,
+      has_citations: Array.isArray(citations) && citations.length > 0,
+      citation_count: Array.isArray(citations) ? citations.length : 0,
+      has_cards: cards !== null && cards !== undefined
+    });
 
     // Agent cards (V2)
     if (role !== "user" && cards) {
@@ -714,6 +768,14 @@
             a.href = "javascript:void(0)";
             a.title = label;
           }
+          // Track source link click
+          a.addEventListener('click', () => {
+            trackChatbotEvent('source_link_clicked', {
+              source_path: c.path || '',
+              source_chunk_id: c.chunk_id || '',
+              source_label: label
+            });
+          });
           sources.appendChild(a);
         });
 
@@ -787,6 +849,12 @@
         // click behavior: ask agent to summarize / open this doc
         card.addEventListener("click", () => {
           if (!path) return;
+          trackChatbotEvent('card_clicked', {
+            card_title: title,
+            card_kind: g.kind,
+            card_path: path,
+            card_chunk_id: chunkId
+          });
           // We send a directive that the backend can interpret via search/get_doc (tool pipeline)
           sendText(`請摘要並導覽：${path}${chunkId ? " #" + chunkId : ""}`);
         });
@@ -928,10 +996,20 @@
       payload.type === "action"
         ? `/${payload.action_id}`
         : String(payload.message || "");
+    
+    // Track user message
+    trackChatbotEvent('user_message_sent', {
+      message_type: payload.type,
+      message_length: userText.length,
+      action_id: payload.action_id || null
+    });
+    
     addMessage("user", userText, [], null);
 
     setBusy(true);
     showTyping();
+    
+    const requestStartTime = Date.now();
 
     try {
       let data;
@@ -948,9 +1026,21 @@
         data = await sendToApi(bodyJson);
       }
 
+      const responseTime = Date.now() - requestStartTime;
       const answer = (data.answer || "").trim() || "Repo/KB 中沒有提供足夠資訊。";
       const citations = Array.isArray(data.citations) ? data.citations : [];
       const cards = data.cards || null;
+      const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
+
+      // Track API response
+      trackChatbotEvent('api_response_received', {
+        response_time_ms: responseTime,
+        answer_length: answer.length,
+        citation_count: citations.length,
+        has_cards: cards !== null,
+        suggestion_count: suggestions.length,
+        is_demo: useDemo
+      });
 
       // backend may return mode/suggestions; sync client mode if present
       if (data.mode && modeSelect) {
@@ -958,6 +1048,9 @@
         if (["GUIDE", "CHAT", "STRICT"].includes(m)) {
           currentMode = m;
           modeSelect.value = m;
+          trackChatbotEvent('mode_updated_by_backend', {
+            new_mode: m
+          });
         }
       }
 
@@ -965,10 +1058,21 @@
       addMessage("assistant", answer, citations, cards);
 
       // suggestions chips (dynamic)
-      if (Array.isArray(data.suggestions) && data.suggestions.length) {
-        renderDynamicChips(data.suggestions);
+      if (suggestions.length) {
+        trackChatbotEvent('suggestions_displayed', {
+          suggestion_count: suggestions.length
+        });
+        renderDynamicChips(suggestions);
       }
     } catch (e) {
+      const responseTime = Date.now() - requestStartTime;
+      
+      // Track error
+      trackChatbotEvent('api_error', {
+        error_message: String(e?.message || e),
+        response_time_ms: responseTime
+      });
+      
       hideTyping();
       addMessage(
         "assistant",
@@ -993,7 +1097,13 @@
       chip.type = "button";
       chip.className = "dt-chip";
       chip.textContent = text;
-      chip.addEventListener("click", () => sendText(text));
+      chip.addEventListener("click", () => {
+        trackChatbotEvent('suggestion_chip_clicked', {
+          suggestion_text: text.substring(0, 100),
+          suggestion_length: text.length
+        });
+        sendText(text);
+      });
       chipsSlot.appendChild(chip);
     });
   }
@@ -1001,6 +1111,11 @@
   function handleActionPayload(payload) {
     if (!payload) return;
     if (payload.type === "action") {
+      trackChatbotEvent('action_payload_triggered', {
+        action_id: payload.action_id,
+        payload_type: 'action',
+        args_count: Object.keys(payload.args || {}).length
+      });
       sendPayload({
         type: "action",
         action_id: payload.action_id,
@@ -1008,6 +1123,10 @@
       });
       return;
     }
+    trackChatbotEvent('quick_action_message_sent', {
+      message_source: 'top_action',
+      message_preview: (payload.message || "").substring(0, 50)
+    });
     sendText(payload.message || "");
   }
 
@@ -1018,26 +1137,50 @@
   }
 
   function seed() {
+    trackChatbotEvent('session_reset', {
+      timestamp: new Date().toISOString()
+    });
+    
     body.innerHTML = "";
     body.appendChild(jumpBtn);
     addMessage("assistant", CFG.WELCOME_MESSAGE, [], null);
 
-    quickOpen = false;
-    quick.classList.remove("open");
-    toggleQuickBtn.textContent = "展開";
     updateJumpVisibility();
 
     // initial chips
     renderChips();
   }
+  
   seed();
+  
+  // Track initial session open
+  trackChatbotEvent('widget_initialized', {
+    config_theme: CFG.THEME,
+    config_position: CFG.POSITION,
+    demo_mode: CFG.DEMO_MODE,
+    mode_toggle_enabled: CFG.ENABLE_MODE_TOGGLE
+  });
 
   // expose API
   window.DTZ_CHATBOT = {
-    open: openPanel,
-    close: closePanel,
+    open: () => {
+      trackChatbotEvent('panel_opened', {});
+      return openPanel();
+    },
+    close: () => {
+      trackChatbotEvent('panel_closed', {});
+      return closePanel();
+    },
+    send: sendText,
     sendText,
-    seed,
+    seed: () => {
+      trackChatbotEvent('seed_called', {});
+      return seed();
+    },
+    clear: () => {
+      trackChatbotEvent('clear_called', {});
+      return seed();
+    },
     config: CFG,
     session_id: SID,
     setMode: (m) => {
@@ -1045,6 +1188,9 @@
       if (["GUIDE", "CHAT", "STRICT"].includes(mm)) {
         currentMode = mm;
         if (modeSelect) modeSelect.value = mm;
+        trackChatbotEvent('mode_set', {
+          new_mode: mm
+        });
       }
     },
     getMode: () => currentMode,

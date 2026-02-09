@@ -96,6 +96,92 @@
     "jobTitle": "AI & SA 系統分析師"
   }
   </script>
+  <style>
+    .teaching-card { 
+      display: flex; 
+      flex-direction: column; 
+      height: 100%; 
+      padding: 28px; 
+      border-radius: 20px; 
+      background: linear-gradient(135deg, #1a2847 0%, #243558 100%); 
+      cursor: pointer; 
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+      text-decoration: none; 
+      border: 1.5px solid rgba(0, 144, 255, 0.4); 
+      position: relative; 
+      overflow: hidden; 
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+    }
+    .teaching-card::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(0, 200, 255, 0.15), transparent);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .teaching-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0, 144, 255, 0.35);
+      border-color: rgba(0, 200, 255, 0.6);
+      background: linear-gradient(135deg, #253558 0%, #2f4570 100%);
+    }
+    .teaching-icon {
+      font-size: 56px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, rgba(0, 180, 255, 0.25), rgba(0, 120, 200, 0.15));
+      width: 88px;
+      height: 88px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid rgba(0, 180, 255, 0.4);
+      position: relative;
+      z-index: 1;
+      box-shadow: inset 0 2px 8px rgba(0, 200, 255, 0.1), 0 4px 12px rgba(0, 144, 255, 0.15);
+    }
+    .teaching-title {
+      font-size: 18px;
+      font-weight: 900;
+      margin: 0 0 12px 0;
+      color: #e3f2fd;
+      line-height: 1.4;
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 1;
+    }
+    .teaching-desc {
+      font-size: 14px;
+      color: #b3d9f2;
+      margin: 0;
+      flex-grow: 1;
+      line-height: 1.65;
+      font-weight: 500;
+      position: relative;
+      z-index: 1;
+    }
+    .teaching-cta {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0, 180, 255, 0.25);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .teaching-cta span {
+      font-size: 12px;
+      font-weight: 900;
+      color: #00d9ff;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+  </style>
 </head>
 
 <body>
@@ -123,6 +209,7 @@
             <li><a href="#portfolio" class="nav-link scrollto" data-nav-section="portfolio"><i class="bx bx-book-content"></i> <span>Portfolio</span></a></li>
             <li><a href="#resume" class="nav-link scrollto" data-nav-section="resume"><i class="bx bx-file-blank"></i> <span>Resume</span></a></li>
             <li><a href="#certifications" class="nav-link scrollto" data-nav-section="certifications"><i class="bx bx-award"></i> <span>Certifications</span></a></li>
+            <li><a href="#share" class="nav-link scrollto" data-nav-section="share"><i class="bx bx-share"></i> <span>Share</span></a></li>
             <!--<li><a href="blog\blog.html" class="nav-link scrollto" data-nav-section="blog"><i class="bx bx-briefcase"></i> <span>blog</span></a></li>-->
             <li><a href="#contact" class="nav-link scrollto" data-nav-section="contact"><i class="bx bx-envelope"></i> <span>Contact</span></a></li>
 
@@ -397,6 +484,28 @@
     </div>
   </div>
 </section><!-- End Portfolio Section -->
+
+    <!-- ======= Share Section (Teaching Articles) ======= -->
+    <section id="share" class="share section-bg" data-section="share">
+      <div class="container">
+        <div class="section-title">
+          <h2>Share / 技術分享</h2>
+          <p>透過視覺化與互動式教學，深入淺出地解釋複雜的技術概念</p>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="swiper" id="teaching-swiper">
+              <div class="swiper-wrapper" id="teaching-articles"></div>
+              <div class="swiper-pagination"></div>
+              <div class="swiper-button-next"></div>
+              <div class="swiper-button-prev"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- End Share Section -->
+
     <!-- ======= Resume Section ======= -->
       <section id="resume" class="resume" data-section="resume">
       <div class="container">
@@ -740,6 +849,56 @@ document.addEventListener('DOMContentLoaded', () => {
     spaceBetween: 16,
     pagination: { el: '#portfolio-swiper .swiper-pagination', clickable: true },
     navigation: { nextEl: '#portfolio-swiper .swiper-button-next', prevEl: '#portfolio-swiper .swiper-button-prev' }
+  });
+});
+
+// Teaching Articles Carousel
+document.addEventListener('DOMContentLoaded', () => {
+  const teachingArticles = [
+    { file: 'aiModal.html', title: 'AI 流程視覺化：電子商務顧客分析', icon: '🤖', desc: '用 Vue.js 與動畫展示 AI 在客戶分析中的應用流程' },
+    { file: 'api.html', title: 'API 和 OSI 模型教學', icon: '🌐', desc: '深入理解 API 設計與網路七層模型的對應關係' },
+    { file: 'awsServerless.html', title: 'AWS 無伺服器架構互動式教學', icon: '☁️', desc: '事件驅動架構的設計原理與實務應用' },
+    { file: 'awsThreeTier.html', title: 'AWS 三層式架構互動式教學', icon: '🏗️', desc: '經典三層架構在雲端的實現方式' },
+    { file: 'hello-world.html', title: '從零打造個人部落格（純前端架構）', icon: '📝', desc: '使用純前端技術在 GitHub Pages 構建動態部落格' },
+    { file: 'networkAttack.html', title: '網路攻擊視覺化教學', icon: '🔒', desc: '用動畫拆解 SQLi、XSS 等常見網路攻擊手法' },
+    { file: 'ngrok.html', title: 'ngrok 學習平台', icon: '🔗', desc: '快速建立本地開發環境與外網通道' }
+  ];
+
+  const mount = document.getElementById('teaching-articles');
+  if (!mount) return;
+
+  mount.innerHTML = teachingArticles.map(article => `
+    <div class="swiper-slide" aria-roledescription="slide">
+      <a class="teaching-card" href="javascript:void(0)" onclick="window.open('blog/content/${article.file}', '_blank'); return false;">
+        <div class="teaching-icon">${article.icon}</div>
+        <h3 class="teaching-title">${article.title}</h3>
+        <p class="teaching-desc">${article.desc}</p>
+        <div class="teaching-cta">
+          <span>實踐 →</span>
+        </div>
+      </a>
+    </div>
+  `).join('');
+
+  // Initialize Swiper for teaching articles
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const autoplay = prefersReduced ? false : { delay: 4000, disableOnInteraction: false };
+
+  new Swiper('#teaching-swiper', {
+    effect: 'coverflow',
+    grabCursor: true,
+    centeredSlides: true,
+    loop: teachingArticles.length > 1,
+    slidesPerView: 'auto',
+    coverflowEffect: { rotate: 16, stretch: 0, depth: 140, modifier: 1, slideShadows: true },
+    autoplay,
+    pagination: { el: '#teaching-swiper .swiper-pagination', clickable: true },
+    navigation: { nextEl: '#teaching-swiper .swiper-button-next', prevEl: '#teaching-swiper .swiper-button-prev' },
+    breakpoints: {
+      320: { slidesPerView: 1.1, spaceBetween: 12 },
+      768: { slidesPerView: 1.8, spaceBetween: 16 },
+      1024: { slidesPerView: 2.4, spaceBetween: 20 }
+    }
   });
 });
 </script>

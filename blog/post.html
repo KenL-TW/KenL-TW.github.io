@@ -132,6 +132,24 @@
         return;
       }
       const post = posts[idx];
+      
+      // 如果 post 有 content 欄位但沒有 contentHtml，嘗試載入外部文件
+      if(post.content && !post.contentHtml && USE_FETCH){
+        try{
+          const r = await fetch(resolveCover(post.content));
+          if(r.ok){
+            const html = await r.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const article = doc.querySelector('article');
+            post.contentHtml = article ? article.innerHTML : '<p class="muted">文章內容載入失敗</p>';
+          }
+        }catch(e){
+          console.warn('[Blog] 加載外部內容失敗:', post.content, e);
+          post.contentHtml = '<p class="muted">文章內容載入失敗，請檢查文件路徑</p>';
+        }
+      }
+      
       render(post, posts[idx-1], posts[idx+1]);
       updateSEO(post);
     })();
