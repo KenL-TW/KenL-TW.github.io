@@ -215,6 +215,10 @@
     font-weight: 900;
     cursor: pointer;
   }
+  .dt-mode select option{
+    color: var(--text);
+    background: var(--card);
+  }
 
   .dt-topActions{
     padding: 10px 14px 10px;
