@@ -4,32 +4,37 @@
     BRAND_NAME: "Digitools Assistant",
     SUBTITLE: "Repo-based Answers Only",
     WELCOME_MESSAGE:
-      "你好！我是一個 KB-only 助手。\n\n你可以直接輸入問題，或使用上方三個快捷按鈕快速開始。",
+      "你好！我是網站導覽助理 🤝\n\n你可以問我：\n- 這網站怎麼逛、先看哪裡\n- 推薦 3 個最值得看的專案\n- 查核履歷/經歷/技術細節（我會嚴格以 KB 為準）",
     THEME: "auto",
     POSITION: "right",
-    MAX_CITATIONS: 4,
+    MAX_CITATIONS: 6,
+
+    // Repo link building
     GITHUB_REPO_URL: "",
-    TOP_ACTIONS: [
-      { icon: "🧭", title: "快速開始", desc: "3步驟上手", payload: { type: "text", message: "快速開始：請用最短步驟介紹這個系統如何使用。" } },
-      { icon: "📚", title: "FAQ", desc: "常見問題", payload: { type: "text", message: "請列出最常見的 FAQ，並用條列簡短回答。" } },
-      { icon: "🧾", title: "技術分享", desc: "專案/技術", payload: { type: "action", action_id: "show_projects" } }
-    ],
-    QUICK_CHIPS: [
-      "請用一句話說明產品定位",
-      "有哪些限制？",
-      "請提供使用流程",
-      "Repo 的資料會多久更新？",
-      "給我一個常見使用案例"
-    ],
+    SOURCE_LINK_MODE: "github", // github | raw | pages
+    GITHUB_BRANCH: "main",
+    GITHUB_PAGES_BASE: "", // e.g. "https://kenl-tw.github.io" (optional)
+
+    // Request
     REQUEST_TIMEOUT_MS: 30000,
-    DEMO_MODE: false
-    ,AUTO_OPEN: true,
-    KB_INDEX_PATH: "kb/index.json"
+    DEMO_MODE: false,
+
+    // Session / agent
+    SESSION_STORAGE_KEY: "dtz_session_id",
+    DEFAULT_MODE: "GUIDE", // GUIDE | CHAT | STRICT
+    ENABLE_MODE_TOGGLE: true,
+
+    // Security optional
+    CLIENT_TOKEN: "",
+
+    TOP_ACTIONS: [],
+    QUICK_CHIPS: [],
   };
 
-  const userConfig = (window.ChatbotConfig && typeof window.ChatbotConfig === "object")
-    ? window.ChatbotConfig
-    : {};
+  const userConfig =
+    window.ChatbotConfig && typeof window.ChatbotConfig === "object"
+      ? window.ChatbotConfig
+      : {};
   const CFG = deepMerge(structuredClone(DEFAULT_CONFIG), userConfig);
 
   function deepMerge(target, source) {
@@ -44,7 +49,9 @@
     return target;
   }
 
-  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function clamp(n, a, b) {
+    return Math.max(a, Math.min(b, n));
+  }
 
   function escapeHtml(s) {
     return String(s)
@@ -55,7 +62,10 @@
   }
 
   function isDarkPreferred() {
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
   }
   function resolveTheme() {
     if (CFG.THEME === "light") return "light";
@@ -64,6 +74,38 @@
   }
   const THEME = resolveTheme();
 
+  // -------------------------
+  // Session ID (Agent memory)
+  // -------------------------
+  function genSessionId() {
+    // simple stable id (no PII)
+    const rand = crypto?.getRandomValues
+      ? Array.from(crypto.getRandomValues(new Uint8Array(16)))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("")
+      : Math.random().toString(16).slice(2) + Date.now().toString(16);
+    return `s_${rand}`;
+  }
+
+  function getSessionId() {
+    try {
+      const k = CFG.SESSION_STORAGE_KEY || "dtz_session_id";
+      let sid = localStorage.getItem(k);
+      if (!sid) {
+        sid = genSessionId();
+        localStorage.setItem(k, sid);
+      }
+      return sid;
+    } catch {
+      // fallback in-memory
+      if (!window.__DTZ_SID) window.__DTZ_SID = genSessionId();
+      return window.__DTZ_SID;
+    }
+  }
+
+  // -------------------------
+  // Styles
+  // -------------------------
   const css = `
   :root{ --dtz:2147483000; }
   .dt-chatbot, .dt-chatbot * { box-sizing: border-box; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
@@ -81,6 +123,7 @@
     --btn: #0b1220;
     --btnText: #ffffff;
     --srcBg: rgba(255,255,255,.92);
+    --card2: rgba(255,255,255,.96);
   }
   .dt-chatbot[data-theme="dark"]{
     --bg: #070b14; --bg2:#0b1630;
@@ -94,6 +137,7 @@
     --btn: #ffffff;
     --btnText: #0b1220;
     --srcBg: rgba(255,255,255,.06);
+    --card2: rgba(255,255,255,.04);
   }
 
   .dt-fab{
@@ -114,9 +158,8 @@
     position: fixed;
     right: 18px;
     bottom: 84px;
-    /* 減少寬度一點、增加高度一點以提升閱讀空間 */
-    width: min(400px, calc(100vw - 36px));
-    height: min(760px, calc(100vh - 120px));
+    width: min(420px, calc(100vw - 36px));
+    height: min(780px, calc(100vh - 120px));
     border-radius: 18px;
     overflow: hidden;
     border: 1px solid var(--line);
@@ -143,7 +186,8 @@
   .dt-title{ display:flex; flex-direction:column; gap:2px; min-width:0; }
   .dt-title strong{ font-size:14px; font-weight:900; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .dt-title span{ font-size:12px; opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .dt-actions{ display:flex; gap:8px; flex: 0 0 auto; }
+
+  .dt-actions{ display:flex; gap:8px; align-items:center; }
   .dt-iconbtn{
     width:32px; height:32px; border-radius: 12px;
     border: 1px solid rgba(255,255,255,.16);
@@ -151,6 +195,25 @@
     color:#fff;
     cursor:pointer;
     display:grid; place-items:center;
+  }
+
+  .dt-mode{
+    display:flex; align-items:center; gap:6px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.14);
+    font-size: 11px;
+    font-weight: 900;
+    user-select:none;
+  }
+  .dt-mode select{
+    background: transparent;
+    border: 0;
+    color: #fff;
+    outline: 0;
+    font-weight: 900;
+    cursor: pointer;
   }
 
   .dt-topActions{
@@ -193,10 +256,7 @@
     position: relative;
   }
 
-  /* Message row: increase spacing and support left/right alignment */
   .dt-msg{ display:flex; gap:14px; margin: 18px 0; align-items:flex-end; }
-
-  /* Avatar */
   .dt-avatar{
     width: 36px; height: 36px; border-radius: 10px;
     display:grid; place-items:center;
@@ -207,24 +267,20 @@
     flex: 0 0 auto;
     margin-top: 2px;
   }
-
-  /* Bubble: more padding and slightly narrower max-width for readability */
   .dt-bubble{
-    max-width: 75%;
+    max-width: 78%;
     padding: 14px 16px;
     border-radius: 16px;
     border: 1px solid var(--line);
     background: ${THEME === "dark" ? "rgba(255,255,255,.06)" : "#fff"};
     color: var(--text);
-    line-height: 1.7;
+    line-height: 1.65;
     font-size: 14px;
     white-space: pre-wrap;
     word-break: break-word;
   }
 
-  /* User messages: show on right side (reverse row) */
   .dt-user{ flex-direction: row-reverse; }
-  .dt-user .dt-avatar{ margin-top: 4px; }
   .dt-user .dt-bubble{
     background: linear-gradient(135deg, #0072CE 0%, #0056b3 100%);
     color: #fff;
@@ -232,10 +288,8 @@
     box-shadow: 0 6px 20px rgba(2,6,23,0.12);
   }
 
-  /* Assistant (AI) messages: left side with subtle card style */
   .dt-assistant .dt-bubble{
-    background: ${THEME === "dark" ? "rgba(255,255,255,.03)" : "#fff"};
-    color: var(--text);
+    background: var(--card2);
     border: 1px solid var(--line);
     box-shadow: 0 2px 6px rgba(0,0,0,0.04);
   }
@@ -272,6 +326,54 @@
     text-overflow:ellipsis;
     text-decoration: none;
     display:block;
+  }
+
+  /* Agent cards */
+  .dt-cardWrap{
+    margin-top: 10px;
+    display: grid;
+    gap: 8px;
+  }
+  .dt-card{
+    border: 1px solid var(--line);
+    background: ${THEME === "dark" ? "rgba(255,255,255,.04)" : "#fff"};
+    border-radius: 14px;
+    padding: 10px;
+    cursor: pointer;
+    transition: transform .12s ease, background .12s ease;
+  }
+  .dt-card:hover{
+    transform: translateY(-1px);
+    background: ${THEME === "dark" ? "rgba(255,255,255,.06)" : "rgba(248,250,252,.9)"};
+  }
+  .dt-cardTitle{
+    font-weight: 900;
+    font-size: 12.5px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .dt-cardSub{
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .dt-cardMeta{
+    margin-top: 8px;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .dt-pill{
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--chip);
+    color: var(--muted);
+    white-space: nowrap;
   }
 
   .dt-quickWrap{ background: var(--card); border-top: 1px solid var(--line); }
@@ -350,22 +452,6 @@
   }
   .dt-send:disabled{ opacity:.65; cursor:not-allowed; }
 
-  .dt-smallHint{
-    margin-top: 8px;
-    display:flex; justify-content: space-between; gap:10px;
-    font-size: 12px;
-    color: var(--muted);
-  }
-  .dt-pill{
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--chip);
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
   .dt-jump{
     position: sticky;
     bottom: 10px;
@@ -387,19 +473,11 @@
   @media (max-width: 520px){
     .dt-panel{
       right: 12px; bottom: 78px;
-      /* slightly smaller on mobile for proportional sizing */
-      width: calc(100vw - 36px);
-      height: calc(100vh - 160px);
-      transform: translateY(6px) scale(.95);
-      transform-origin: bottom right;
+      width: calc(100vw - 24px);
+      height: calc(100vh - 130px);
     }
     .dt-chatbot{ right: 12px; bottom: 12px; }
-    .dt-bubble{ font-size:13px; }
-    .dt-avatar{ width:32px; height:32px; }
-    .dt-fab{ width:48px; height:48px; }
   }
-
-
   `;
 
   const styleId = "dt-chatbot-style";
@@ -410,9 +488,25 @@
     document.head.appendChild(style);
   }
 
+  // -------------------------
+  // DOM
+  // -------------------------
   const root = document.createElement("div");
   root.className = "dt-chatbot";
   root.setAttribute("data-theme", THEME);
+
+  const modeToggleHtml = CFG.ENABLE_MODE_TOGGLE
+    ? `
+      <div class="dt-mode" title="對話模式">
+        <span>Mode</span>
+        <select data-slot="mode">
+          <option value="GUIDE">GUIDE</option>
+          <option value="CHAT">CHAT</option>
+          <option value="STRICT">STRICT</option>
+        </select>
+      </div>
+    `
+    : "";
 
   root.innerHTML = `
     <button class="dt-fab" type="button" aria-label="Open Chat">💬</button>
@@ -424,8 +518,8 @@
           <span>${escapeHtml(CFG.SUBTITLE)}</span>
         </div>
         <div class="dt-actions">
+          ${modeToggleHtml}
           <button class="dt-iconbtn" type="button" data-action="clear" title="Clear">🧹</button>
-          <button class="dt-iconbtn" type="button" data-action="kb" title="KB">📚</button>
           <button class="dt-iconbtn" type="button" data-action="close" title="Close">✕</button>
         </div>
       </div>
@@ -451,10 +545,6 @@
           <textarea class="dt-textarea" data-slot="input" rows="1" placeholder="輸入問題…（Enter 送出 / Shift+Enter 換行）"></textarea>
           <button class="dt-send" type="button" data-action="send">Send</button>
         </div>
-        <div class="dt-smallHint">
-          <span class="dt-pill">UI A · Side Panel</span>
-          <span class="dt-pill">Buttons ≤ 3 · No memory</span>
-        </div>
       </div>
     </div>
   `;
@@ -470,6 +560,7 @@
   const sendBtn = root.querySelector('[data-action="send"]');
   const jumpBtn = root.querySelector('[data-action="jump"]');
   const toggleQuickBtn = root.querySelector('[data-action="toggle-quick"]');
+  const modeSelect = root.querySelector('[data-slot="mode"]');
 
   let isOpen = false;
   let isBusy = false;
@@ -477,9 +568,19 @@
   let lastScrollTop = 0;
   let typingEl = null;
 
+  // state
+  const SID = getSessionId();
+  let currentMode = (CFG.DEFAULT_MODE || "GUIDE").toUpperCase();
+  if (modeSelect) modeSelect.value = currentMode;
+
+  // -------------------------
+  // Render helpers
+  // -------------------------
   function renderTopActions() {
     topActionsSlot.innerHTML = "";
-    const list = Array.isArray(CFG.TOP_ACTIONS) ? CFG.TOP_ACTIONS.slice(0, 3) : [];
+    const list = Array.isArray(CFG.TOP_ACTIONS)
+      ? CFG.TOP_ACTIONS.slice(0, 3)
+      : [];
     list.forEach((item, idx) => {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -487,11 +588,15 @@
       btn.innerHTML = `
         <div class="dt-actIcon">${escapeHtml(item.icon ?? "✨")}</div>
         <div class="dt-actText">
-          <strong>${escapeHtml(item.title ?? `Action ${idx+1}`)}</strong>
+          <strong>${escapeHtml(item.title ?? `Action ${idx + 1}`)}</strong>
           <span>${escapeHtml(item.desc ?? "")}</span>
         </div>
       `;
-      btn.addEventListener("click", () => handleActionPayload(item.payload || { type: "text", message: item.message || item.title }));
+      btn.addEventListener("click", () =>
+        handleActionPayload(
+          item.payload || { type: "text", message: item.message || item.title }
+        )
+      );
       topActionsSlot.appendChild(btn);
     });
   }
@@ -512,53 +617,6 @@
   renderTopActions();
   renderChips();
 
-  // Fetch KB index and extract projects list
-  async function loadKBProjects() {
-    try {
-      const res = await fetch(CFG.KB_INDEX_PATH || "kb/index.json", { cache: "no-store" });
-      if (res && res.ok) {
-        const data = await res.json();
-        const chunks = Array.isArray(data.chunks) ? data.chunks : [];
-        // Extract unique project titles from KB chunks
-        const projects = chunks.filter(c => /project|專案|detail|電商|協作|推薦|應用|架構/i.test((c.path || "") + " " + (c.title || "")));
-        return projects.length ? projects : [];
-      }
-    } catch (e) {
-      console.error("Failed to load KB projects", e);
-    }
-    return [];
-  }
-
-  function showProjectsList() {
-    loadKBProjects().then(projects => {
-      if (!projects.length) {
-        sendText("知識庫中未找到專案資訊。");
-        return;
-      }
-      const list = projects.map(p => `• ${p.title || p.path}`).join("\n");
-      const msg = `📌 **知識庫專案清單:**\n\n${list}\n\n請選擇上方的專案名稱深入瞭解詳情。`;
-      addMessage("assistant", msg, []);
-      scrollBottom();
-    });
-  }
-
-  function downloadKBSample(){
-    const sample = {
-      meta: { title: "Sample KB", created: new Date().toISOString() },
-      chunks: [
-        { path: "kb/docs/example.md", title: "示範文件", chunk_id: "ex-1", text: "這是一個示範的知識庫內容，請用於測試 RAG 回答。" }
-      ]
-    };
-    const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'kb-sample.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  }
-
   function openPanel() {
     isOpen = true;
     panel.classList.add("open");
@@ -569,7 +627,9 @@
     isOpen = false;
     panel.classList.remove("open");
   }
-  function togglePanel() { isOpen ? closePanel() : openPanel(); }
+  function togglePanel() {
+    isOpen ? closePanel() : openPanel();
+  }
   fab.addEventListener("click", togglePanel);
 
   function toggleQuick() {
@@ -594,6 +654,13 @@
     }
   });
 
+  if (modeSelect) {
+    modeSelect.addEventListener("change", () => {
+      currentMode = (modeSelect.value || "GUIDE").toUpperCase();
+      addMessage("assistant", `已切換模式：${currentMode}`, [], null);
+    });
+  }
+
   root.addEventListener("click", (e) => {
     const t = e.target;
     if (!(t instanceof HTMLElement)) return;
@@ -602,7 +669,6 @@
 
     if (act === "close") closePanel();
     if (act === "clear") seed();
-    if (act === "kb") downloadKBSample();
     if (act === "send") {
       const q = input.value.trim();
       input.value = "";
@@ -613,16 +679,66 @@
     if (act === "jump") jumpToLatest();
   });
 
-  function scrollBottom() { body.scrollTop = body.scrollHeight; }
-
-  function buildCitationLink(c) {
-    if (!CFG.GITHUB_REPO_URL) return null;
-    if (!c || !c.path) return null;
-    const safePath = String(c.path).replace(/^\/+/, "");
-    return `${CFG.GITHUB_REPO_URL.replace(/\/+$/, "")}/blob/main/${safePath}`;
+  function scrollBottom() {
+    body.scrollTop = body.scrollHeight;
   }
 
-  function addMessage(role, text, citations) {
+  // -------------------------
+  // Source link building (V2)
+  // -------------------------
+  function normalizeRepoUrl(u) {
+    return String(u || "").replace(/\/+$/, "");
+  }
+
+  function toRawUrl(repoUrl, path) {
+    // https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>
+    try {
+      const u = normalizeRepoUrl(repoUrl);
+      // repoUrl: https://github.com/Owner/Repo
+      const m = u.match(/github\.com\/([^\/]+)\/([^\/]+)/i);
+      if (!m) return null;
+      const owner = m[1];
+      const repo = m[2];
+      const branch = CFG.GITHUB_BRANCH || "main";
+      const safePath = String(path || "").replace(/^\/+/, "");
+      return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${safePath}`;
+    } catch {
+      return null;
+    }
+  }
+
+  function toGithubBlobUrl(repoUrl, path) {
+    try {
+      const u = normalizeRepoUrl(repoUrl);
+      const branch = CFG.GITHUB_BRANCH || "main";
+      const safePath = String(path || "").replace(/^\/+/, "");
+      return `${u}/blob/${branch}/${safePath}`;
+    } catch {
+      return null;
+    }
+  }
+
+  function toPagesUrl(path) {
+    const base = (CFG.GITHUB_PAGES_BASE || "").replace(/\/+$/, "");
+    if (!base) return null;
+    const safePath = String(path || "").replace(/^\/+/, "");
+    return `${base}/${safePath}`;
+  }
+
+  function buildCitationLink(c) {
+    if (!c || !c.path) return null;
+    if (!CFG.GITHUB_REPO_URL) return null;
+
+    const mode = String(CFG.SOURCE_LINK_MODE || "github").toLowerCase();
+    if (mode === "raw") return toRawUrl(CFG.GITHUB_REPO_URL, c.path);
+    if (mode === "pages") return toPagesUrl(c.path);
+    return toGithubBlobUrl(CFG.GITHUB_REPO_URL, c.path);
+  }
+
+  // -------------------------
+  // Messages (with cards)
+  // -------------------------
+  function addMessage(role, text, citations, cards) {
     const row = document.createElement("div");
     row.className = "dt-msg " + (role === "user" ? "dt-user" : "dt-assistant");
 
@@ -634,6 +750,13 @@
     bubble.className = "dt-bubble";
     bubble.textContent = text || "";
 
+    // Agent cards (V2)
+    if (role !== "user" && cards) {
+      const cardWrap = renderCards(cards);
+      if (cardWrap) bubble.appendChild(cardWrap);
+    }
+
+    // citations
     if (role !== "user" && Array.isArray(citations) && citations.length > 0) {
       const meta = document.createElement("div");
       meta.className = "dt-meta";
@@ -642,20 +765,25 @@
       const sources = document.createElement("div");
       sources.className = "dt-sources";
 
-      citations.slice(0, clamp(CFG.MAX_CITATIONS || 4, 1, 8)).forEach((c) => {
-        const a = document.createElement("a");
-        a.className = "dt-src";
-        const label = `${c.path || ""} · ${c.chunk_id || ""}`.trim();
-        a.textContent = label || "source";
-        const url = buildCitationLink(c);
-        if (url) {
-          a.href = url; a.target = "_blank"; a.rel = "noreferrer"; a.title = url;
-        } else {
-          a.href = "javascript:void(0)";
-          a.title = label;
-        }
-        sources.appendChild(a);
-      });
+      citations
+        .slice(0, clamp(CFG.MAX_CITATIONS || 6, 1, 12))
+        .forEach((c) => {
+          const a = document.createElement("a");
+          a.className = "dt-src";
+          const label = `${c.path || ""} · ${c.chunk_id || ""}`.trim();
+          a.textContent = label || "source";
+          const url = buildCitationLink(c);
+          if (url) {
+            a.href = url;
+            a.target = "_blank";
+            a.rel = "noreferrer";
+            a.title = url;
+          } else {
+            a.href = "javascript:void(0)";
+            a.title = label;
+          }
+          sources.appendChild(a);
+        });
 
       bubble.appendChild(meta);
       bubble.appendChild(sources);
@@ -666,9 +794,76 @@
     body.appendChild(row);
     body.appendChild(jumpBtn);
 
-    const nearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 140;
+    const nearBottom =
+      body.scrollHeight - body.scrollTop - body.clientHeight < 140;
     if (nearBottom) scrollBottom();
     updateJumpVisibility();
+  }
+
+  function renderCards(cards) {
+    const groups = [];
+
+    const identity = Array.isArray(cards.identity_cards)
+      ? cards.identity_cards
+      : [];
+    const projects = Array.isArray(cards.project_cards)
+      ? cards.project_cards
+      : [];
+    const hits = Array.isArray(cards.search_hit_cards)
+      ? cards.search_hit_cards
+      : [];
+
+    if (projects.length)
+      groups.push({ title: "精選專案", items: projects, kind: "project" });
+    if (hits.length)
+      groups.push({ title: "相關內容", items: hits, kind: "hit" });
+    if (identity.length)
+      groups.push({ title: "關於 Ken", items: identity, kind: "identity" });
+
+    if (!groups.length) return null;
+
+    const wrap = document.createElement("div");
+    wrap.className = "dt-cardWrap";
+
+    groups.forEach((g) => {
+      const head = document.createElement("div");
+      head.className = "dt-meta";
+      head.textContent = g.title;
+      wrap.appendChild(head);
+
+      g.items.slice(0, 6).forEach((it) => {
+        const card = document.createElement("div");
+        card.className = "dt-card";
+
+        const title = it.title || it.path || "Untitled";
+        const sub =
+          it.one_liner || it.excerpt || it.desc || it.summary || "";
+        const path = it.path || "";
+        const chunkId = it.chunk_id || "";
+
+        card.innerHTML = `
+          <div class="dt-cardTitle">${escapeHtml(title)}</div>
+          <div class="dt-cardSub">${escapeHtml(sub)}</div>
+          <div class="dt-cardMeta">
+            <span class="dt-pill">${escapeHtml(g.kind.toUpperCase())}</span>
+            <span title="${escapeHtml(path)}">${escapeHtml(
+          path ? path.split("/").slice(-2).join("/") : ""
+        )}</span>
+          </div>
+        `;
+
+        // click behavior: ask agent to summarize / open this doc
+        card.addEventListener("click", () => {
+          if (!path) return;
+          // We send a directive that the backend can interpret via search/get_doc (tool pipeline)
+          sendText(`請摘要並導覽：${path}${chunkId ? " #" + chunkId : ""}`);
+        });
+
+        wrap.appendChild(card);
+      });
+    });
+
+    return wrap;
   }
 
   function showTyping() {
@@ -710,141 +905,98 @@
     body.scrollTop = body.scrollHeight;
     updateJumpVisibility();
   }
-  body.addEventListener("scroll", () => {
-    const st = body.scrollTop;
-    if (Math.abs(st - lastScrollTop) > 20) {
-      lastScrollTop = st;
-      updateJumpVisibility();
-    }
-  }, { passive: true });
+  body.addEventListener(
+    "scroll",
+    () => {
+      const st = body.scrollTop;
+      if (Math.abs(st - lastScrollTop) > 20) {
+        lastScrollTop = st;
+        updateJumpVisibility();
+      }
+    },
+    { passive: true }
+  );
 
-  function handleActionPayload(payload) {
-    if (!payload) return;
-    
-    // Handle special action: show_projects
-    if (payload.type === "action" && payload.action_id === "show_projects") {
-      showProjectsList();
-      return;
-    }
-    
-    if (payload.type === "action") {
-      sendPayload({ type: "action", action_id: payload.action_id, args: payload.args || {} });
-      return;
-    }
-    sendText(payload.message || "");
+  // -------------------------
+  // API
+  // -------------------------
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
   }
 
   async function sendToApi(bodyJson) {
     const controller = new AbortController();
-    const tid = setTimeout(() => controller.abort(), clamp(CFG.REQUEST_TIMEOUT_MS || 30000, 5000, 120000));
+    const tid = setTimeout(
+      () => controller.abort(),
+      clamp(CFG.REQUEST_TIMEOUT_MS || 30000, 5000, 120000)
+    );
+
     try {
-      // Build headers: include content-type and optional auth (API key / bearer token / extra headers)
       const headers = { "Content-Type": "application/json" };
-      if (CFG.API_KEY) headers[CFG.API_KEY_HEADER || "x-api-key"] = CFG.API_KEY;
-      if (CFG.BEARER_TOKEN) headers["Authorization"] = `Bearer ${CFG.BEARER_TOKEN}`;
-      if (CFG.ADDITIONAL_HEADERS && typeof CFG.ADDITIONAL_HEADERS === "object") {
-        for (const [k, v] of Object.entries(CFG.ADDITIONAL_HEADERS)) {
-          headers[k] = v;
-        }
-      }
+      if (CFG.CLIENT_TOKEN) headers["x-client-token"] = CFG.CLIENT_TOKEN;
 
-      // Debug: log request details to help diagnose network / CORS errors
+      // Debug (safe)
       try {
-        console.debug("DT-CHAT: sending request", { url: CFG.CHAT_API_URL, headers, body: bodyJson });
-      } catch (e) {
-        // ignore logging errors
-      }
-
-      let res;
-      try {
-        res = await fetch(CFG.CHAT_API_URL, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(bodyJson),
-          signal: controller.signal
+        console.debug("DTZ-AGENT: request", {
+          url: CFG.CHAT_API_URL,
+          body: bodyJson,
         });
-      } catch (fetchError) {
-        console.error("DT-CHAT: fetch failed", fetchError);
-        throw fetchError;
-      }
+      } catch {}
+
+      const res = await fetch(CFG.CHAT_API_URL, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(bodyJson),
+        signal: controller.signal,
+      });
+
       const ct = res.headers.get("content-type") || "";
       if (!res.ok) {
-        const t = ct.includes("application/json") ? JSON.stringify(await res.json()) : await res.text();
+        const t = ct.includes("application/json")
+          ? JSON.stringify(await res.json())
+          : await res.text();
         throw new Error(`HTTP ${res.status}: ${t}`);
       }
-      return ct.includes("application/json") ? await res.json() : { answer: await res.text() };
+      return ct.includes("application/json")
+        ? await res.json()
+        : { answer: await res.text() };
     } finally {
       clearTimeout(tid);
     }
   }
 
+  // Optional local demo if API missing
   async function demoAnswer(message) {
-    // Accept either a payload object or a message string
-    if (message && typeof message === 'object') {
-      message = message.message || message.action_id || '';
-    }
-    // Attempt to read local kb index to pick two random entries for a realistic RAG demo
-    try {
-      const res = await fetch(CFG.KB_INDEX_PATH || "kb/index.json", { cache: "no-store" });
-      if (res && res.ok) {
-        const jd = await res.json();
-        const chunks = Array.isArray(jd.chunks) ? jd.chunks.slice() : [];
-
-        // Prefer chunks that look like product entries (path/title/text contains 商品/product/電商)
-        const productCandidates = chunks.filter(c => /product|商品|電商|item/i.test((c.path || "") + " " + (c.title || "") + " " + (c.text || "")));
-        const pool = productCandidates.length ? productCandidates.slice() : chunks;
-
-        const picks = [];
-        while (picks.length < 2 && pool.length) {
-          const idx = Math.floor(Math.random() * pool.length);
-          picks.push(pool.splice(idx, 1)[0]);
-        }
-
-        if (picks.length) {
-          const answerParts = picks.map((p, i) => {
-            const title = p.title || p.path || `Product ${i + 1}`;
-            const body = (p.text || "(no description available)").trim();
-            return `商品 ${i + 1}：${title}\n\n${body}`;
-          });
-
-          return {
-            answer: answerParts.join("\n\n---\n\n"),
-            citations: picks.map(p => ({ path: p.path || "", chunk_id: p.chunk_id || p.path || "" }))
-          };
-        }
-      }
-    } catch (e) {
-      // ignore and fallback to generic demo
-    }
-
-    const long =
-      "（Demo mode）我已依照 KB-only 的規則整理：\n\n" +
-      "1) 回答會以『文件式』方式呈現，避免碎片化。\n" +
-      "2) 若 KB 沒有內容，會明確回覆不足，不會猜。\n\n" +
-      "建議下一步：\n" +
-      "• 直接提供你要查的功能/頁面/錯誤訊息\n" +
-      "• 或點上方三個按鈕（快速開始 / FAQ / 技術分享）\n\n" +
-      "你的輸入： " + message;
-
+    await sleep(280);
     return {
-      answer: long,
-      citations: [
-        { path: "kb/docs/overview.md", chunk_id: "overview#0001" },
-        { path: "kb/docs/faq.md", chunk_id: "faq#0001" }
-      ]
+      answer:
+        "（Demo mode）我現在在模擬導覽。\n\n你可以問：推薦 3 個專案 / 介紹 Ken / 從哪裡開始看。\n\nCitations:\n(none)",
+      citations: [],
+      mode: "GUIDE",
+      suggestions: ["介紹 Ken", "推薦 3 個專案", "我該從哪裡開始看？"],
+      cards: {
+        project_cards: [
+          {
+            title: "AI Agent / RAG 專案",
+            path: "kb/docs/projects-detail.md",
+            chunk_id: "projects-detail#agent",
+            one_liner: "KB 驅動的導覽型 Agent，支援 citations 與 minimal memory。",
+          },
+        ],
+        search_hit_cards: [],
+        identity_cards: [],
+      },
     };
   }
-
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   async function sendPayload(payload) {
     if (!payload || isBusy) return;
 
-    if (payload.type === "action") {
-      addMessage("user", `/${payload.action_id}`, []);
-    } else {
-      addMessage("user", String(payload.message || ""), []);
-    }
+    const userText =
+      payload.type === "action"
+        ? `/${payload.action_id}`
+        : String(payload.message || "");
+    addMessage("user", userText, [], null);
 
     setBusy(true);
     showTyping();
@@ -853,27 +1005,78 @@
       let data;
       const useDemo = CFG.DEMO_MODE || !CFG.CHAT_API_URL;
       if (useDemo) {
-        await sleep(420);
-        data = await demoAnswer(payload);
+        data = await demoAnswer(userText);
       } else {
-        data = await sendToApi(payload);
+        // V2 payload includes session_id + mode
+        const bodyJson = {
+          session_id: SID,
+          message: userText,
+          mode: currentMode,
+        };
+        data = await sendToApi(bodyJson);
       }
 
-      const answer = (data.answer || "").trim() || "Repo 中沒有提供足夠資訊。";
+      const answer = (data.answer || "").trim() || "Repo/KB 中沒有提供足夠資訊。";
       const citations = Array.isArray(data.citations) ? data.citations : [];
+      const cards = data.cards || null;
+
+      // backend may return mode/suggestions; sync client mode if present
+      if (data.mode && modeSelect) {
+        const m = String(data.mode).toUpperCase();
+        if (["GUIDE", "CHAT", "STRICT"].includes(m)) {
+          currentMode = m;
+          modeSelect.value = m;
+        }
+      }
 
       hideTyping();
-      addMessage("assistant", answer, citations);
+      addMessage("assistant", answer, citations, cards);
 
+      // suggestions chips (dynamic)
+      if (Array.isArray(data.suggestions) && data.suggestions.length) {
+        renderDynamicChips(data.suggestions);
+      }
     } catch (e) {
       hideTyping();
-      addMessage("assistant", "系統暫時無法取得回應，請稍後再試。\n\n" + String(e?.message || e), []);
+      addMessage(
+        "assistant",
+        "系統暫時無法取得回應，請稍後再試。\n\n" + String(e?.message || e),
+        [],
+        null
+      );
     } finally {
       setBusy(false);
-      const nearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 160;
+      const nearBottom =
+        body.scrollHeight - body.scrollTop - body.clientHeight < 160;
       if (nearBottom) scrollBottom();
       updateJumpVisibility();
     }
+  }
+
+  function renderDynamicChips(suggestions) {
+    // Replace QUICK_CHIPS area with live suggestions (agent-like)
+    chipsSlot.innerHTML = "";
+    suggestions.slice(0, 6).forEach((text) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "dt-chip";
+      chip.textContent = text;
+      chip.addEventListener("click", () => sendText(text));
+      chipsSlot.appendChild(chip);
+    });
+  }
+
+  function handleActionPayload(payload) {
+    if (!payload) return;
+    if (payload.type === "action") {
+      sendPayload({
+        type: "action",
+        action_id: payload.action_id,
+        args: payload.args || {},
+      });
+      return;
+    }
+    sendText(payload.message || "");
   }
 
   function sendText(message) {
@@ -885,22 +1088,33 @@
   function seed() {
     body.innerHTML = "";
     body.appendChild(jumpBtn);
-    addMessage("assistant", CFG.WELCOME_MESSAGE, [
-    ]);
+    addMessage("assistant", CFG.WELCOME_MESSAGE, [], null);
+
     quickOpen = false;
     quick.classList.remove("open");
     toggleQuickBtn.textContent = "展開";
     updateJumpVisibility();
+
+    // initial chips
+    renderChips();
   }
   seed();
-  // Desktop-only auto-open when enabled in config
-  try {
-    if (CFG.AUTO_OPEN && window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
-      openPanel();
-    }
-  } catch (e) {
-    // ignore
-  }
 
-  window.DTZ_CHATBOT = { open: openPanel, close: closePanel, sendText, seed, config: CFG };
+  // expose API
+  window.DTZ_CHATBOT = {
+    open: openPanel,
+    close: closePanel,
+    sendText,
+    seed,
+    config: CFG,
+    session_id: SID,
+    setMode: (m) => {
+      const mm = String(m || "").toUpperCase();
+      if (["GUIDE", "CHAT", "STRICT"].includes(mm)) {
+        currentMode = mm;
+        if (modeSelect) modeSelect.value = mm;
+      }
+    },
+    getMode: () => currentMode,
+  };
 })();

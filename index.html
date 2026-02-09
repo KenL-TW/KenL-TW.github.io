@@ -938,37 +938,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Chatbot Configuration & Widget -->
   <script>
-    // 初始化 Chatbot 配置（必須在 chatbot-widget.js 之前）
-    window.ChatbotConfig = {
-      CHAT_API_URL: "https://jj5xm6ff2a4wlp3t6kcw5vfcue0yeneo.lambda-url.ap-northeast-1.on.aws/",
+  window.ChatbotConfig = {
+    CHAT_API_URL: "https://jj5xm6ff2a4wlp3t6kcw5vfcue0yeneo.lambda-url.ap-northeast-1.on.aws/",
 
-      BRAND_NAME: "Digitools Assistant",
-      SUBTITLE: "Repo-based Answers Only",
+    BRAND_NAME: "Digitools Assistant",
+    SUBTITLE: "Repo-based Answers Only",
 
-      // 你的 repo（用於 sources 生成連結）
-      GITHUB_REPO_URL: "https://github.com/KenL-TW/KenL-TW.github.io",
+    GITHUB_REPO_URL: "https://github.com/KenL-TW/KenL-TW.github.io",
+    SOURCE_LINK_MODE: "raw",
+    GITHUB_BRANCH: "main",
+    GITHUB_PAGES_BASE: "https://kenl-tw.github.io",
 
-      // sources 連結模式：github=repo頁 / raw=raw內容 / pages=GitHub Pages（若你有對應路徑）
-      SOURCE_LINK_MODE: "raw",
+    DEFAULT_MODE: "GUIDE",
+    ENABLE_MODE_TOGGLE: true,
 
-      TOP_ACTIONS: [
-        { icon: "🧭", title: "快速開始", desc: "3步驟上手", payload: { type: "text", message: "快速開始：請用最短步驟介紹這個系統如何使用。" } },
+    TOP_ACTIONS: [
+      { icon: "🧭", title: "快速開始", desc: "3步驟上手", payload: { type: "text", message: "快速開始：請用最短步驟介紹這個系統如何使用。" } },
       { icon: "📚", title: "FAQ", desc: "常見問題", payload: { type: "text", message: "請列出最常見的 FAQ，並用條列簡短回答。" } },
       { icon: "🧾", title: "技術分享", desc: "專案/技術", payload: { type: "text", message: "請針對有興趣的專案或技術進行發問。" } }
-      ],
+    ],
 
-      QUICK_CHIPS: [
-        "快速開始是什麼？",
-        "KB-only 原則是什麼？",
-        "知識庫的內容有什麼？"
-      ],
-
-      THEME: "auto",
-      REQUEST_TIMEOUT_MS: 30000
-    };
-  </script>
-  <!-- Chatbot Widget 會在此配置後加載，並自動初始化對話框 -->
-  <script src="./assets/chatbot-widget.js"></script>
+    QUICK_CHIPS: ["介紹 Ken", "推薦 3 個專案", "我該從哪裡開始看？"],
+    THEME: "auto",
+    REQUEST_TIMEOUT_MS: 30000
+  };
+</script>
+<script src="./assets/chatbot-widget.js"></script>
   <script>
   // 頁面 render 完成後自動打開 chatbot
   (function autoOpenChatbot(){

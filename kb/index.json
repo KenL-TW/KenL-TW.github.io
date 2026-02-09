@@ -1,89 +1,126 @@
 {
-  "version": "2026-01-30",
+  "version": "kb-index-v2",
+  "generated_at": "2026-02-09",
+  "source": "https://kenl-tw.github.io/",
   "chunks": [
     {
-      "chunk_id": "quickstart#0001",
-      "path": "kb/docs/quickstart.md",
-      "title": "快速開始",
-      "text": "快速開始：點擊右下角聊天按鈕，輸入問題，系統將只根據 GitHub Repo 的知識庫內容回答，並附上引用來源。"
+      "path": "kb/docs/site-overview.md",
+      "chunk_id": "site-overview#0001",
+      "title": "KenLiao 個人網站總覽",
+      "text": "Ken Liao 個人網站為作品集與履歷導覽頁，主要區塊包含 About、Skills、Portfolio、Resume、Certifications、Contact。網站亦展示以 GitHub Pages 與 AWS Serverless 架構打造的 AI 市場分析系統，以及 STRATOS PM 甘特圖任務矩陣工具。",
+      "tags": ["site", "guide", "overview"]
     },
     {
-      "chunk_id": "kb_policy#0001",
-      "path": "kb/docs/kb_policy.md",
-      "title": "KB-only 原則",
-      "text": "本聊天機器人僅依據 GitHub Repo 中的知識庫內容回答，不會猜測或補完不存在的資訊。若資料不足，會明確告知。"
+      "path": "kb/about/profile.md",
+      "chunk_id": "about#0001",
+      "title": "關於 Ken：個性與自我介紹",
+      "text": "Ken 提到自己是天秤座，注重平衡與和諧，喜歡透過交流與分享來擴展知識。",
+      "tags": ["about", "intro", "guide"]
     },
     {
-      "chunk_id": "faq#0001",
-      "path": "kb/docs/faq.md",
-      "title": "知識庫 FAQ",
-      "text": "知識庫位於 GitHub Repo 的 kb 資料夾中。若問題找不到答案，系統會要求提供文件名稱或關鍵字。"
+      "path": "kb/about/role.md",
+      "chunk_id": "about#role-system-analyst",
+      "title": "職能定位：數位轉型—系統分析師",
+      "text": "Ken 的職能定位為「數位轉型—系統分析師」：將複雜的商業需求落地為系統規格設計，並考量商業與技術平衡點以整合為最佳方案。",
+      "tags": ["about", "positioning", "system-analysis"]
     },
     {
-      "chunk_id": "projects-overview#0001",
-      "path": "kb/docs/projects-overview.md",
-      "title": "專案總覽",
-      "text": "本知識庫涵蓋本人的核心專案與技術實踐。主要專案類別包括全棧 Web 應用、DevOps & 基礎設施、資料處理 & 分析、AI / ML 應用。可選擇上方「專案」主題深入瞭解。"
+      "path": "kb/about/quick-facts.md",
+      "chunk_id": "about#quick-facts",
+      "title": "快速資訊：基本資料與亮點",
+      "text": "Birthday: 27 Sep 1996；City: New Taipei；Fun Fact: 合格的國家桌球C級教練；Degree: 大學；Freelance: 一頁式網站建立、SEO優化、小工具製作；語言: TOEIC 935（聽說讀寫/精通）。",
+      "tags": ["about", "facts", "contact"]
     },
     {
-      "chunk_id": "projects-detail#ecommerce",
-      "path": "kb/docs/projects-detail.md",
-      "title": "電商平台專案",
-      "text": "全棧電商系統，包含商品管理、購物車、訂單處理、支付整合。技術棧：React 18 + Redux、Node.js + Express + MongoDB、Stripe / 綠界科技、Docker + AWS ECS。首屏載入 < 2s，轉換率提升 +35%。"
+      "path": "kb/about/talks.md",
+      "chunk_id": "about#career-talk-20240328",
+      "title": "職涯分享會講師經驗",
+      "text": "Ken 受邀於企業舉辦職涯分享會，主題涵蓋職涯轉換、個人成長與語言學習，並以實務案例分享協助探索職涯方向。日期：2024/03/28（台北）。",
+      "tags": ["about", "talks", "career"]
     },
     {
-      "chunk_id": "projects-detail#collaboration",
-      "path": "kb/docs/projects-detail.md",
-      "title": "即時協作工具專案",
-      "text": "多人同步編輯的文件協作平台，類似 Google Docs。技術棧：Vue 3 + Pinia、Node.js + Socket.io + PostgreSQL、OT / CRDT 衝突解決、AWS S3 CDN。核心功能：即時編輯、評論、版本控制、許可權管理。"
+      "path": "kb/skills/skills-matrix.md",
+      "chunk_id": "skills#matrix-0001",
+      "title": "技能矩陣（百分比）",
+      "text": "Skills：English 90%；IT Project Management 80%；AI Utilize Skills 70%；Python 60%；System Documents 80%；System Analysis 75%。",
+      "tags": ["skills", "matrix", "resume"]
     },
     {
-      "chunk_id": "projects-detail#ml-engine",
-      "path": "kb/docs/projects-detail.md",
-      "title": "機器學習推薦引擎",
-      "text": "推薦系統，基於用戶行為與物品特徵進行個性化推薦。技術：PyTorch、Spark SQL、Airflow DAG、SageMaker FastAPI。算法：協同過濾、內容過濾、LightGBM、Faiss 向量搜尋。CTR +28%、Precision@10: 0.85、延遲 < 100ms。"
+      "path": "kb/projects/portfolio-overview.md",
+      "chunk_id": "projects#overview-0001",
+      "title": "作品集概覽",
+      "text": "作品集展示 Ken 的專案開發經驗與技術能力，包含：AI 市場分析系統、CTSS 平台在地化導入與技術顧問、STRATOS PM 甘特圖任務矩陣工具。",
+      "tags": ["projects", "overview", "guide"]
     },
     {
-      "chunk_id": "tech-stack#frontend",
-      "path": "kb/docs/tech-stack.md",
-      "title": "前端技術棧",
-      "text": "JavaScript 框架：React 18、Vue 3、Next.js。樣式：Tailwind CSS、SCSS、CSS-in-JS。狀態管理：Redux Toolkit、Zustand、Pinia、TanStack Query。UI 組件：Ant Design、Material-UI、Shadcn/ui。"
+      "path": "kb/projects/ai-market-research.md",
+      "chunk_id": "projects#ai-market-research-0001",
+      "title": "專案：AI 市場分析系統（技術棧與介紹）",
+      "text": "AI 市場分析系統：以 GitHub Pages 與 AWS Serverless 架構打造即時 AI 市場研究平台。前端整合 Chart.js；後端由 API Gateway + Lambda 組成，並透過 AWS Secrets Manager 管理 OpenAI API Key。使用者可輸入任意產業，即時取得市場規模、SWOT、競品版圖與成長曲線等動態可視化分析。技術：GitHub Pages、AWS API Gateway、AWS Lambda（Python）、Secrets Manager、OpenAI GPT-4o-mini、Chart.js、TailwindCSS。",
+      "tags": ["projects", "ai", "aws", "serverless", "chartjs"]
     },
     {
-      "chunk_id": "tech-stack#backend",
-      "path": "kb/docs/tech-stack.md",
-      "title": "後端技術棧",
-      "text": "Runtime：Node.js + Express、Python + FastAPI、Fastify。資料庫：PostgreSQL、MongoDB、Redis、Elasticsearch。API：REST、GraphQL、JWT 認證、OAuth 2.0。"
+      "path": "kb/projects/ctss-consulting.md",
+      "chunk_id": "projects#ctss-0001",
+      "title": "專案：CTSS 平台在地化導入 + 技術顧問",
+      "text": "CTSS 平台：Ken 作為在台技術顧問與系統分析人員，協助日方團隊落地台灣市場，包含功能設計建議、跨文化溝通橋樑、自動化流程規劃、招募數據分析，確保平台在台灣環境下可順利運行並具備可維運性。工作內容：系統分析與功能設計、人力策略與市場分析建議、自動化流程設計、追蹤優化後成效。",
+      "tags": ["projects", "consulting", "system-analysis", "automation"]
     },
     {
-      "chunk_id": "tech-stack#devops",
-      "path": "kb/docs/tech-stack.md",
-      "title": "DevOps & 部署技術",
-      "text": "容器化：Docker、Docker Compose、Kubernetes。CI/CD：GitHub Actions、GitLab CI、Jenkins。雲端：AWS (EC2/ECS/Lambda/RDS/S3/CloudFront)、Vercel、Azure。"
+      "path": "kb/projects/stratos-pm.md",
+      "chunk_id": "projects#stratos-pm-0001",
+      "title": "專案：STRATOS PM 甘特圖任務矩陣工具",
+      "text": "STRATOS PM：單頁式專案管理工具，將「任務矩陣 (WBS)」與「右側甘特圖」高度聯動，支援依賴關係、風險標示、部門收合、Auto Schedule 與 JSON 匯入匯出，模擬真實專案管理現場的決策流程。技術：React 18 (UMD)、Tailwind CSS、Vanilla JS 單檔 SPA、localStorage 狀態保存、GitHub Pages 部署。",
+      "tags": ["projects", "pm", "gantt", "wbs", "frontend"]
     },
     {
-      "chunk_id": "tech-stack#data-ai",
-      "path": "kb/docs/tech-stack.md",
-      "title": "資料 & AI 技術",
-      "text": "資料處理：Apache Spark、Airflow、Pandas。機器學習：PyTorch、TensorFlow、Scikit-learn、LightGBM、XGBoost。向量資料庫：Faiss、Milvus、Pinecone。"
+      "path": "kb/projects/ai-business-analyzer.md",
+      "chunk_id": "projects#ai-business-analyzer-0001",
+      "title": "專案頁：AI Business Analyzer（定位與輸出）",
+      "text": "AI Business Analyzer：透過 API Gateway + Lambda + OpenAI + SNS 的微服務架構，快速產出產業市場分析、競品盤點、AI 應用點子與 SWOT，用於創業構想驗證、Side Project 商機評估與 Pitch Deck 構思。頁面輸出區塊包含：市場概要 Summary、數據與細分（CAGR/賽道/驅動/風險）、市場成長趨勢（Chart.js）、SWOT、競品盤點（品牌/產品/形式/收費/差異化）、AI 應用構想（內容創作/用戶互動/商業變現）、原始分析內容（JSON/Text）。",
+      "tags": ["projects", "ai", "microservices", "swot", "market-research"]
     },
     {
-      "chunk_id": "faq-extended#about-projects",
-      "path": "kb/docs/faq-extended.md",
-      "title": "關於專案常問",
-      "text": "Q: 最擅長的開發領域？A: 全棧 Web 應用開發。Q: 開發經驗多少年？A: 5+ 年。Q: 遠端工作？A: 支援遠端，時區靈活。"
+      "path": "kb/resume/education.md",
+      "chunk_id": "resume#education-0001",
+      "title": "履歷：教育背景",
+      "text": "Education：私立逢甲大學—國際企業管理學士學位學程(英語專班)（2015/9-2019/6）；加州柏克萊課程(美國)—專案管理、商業管理（2018/8-2019/8）；高苑大學—數位行銷研習班(C#開發能力養成班)（2021/6-2021/9）。",
+      "tags": ["resume", "education"]
     },
     {
-      "chunk_id": "faq-extended#tech-qa",
-      "path": "kb/docs/faq-extended.md",
-      "title": "技術選擇常問",
-      "text": "React vs Vue：各有優勢。TypeScript：強烈建議。SQL vs NoSQL：取決於資料特性。DevOps 學習順序：Git → Docker → CI/CD → Kubernetes → 雲端。"
+      "path": "kb/resume/tools.md",
+      "chunk_id": "resume#tools-0001",
+      "title": "履歷：工具與應用（AI / 專案管理）",
+      "text": "Tools & Applications：AI應用工具—Basic AI Agent Design、GPT系列/Copilot/Germini、NotebookLM/perplexity.ai、Felo.ai/DiagramGPT/leonardo.ai/Gamma。專案管理工具—Jira/Sprint Tool、Interface Spec/System Spec/Flow chart/DB Schema/WBS、Swimlane diagram/Activity Diagram/Use Case Diagram/Sequence Diagram。",
+      "tags": ["resume", "tools", "ai", "pm"]
     },
     {
-      "chunk_id": "faq-extended#deployment",
-      "path": "kb/docs/faq-extended.md",
-      "title": "部署與性能常問",
-      "text": "部署選擇：Vercel (前端) / Render 或 Railway (後端)。高可用：負載均衡、多區域、自動故障轉移、監控告警。性能優化：代碼分割、圖片優化、CDN、緩存策略、DB 優化。"
+      "path": "kb/resume/work-experience.md",
+      "chunk_id": "resume#work-0001",
+      "title": "履歷：工作經驗（伊雲谷數位科技）",
+      "text": "伊雲谷數位科技（2023/12 ~ Now）—數位轉型 系統分析師：評估與分析現行系統、了解專案需求/資源/時程；制定 SOW 並拆解功能清單與範圍；撰寫開發技術規格與系統流程；擔任 SA 團隊海外導入窗口；設計關聯式資料庫欄位以結合規格與維運；召開跨部門會議，規劃 AS-IS 到 TO-BE 並交付成果。",
+      "tags": ["resume", "work", "system-analysis", "sow", "db"]
+    },
+    {
+      "path": "kb/resume/work-experience.md",
+      "chunk_id": "resume#work-0002",
+      "title": "履歷：工作經驗（宏碁股份有限公司）",
+      "text": "宏碁股份有限公司（2021/11 ~ 2023/11）—專案工程師：參與電子商務專案開發、理解需求、撰寫功能規格、規劃時程、教育訓練並確保如期如質上線；規劃系統串接/整合測試/確認 API 文件（訂單、物流、金流、資料流），製作 System Map；跨部門協作（IT infra、B2B整合、商業團隊、內部系統運營、亞洲國家使用者）。",
+      "tags": ["resume", "work", "ecommerce", "integration", "api"]
+    },
+    {
+      "path": "kb/certs/certifications.md",
+      "chunk_id": "certs#0001",
+      "title": "證照：雲端 / 專案管理 / AI / 英語",
+      "text": "Certifications：AWS Certified Solutions Architect Associate（2024，有效期限：2027）；Project Management Professional (PMP)（2023，有效期限：2026）；Practical Application of Gen AI for Project Managers（2024，AI專案能力）；AWS Certified AI Practitioner（2024，有效期限：2027）；AWS Certified Cloud Practitioner（2024，有效期限：2026）；TOEIC Score 935（2019）。",
+      "tags": ["certifications", "aws", "pmp", "ai", "english"]
+    },
+    {
+      "path": "kb/contact/contact.md",
+      "chunk_id": "contact#0001",
+      "title": "聯絡方式",
+      "text": "Contact：Location：新北市三重區；Email：kenliao.applicant@gmail.com。",
+      "tags": ["contact"]
     }
   ]
 }
