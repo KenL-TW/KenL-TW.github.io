@@ -1100,21 +1100,22 @@ document.addEventListener('DOMContentLoaded', function() {
   window.ChatbotConfig = {
     CHAT_API_URL: "https://jj5xm6ff2a4wlp3t6kcw5vfcue0yeneo.lambda-url.ap-northeast-1.on.aws/",
 
-    BRAND_NAME: "Digitools Assistant",
-    SUBTITLE: "Repo-based Answers Only",
+    BRAND_NAME: "Archi",
+    SUBTITLE: "Structured · Verified · Guided",
 
     GITHUB_REPO_URL: "https://github.com/KenL-TW/KenL-TW.github.io",
     SOURCE_LINK_MODE: "raw",
     GITHUB_BRANCH: "main",
     GITHUB_PAGES_BASE: "https://kenl-tw.github.io",
+    KB_INDEX_URL: "kb/index.json",
 
     DEFAULT_MODE: "GUIDE",
     ENABLE_MODE_TOGGLE: true,
 
     TOP_ACTIONS: [
-      { icon: "🧭", title: "快速開始", desc: "3步驟上手", payload: { type: "text", message: "快速開始：請用最短步驟介紹這個系統如何使用。" } },
-      { icon: "📚", title: "FAQ", desc: "常見問題", payload: { type: "text", message: "請列出最常見的 FAQ，並用條列簡短回答。" } },
-      { icon: "🧾", title: "技術分享", desc: "專案/技術", payload: { type: "text", message: "請針對有興趣的專案或技術進行發問。" } }
+      { icon: "🧭", title: "Archi 導覽", desc: "快速認識網站", payload: { type: "text", message: "Archi，帶我用 3 步驟逛完這個網站" } },
+      { icon: "🧪", title: "履歷查核", desc: "驗證 + Citations", payload: { type: "text", message: "用 STRICT 模式整理 Ken 的經歷摘要（每點附 citations）" } },
+      { icon: "🧱", title: "專案精選", desc: "推薦精選路徑", payload: { type: "text", message: "推薦 3 個最值得看的專案，並告訴我先看哪個頁面" } }
     ],
 
     QUICK_CHIPS: ["介紹 Ken", "推薦 3 個專案", "我該從哪裡開始看？"],

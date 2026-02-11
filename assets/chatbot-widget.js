@@ -1,10 +1,10 @@
 (() => {
   const DEFAULT_CONFIG = {
     CHAT_API_URL: "",
-    BRAND_NAME: "Digitools Assistant",
-    SUBTITLE: "Repo-based Answers Only",
+    BRAND_NAME: "Archi",
+    SUBTITLE: "Structured · Verified · Guided",
     WELCOME_MESSAGE:
-      "你好！我是網站導覽助理 🤝\n\n你可以問我：\n- 這網站怎麼逛、先看哪裡\n- 推薦 3 個最值得看的專案\n- 查核履歷/經歷/技術細節（我會嚴格以 KB 為準）",
+      "你好！我是 Archi，Ken 的知識架構導覽 Agent 🧭\n\n我不是一般聊天機器人，而是幫你有系統地認識 Ken 的專業、專案與經歷。每個回答都有來源支援。\n\n選擇導覽模式：\n🧭 GUIDE：快速瀏覽\n🧪 STRICT：驗證模式（附 citations）\n💬 CHAT：自由提問",
     THEME: "auto",
     POSITION: "right",
     MAX_CITATIONS: 6,
@@ -14,6 +14,9 @@
     SOURCE_LINK_MODE: "github", // github | raw | pages
     GITHUB_BRANCH: "main",
     GITHUB_PAGES_BASE: "", // e.g. "https://kenl-tw.github.io" (optional)
+
+    // KB manifest (for agent context)
+    KB_INDEX_URL: "kb/index.json", // Path or URL to KB manifest
 
     // Request
     REQUEST_TIMEOUT_MS: 30000,
@@ -101,6 +104,37 @@
       if (!window.__DTZ_SID) window.__DTZ_SID = genSessionId();
       return window.__DTZ_SID;
     }
+  }
+
+  // -------------------------
+  // KB Manifest (for agent context)
+  // -------------------------
+  let kbIndexCache = null;
+
+  async function loadKBIndex() {
+    if (kbIndexCache) return kbIndexCache;
+    if (!CFG.KB_INDEX_URL) return null;
+
+    try {
+      const resp = await fetch(CFG.KB_INDEX_URL);
+      const data = await resp.json();
+      if (data && data.chunks && Array.isArray(data.chunks)) {
+        kbIndexCache = data;
+        return data;
+      }
+    } catch {
+      console.warn("Failed to load KB index:", CFG.KB_INDEX_URL);
+    }
+    return null;
+  }
+
+  function getKBSummary() {
+    if (!kbIndexCache) return null;
+    // Return paths and titles for agent context
+    const paths = kbIndexCache.chunks
+      .slice(0, 20)
+      .map(c => ({ path: c.path, title: c.title }));
+    return { version: kbIndexCache.version, chunks_count: kbIndexCache.chunks.length, sample: paths };
   }
 
   // -------------------------
@@ -1017,12 +1051,19 @@
       if (useDemo) {
         data = await demoAnswer(userText);
       } else {
-        // V2 payload includes session_id + mode
+        // V2 payload includes session_id + mode + optional KB context
         const bodyJson = {
           session_id: SID,
           message: userText,
           mode: currentMode,
         };
+        
+        // Include KB context if available
+        const kbSummary = getKBSummary();
+        if (kbSummary) {
+          bodyJson.kb_context = kbSummary;
+        }
+        
         data = await sendToApi(bodyJson);
       }
 
@@ -1153,12 +1194,16 @@
   
   seed();
   
+  // Load KB index asynchronously
+  loadKBIndex();
+  
   // Track initial session open
   trackChatbotEvent('widget_initialized', {
     config_theme: CFG.THEME,
     config_position: CFG.POSITION,
     demo_mode: CFG.DEMO_MODE,
-    mode_toggle_enabled: CFG.ENABLE_MODE_TOGGLE
+    mode_toggle_enabled: CFG.ENABLE_MODE_TOGGLE,
+    kb_index_enabled: !!CFG.KB_INDEX_URL
   });
 
   // expose API
