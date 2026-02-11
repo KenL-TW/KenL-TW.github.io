@@ -799,6 +799,25 @@
   // -------------------------
   // Messages (with cards)
   // -------------------------
+  function isProjectRelatedText(text) {
+    const t = String(text || "").toLowerCase();
+    return (
+      t.includes("專案") ||
+      t.includes("project") ||
+      t.includes("作品") ||
+      t.includes("案例") ||
+      t.includes("case study") ||
+      t.includes("portfolio")
+    );
+  }
+
+  function selectProjectCards(text, cards) {
+    if (!cards || !Array.isArray(cards.project_cards)) return null;
+    if (!cards.project_cards.length) return null;
+    if (!isProjectRelatedText(text)) return null;
+    return { project_cards: cards.project_cards };
+  }
+
   function addMessage(role, text, citations, cards) {
     const row = document.createElement("div");
     row.className = "dt-msg " + (role === "user" ? "dt-user" : "dt-assistant");
@@ -822,7 +841,8 @@
 
     // Agent cards (V2)
     if (role !== "user" && cards) {
-      const cardWrap = renderCards(cards);
+      const cardsToRender = selectProjectCards(text, cards);
+      const cardWrap = renderCards(cardsToRender);
       if (cardWrap) bubble.appendChild(cardWrap);
     }
 
