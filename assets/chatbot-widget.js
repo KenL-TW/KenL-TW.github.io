@@ -261,6 +261,14 @@
     background: var(--card);
     display:flex; gap: 8px;
   }
+  .dt-chips{
+    padding: 8px 12px 10px;
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+  }
   .dt-actBtn{
     flex: 1 1 0;
     min-width: 0;
@@ -274,6 +282,18 @@
     user-select:none;
   }
   .dt-actBtn:hover{ background: var(--chipHover); transform: translateY(-1px); }
+  .dt-chip{
+    border: 1px solid var(--line);
+    background: var(--chip);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease;
+    user-select:none;
+  }
+  .dt-chip:hover{ background: var(--chipHover); transform: translateY(-1px); }
   .dt-actIcon{
     width: 26px; height: 26px;
     border-radius: 10px;
@@ -533,6 +553,8 @@
 
       <div class="dt-topActions" data-slot="top-actions"></div>
 
+      <div class="dt-chips" data-slot="chips"></div>
+
       <div class="dt-body" data-slot="body">
         <button class="dt-jump" type="button" data-action="jump">⤓ 回到最新</button>
       </div>
@@ -551,6 +573,7 @@
   const panel = root.querySelector(".dt-panel");
   const body = root.querySelector('[data-slot="body"]');
   const topActionsSlot = root.querySelector('[data-slot="top-actions"]');
+  const chipsSlot = root.querySelector('[data-slot="chips"]');
   const input = root.querySelector('[data-slot="input"]');
   const sendBtn = root.querySelector('[data-action="send"]');
   const jumpBtn = root.querySelector('[data-action="jump"]');
@@ -595,6 +618,28 @@
         handleActionPayload(payload);
       });
       topActionsSlot.appendChild(btn);
+    });
+  }
+
+  function renderChips() {
+    if (!chipsSlot) return;
+    chipsSlot.innerHTML = "";
+    const list = Array.isArray(CFG.QUICK_CHIPS)
+      ? CFG.QUICK_CHIPS.slice(0, 6)
+      : [];
+    list.forEach((text, idx) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "dt-chip";
+      chip.textContent = String(text || "");
+      chip.addEventListener("click", () => {
+        trackChatbotEvent('quick_chip_clicked', {
+          chip_index: idx,
+          chip_text: String(text || "").substring(0, 100)
+        });
+        sendText(text);
+      });
+      chipsSlot.appendChild(chip);
     });
   }
 
@@ -1136,6 +1181,7 @@
   }
 
   function renderDynamicChips(suggestions) {
+    if (!chipsSlot) return;
     // Replace QUICK_CHIPS area with live suggestions (agent-like)
     chipsSlot.innerHTML = "";
     suggestions.slice(0, 6).forEach((text) => {
