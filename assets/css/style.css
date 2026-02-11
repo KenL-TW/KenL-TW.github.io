@@ -986,8 +986,10 @@ section {
   }
 
   .mobile-nav-active #main {
-    margin-left: 300px;
+    margin-left: 0;
     overflow: hidden; /* Prevent horizontal scroll */
+    position: relative;
+    z-index: 9999;
   }
 
   /* Ensure content doesn't overlap with menu when open */
@@ -1005,7 +1007,7 @@ section {
     bottom: 0;
     left: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 9998;
+    z-index: 9996;
     transition: all 0.5s;
   }
 }
