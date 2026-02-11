@@ -143,7 +143,7 @@
   const css = `
   :root{ --dtz:2147483000; }
   .dt-chatbot, .dt-chatbot * { box-sizing: border-box; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-  .dt-chatbot { position: fixed; right: 18px; bottom: 18px; z-index: var(--dtz); }
+  .dt-chatbot { position: fixed; right: 18px; top: 50%; bottom: auto; transform: translateY(-50%); z-index: var(--dtz); }
 
   .dt-chatbot[data-theme="light"]{
     --bg: #0b1220; --bg2:#111c33;
@@ -191,7 +191,8 @@
   .dt-panel{
     position: fixed;
     right: 18px;
-    bottom: 84px;
+    top: 50%;
+    bottom: auto;
     width: min(420px, calc(100vw - 36px));
     height: min(780px, calc(100vh - 120px));
     border-radius: 18px;
@@ -201,13 +202,13 @@
     box-shadow: var(--shadow);
     display: none;
     flex-direction: column;
-    transform: translateX(8px);
+    transform: translate(8px, -50%);
     opacity: 0;
     transition: transform .18s ease, opacity .18s ease;
   }
   .dt-panel.open{
     display:flex;
-    transform: translateX(0);
+    transform: translate(0, -50%);
     opacity: 1;
   }
 
@@ -474,11 +475,15 @@
 
   @media (max-width: 520px){
     .dt-panel{
-      right: 12px; bottom: 78px;
+      right: 12px; top: auto; bottom: 78px;
+      transform: translateX(8px);
       width: calc(100vw - 24px);
       height: calc(100vh - 130px);
     }
-    .dt-chatbot{ right: 12px; bottom: 12px; }
+    .dt-panel.open{
+      transform: translateX(0);
+    }
+    .dt-chatbot{ right: 12px; top: auto; bottom: 12px; transform: none; }
   }
   `;
 
@@ -511,7 +516,7 @@
     : "";
 
   root.innerHTML = `
-    <button class="dt-fab" type="button" aria-label="Open Chat">💬</button>
+    <button class="dt-fab" type="button" aria-label="Open Chat">🤖</button>
 
     <div class="dt-panel" role="dialog" aria-label="Chatbot Panel">
       <div class="dt-header">

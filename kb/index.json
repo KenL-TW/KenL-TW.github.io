@@ -121,6 +121,34 @@
       "title": "聯絡方式",
       "text": "Contact：Location：新北市三重區；Email：kenliao.applicant@gmail.com。",
       "tags": ["contact"]
+    },
+    {
+      "path": "kb/docs/arch_overview.md",
+      "chunk_id": "arch-overview#0001",
+      "title": "Archi 技術架構總覽",
+      "text": "Archi 採用 GitHub Pages + AWS Lambda + DynamoDB + OpenAI Responses API 的 KB-first Serverless 架構。設計核心為 Deterministic Retrieval、Tool-first、Guard Anti-hallucination、Mode Strategy（GUIDE/CHAT/STRICT）。知識來源來自 GitHub Repo index.json，LLM 僅負責語言組織，所有事實必須來自可引用 chunk。",
+      "tags": ["arch", "architecture", "serverless", "kb-first"]
+    },
+    {
+      "path": "kb/docs/arch_overview.md",
+      "chunk_id": "arch-overview#flow",
+      "title": "Archi End-to-End Flow",
+      "text": "一次對話流程為：Browser → Lambda → DynamoDB → Fetch KB index.json → Deterministic Retrieval → OpenAI Responses API → Guard → Writeback → JSON 回傳（answer + citations + cards）。記憶僅提供上下文，不作為事實來源。",
+      "tags": ["arch", "flow", "orchestration"]
+    },
+    {
+      "path": "kb/docs/archi_agent.md",
+      "chunk_id": "archi-agent#positioning",
+      "title": "Archi 專案定位與核心理念",
+      "text": "Archi 是導覽型 KB-first Agent，而非一般 Chatbot。採 Tool-first 設計，先檢索 Repo-based KB，再由 LLM 組織語言，並透過 Guard 防止幻覺。Mode 包含 GUIDE、CHAT、STRICT，以可驗證性為最高優先原則。",
+      "tags": ["agent", "design", "philosophy"]
+    },
+    {
+      "path": "kb/docs/archi_agent.md",
+      "chunk_id": "archi-agent#strategy",
+      "title": "Archi Tool-first 與 Mode 策略",
+      "text": "Tool-first：先產出 citations whitelist，再讓模型生成文字。Mode 策略：GUIDE 提供導覽與計畫；CHAT 保持自然但仍 KB-first；STRICT 僅列可驗證要點並禁止推測。Guard 機制會移除未在 KB 出現的數據或技術名詞。",
+      "tags": ["agent", "mode", "guard"]
     }
   ]
 }
