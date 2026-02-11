@@ -52,26 +52,6 @@
   <link href="assets/css/style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
   <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
-
-  <!-- Simple spacing & ratio for portfolio images -->
-  <style>
-    /* 控制 portfolio 元件上下間距與圖片顯示（簡單版） */
-    .portfolio-wrap {
-      padding-top: 18px;
-      padding-bottom: 18px;
-    }
-    .portfolio-wrap img {
-      display: block;
-      width: 100%;
-      height: auto;
-      margin: 0 auto;
-      object-fit: cover;
-      border-radius: 8px; /* 可選：讓圖片邊角較柔和 */
-    }
-    @media (min-width: 992px) {
-      .portfolio-wrap { padding-top: 28px; padding-bottom: 28px; }
-    }
-  </style>
   <!-- =======================================================
   * Template Name: iPortfolio
   * Template URL: https://bootstrapmade.com/iportfolio-bootstrap-portfolio-websites-template/
@@ -377,113 +357,95 @@
       <section id="portfolio" class="portfolio section-bg" data-section="portfolio">
       <div class="container">
         <div class="section-title">
-          <h2>Portfolio</h2>
-          <p>展示我的專案開發經驗和技術能力</p>
+          <h2>Featured Projects</h2>
+          <p>精選專案 — 完整技術棧與成果展示</p>
         </div>
 
-        <div class="row portfolio-container">
-        <!-- AI 市場分析系統 -->
-        <div class="portfolio-item" data-category="web">
-  <div class="portfolio-wrap">
-    <img src="assets/img/portfolio/ai_market_analyzer.png" 
-        alt="AI 市場分析系統"
-        loading="lazy"
-        width="1200" height="1675">
+        <div class="portfolio-container">
+          <!-- AI 市場分析系統 -->
+          <div class="portfolio-card">
+            <div class="portfolio-img-wrapper">
+              <img src="assets/img/portfolio/ai_market_analyzer.png" 
+                   alt="AI 市場分析系統"
+                   loading="lazy">
+              <div class="portfolio-badge">💡 AI/Serverless</div>
+            </div>
+            <div class="portfolio-content">
+              <div class="portfolio-status">
+                <span class="pulse-dot"></span>
+                <span class="status-text">Live</span>
+              </div>
+              <h3>AI 市場分析系統</h3>
+              <p class="portfolio-brief">
+                GitHub Pages + AWS Serverless 的即時 AI 市場研究平台。一鍵生成產業分析、SWOT、競品對比與成長曲線。
+              </p>
+              <div class="tech-tags">
+                <span>AWS</span>
+                <span>Lambda</span>
+                <span>API Gateway</span>
+                <span>GPT-4o-mini</span>
+                <span>Chart.js</span>
+              </div>
+              <a href="ai-business-analyzer.html" class="portfolio-link">查看專案 →</a>
+            </div>
+          </div>
 
-    <div class="portfolio-info">
+          <!-- CTSS 在台導入專案 -->
+          <div class="portfolio-card">
+            <div class="portfolio-img-wrapper">
+              <img src="assets/img/portfolio/zhongxin-log.png"
+                   alt="CTSS 在台導入與技術顧問專案"
+                   loading="lazy">
+              <div class="portfolio-badge">🏢 Consulting</div>
+            </div>
+            <div class="portfolio-content">
+              <div class="portfolio-status">
+                <span class="pulse-dot" style="background: #3b82f6;"></span>
+                <span class="status-text">Completed</span>
+              </div>
+              <h3>CTSS 在地化導入</h3>
+              <p class="portfolio-brief">
+                日本招募平台在台灣落地。系統分析、功能設計、自動化流程設計與人力策略諮詢。
+              </p>
+              <div class="tech-tags">
+                <span>系統分析</span>
+                <span>功能設計</span>
+                <span>自動化</span>
+                <span>市場分析</span>
+              </div>
+              <a href="https://ctssjpit.com" class="portfolio-link" target="_blank" rel="noopener noreferrer">探索網站 →</a>
+            </div>
+          </div>
 
-      <!-- 進行中動畫 -->
-      <div class="flex items-center mb-2 space-x-2">
-        <div class="flex space-x-1">
-          <span class="dot bg-green-500"></span>
-          <span class="dot bg-green-500 delay-150"></span>
-          <span class="dot bg-green-500 delay-300"></span>
-        </div>
-      </div>
-
-      <h4 class="text-xl font-bold" >AI 市場分析系統</h4>
-      <a href="ai-business-analyzer.html"
-                 target="_blank"
-                 rel="noopener noreferrer">查看專案網站</a>
-
-      <p>
-        以 GitHub Pages 與 AWS Serverless 架構打造的即時 AI 市場研究平台。  
-        前端整合 Chart.js，後端由 API Gateway + Lambda 組成，並透過 
-        AWS Secrets Manager 安全管理 OpenAI API Key。  
-        使用者可直接在網頁上輸入任意產業，即時取得 AI 產生的市場規模、SWOT、競品版圖與成長曲線的動態可視化分析。
-      </p>
-
-      <div class="tech-stack mt-2 space-x-2 text-sm text-gray-500">
-        <span>GitHub Pages</span><br>
-        <span>AWS API Gateway</span><br>
-        <span>AWS Lambda（Python）</span><br>
-        <span>Secrets Manager（OpenAI Key）</span><br>
-        <span>OpenAI GPT-4o-mini</span><br>
-        <span>Chart.js</span><br>
-        <span>TailwindCSS</span><br>
-      </div>
-    </div>
-  </div>
-</div>
-  <!-- CTSS 在台導入專案 — 技術顧問 / 在地化支持 -->
-  <div class="portfolio-item" data-category="consulting">
-    <div class="portfolio-wrap">
-        <div class="portfolio-img">
-          <img src="assets/img/portfolio/zhongxin-log.png"
-               alt="CTSS 在台導入與技術顧問專案">
-        </div>
-        <div class="portfolio-info">
-          <h4 class="portfolio-title">CTSS 平台：在地化導入 + 技術顧問</h4>
-          <p class="portfolio-desc">
-            作為 CTSS 在台的技術顧問與系統分析人員，我協助日方團隊落地台灣市場。負責功能設計建議、跨文化溝通橋樑、自動化流程規劃，以及招募數據分析，以確保平台在台灣環境下能順利運行並具備可維運性。
-          </p>
-          <ul class="tech-stack-list">
-            <li>
-              <a href="https://ctssjpit.com"
-                 target="_blank"
-                 rel="noopener noreferrer">
-                 在台招募網站建置（完整建置 + 部署維運）
-              </a>
-            </li>
-            <li>系統分析與功能設計</li>
-            <li>人力策略與市場分析建議</li>
-            <li>自動化流程設計</li>
-            <li>協助分析整體工作流程並給予實務建議，追蹤優化後成效</li>
-          </ul>
-        </div>
-    </div>
-  </div>
-
-  <!-- STRATOS PM 甘特圖任務管理工具 -->
-  <div class="portfolio-item" data-category="tool">
-    <div class="portfolio-wrap">
-      <img src="assets/img/portfolio/gantt-pm.png"
-           alt="STRATOS PM 甘特圖任務矩陣工具"
-           loading="lazy"
-           width="1200" height="675">
-
-      <div class="portfolio-info">
-        <h4 class="text-xl font-bold">STRATOS PM 甘特圖任務矩陣工具</h4>
-        <a href="tools/gantt.html"
-           target="_blank"
-           rel="noopener noreferrer">開啟互動式甘特圖工具</a>
-
-        <p>
-          自行設計的單頁式專案管理工具，將「任務矩陣 (WBS)」與「右側甘特圖」高度聯動，支援依賴關係、風險標示、部門收合、
-          Auto Schedule 與 JSON 匯入匯出，模擬真實專案管理現場決策流程。
-        </p>
-
-        <div class="tech-stack mt-2 space-x-2 text-sm text-gray-500">
-          <span>React 18 (UMD)</span><br>
-          <span>Tailwind CSS</span><br>
-          <span>Vanilla JS 單檔 SPA</span><br>
-          <span>localStorage 狀態保存</span><br>
-          <span>GitHub Pages 部署</span><br>
+          <!-- STRATOS PM 甘特圖工具 -->
+          <div class="portfolio-card">
+            <div class="portfolio-img-wrapper">
+              <img src="assets/img/portfolio/gantt-pm.png"
+                   alt="STRATOS PM 甘特圖任務矩陣工具"
+                   loading="lazy">
+              <div class="portfolio-badge">⚙️ SPA Tool</div>
+            </div>
+            <div class="portfolio-content">
+              <div class="portfolio-status">
+                <span class="pulse-dot" style="background: #8b5cf6;"></span>
+                <span class="status-text">Live</span>
+              </div>
+              <h3>STRATOS PM</h3>
+              <p class="portfolio-brief">
+                高度互動的專案管理工具。WBS 矩陣與甘特圖聯動，支援依賴關係、自動排程、JSON 匯入匯出。
+              </p>
+              <div class="tech-tags">
+                <span>React 18</span>
+                <span>Vanilla JS</span>
+                <span>Tailwind</span>
+                <span>localStorage</span>
+              </div>
+              <a href="tools/gantt.html" class="portfolio-link" target="_blank" rel="noopener noreferrer">打開工具 →</a>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</section><!-- End Portfolio Section -->
+    </section><!-- End Portfolio Section -->
 
     <!-- ======= Share Section (Teaching Articles) ======= -->
     <section id="share" class="share section-bg" data-section="share">

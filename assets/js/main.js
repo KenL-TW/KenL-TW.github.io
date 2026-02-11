@@ -164,29 +164,9 @@
    * Portfolio initialization and handlers
    */
   const initPortfolio = () => {
-    // Initialize Isotope
-    let portfolioContainer = select('.portfolio-container');
-    if (portfolioContainer) {
-      let portfolioIsotope = new Isotope(portfolioContainer, {
-        itemSelector: '.portfolio-item',
-        layoutMode: 'fitRows',
-        transitionDuration: '0.4s'
-      });
-
-      // Filter handlers
-      let portfolioFilters = select('#portfolio-flters li', true);
-      on('click', '#portfolio-flters li', function(e) {
-        e.preventDefault();
-        portfolioFilters.forEach(el => el.classList.remove('filter-active'));
-        this.classList.add('filter-active');
-
-        portfolioIsotope.arrange({
-          filter: this.getAttribute('data-filter')
-        });
-        portfolioIsotope.on('arrangeComplete', () => AOS.refresh());
-      }, true);
-    }
-
+    // Note: Isotope filtering disabled - using pure CSS Grid layout instead
+    // Remove this section if Isotope functionality is needed in the future
+    
     // Initialize lightbox
     const portfolioLightbox = GLightbox({
       selector: '.portfolio-lightbox',
@@ -217,8 +197,8 @@
       });
     }
 
-    // Initialize modals
-    initPortfolioModals();
+    // Initialize modals - disabled for new card-based design
+    // initPortfolioModals();
   };
 
   function initPortfolioModals() {
