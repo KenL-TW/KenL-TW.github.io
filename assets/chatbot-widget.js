@@ -21,7 +21,6 @@
     // Request
     REQUEST_TIMEOUT_MS: 30000,
     DEMO_MODE: false,
-    ENABLE_STREAMING: true, // Enable streaming response (SSE)
 
     // Session / agent
     SESSION_STORAGE_KEY: "dtz_session_id",
@@ -435,22 +434,6 @@
   .dt-dot:nth-child(3){ animation-delay: .30s; }
   @keyframes dtb { 0%, 80%, 100% { transform: translateY(0); opacity:.55; } 40% { transform: translateY(-3px); opacity:1; } }
 
-  /* Streaming cursor */
-  .dt-stream-cursor{
-    display: inline-block;
-    color: var(--text);
-    animation: dt-blink 1s step-end infinite;
-    font-weight: 400;
-    margin-left: 1px;
-  }
-  @keyframes dt-blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
-  }
-  [data-streaming="true"] .dt-bubble{
-    position: relative;
-  }
-
   .dt-meta{ margin-top: 6px; margin-bottom: 4px; font-size: 11px; color: var(--muted); font-weight: 600; }
   .dt-sources{
     margin-top: 6px;
@@ -729,9 +712,6 @@
   let isBusy = false;
   let lastScrollTop = 0;
   let typingEl = null;
-  let isStreaming = false;
-  let streamController = null;
-  let currentStreamingMessage = null;
 
   // state
   const SID = getSessionId();
@@ -916,21 +896,6 @@
       seed();
     }
     if (act === "send") {
-      // Stop streaming if currently streaming
-      if (isStreaming && streamController) {
-        streamController.abort();
-        isStreaming = false;
-        setBusy(false);
-        trackChatbotEvent('streaming_stopped_by_user', {});
-        
-        if (currentStreamingMessage) {
-          currentStreamingMessage.cursor.remove();
-          addFeedbackButtons(currentStreamingMessage.bubble, currentStreamingMessage.messageId);
-        }
-        return;
-      }
-      
-      // Normal send behavior
       const q = input.value.trim();
       if (q) {
         trackChatbotEvent('message_sent_by_button', {
@@ -1032,192 +997,6 @@
   // -------------------------
   // Messages (with cards)
   // -------------------------
-  
-  // Streaming message support
-  function createStreamingMessage(role, messageId) {
-    const row = document.createElement("div");
-    row.className = "dt-msg " + (role === "user" ? "dt-user" : "dt-assistant");
-    row.setAttribute('data-message-id', messageId);
-    row.setAttribute('data-streaming', 'true');
-
-    const avatar = document.createElement("div");
-    avatar.className = "dt-avatar";
-    avatar.textContent = role === "user" ? "U" : "AI";
-
-    const bubble = document.createElement("div");
-    bubble.className = "dt-bubble";
-    bubble.setAttribute('data-bubble', 'true');
-    
-    // Add streaming cursor
-    const cursor = document.createElement("span");
-    cursor.className = "dt-stream-cursor";
-    cursor.textContent = "▊";
-    bubble.appendChild(cursor);
-
-    row.appendChild(avatar);
-    row.appendChild(bubble);
-    body.appendChild(row);
-    body.appendChild(jumpBtn);
-    
-    scrollBottom();
-    updateJumpVisibility();
-    
-    return { row, bubble, cursor, messageId };
-  }
-  
-  async function streamText(bubble, cursor, text, speed = 20) {
-    const words = text.split('');
-    let currentText = '';
-    
-    for (let i = 0; i < words.length; i++) {
-      if (!isStreaming) break; // Stop if streaming cancelled
-      
-      currentText += words[i];
-      bubble.textContent = currentText;
-      bubble.appendChild(cursor);
-      
-      // Auto scroll
-      const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 200;
-      if (nearBottom) scrollBottom();
-      
-      // Variable speed for natural feel
-      const char = words[i];
-      let delay = speed;
-      if (char === '.' || char === '，' || char === '。') delay = speed * 3;
-      else if (char === ' ' || char === '\n') delay = speed * 0.5;
-      
-      await sleep(delay);
-    }
-    
-    cursor.remove();
-    return currentText;
-  }
-  
-  function finishStreamingMessage(messageObj, fullText, citations, cards) {
-    const { row, bubble, messageId } = messageObj;
-    
-    row.removeAttribute('data-streaming');
-    bubble.textContent = fullText;
-    
-    // Add to conversation history
-    conversationHistory.push({
-      id: messageId,
-      role: 'assistant',
-      content: fullText,
-      citations: citations,
-      timestamp: new Date().toISOString()
-    });
-    
-    // Add cards
-    if (cards) {
-      const cardsToRender = selectProjectCards(fullText, cards);
-      const cardWrap = renderCards(cardsToRender);
-      if (cardWrap) bubble.appendChild(cardWrap);
-    }
-    
-    // Add citations
-    if (Array.isArray(citations) && citations.length > 0) {
-      const meta = document.createElement("div");
-      meta.className = "dt-meta";
-      meta.textContent = "Sources (repo):";
-
-      const sources = document.createElement("div");
-      sources.className = "dt-sources";
-
-      citations.slice(0, clamp(CFG.MAX_CITATIONS || 6, 1, 12)).forEach((c) => {
-        const a = document.createElement("a");
-        a.className = "dt-src";
-        const label = `${c.path || ""} · ${c.chunk_id || ""}`.trim();
-        a.textContent = label || "source";
-        const url = buildCitationLink(c);
-        if (url) {
-          a.href = url;
-          a.target = "_blank";
-          a.rel = "noreferrer";
-          a.title = url;
-        } else {
-          a.href = "javascript:void(0)";
-          a.title = label;
-        }
-        a.addEventListener('click', () => {
-          trackChatbotEvent('source_link_clicked', {
-            source_path: c.path || '',
-            source_chunk_id: c.chunk_id || '',
-            source_label: label
-          });
-        });
-        sources.appendChild(a);
-      });
-
-      bubble.appendChild(meta);
-      bubble.appendChild(sources);
-    }
-    
-    // Add feedback buttons
-    addFeedbackButtons(bubble, messageId);
-    
-    scrollBottom();
-    updateJumpVisibility();
-  }
-  
-  function addFeedbackButtons(bubble, messageId) {
-    const feedbackDiv = document.createElement("div");
-    feedbackDiv.className = "dt-feedback";
-    
-    const helpfulBtn = document.createElement("button");
-    helpfulBtn.type = "button";
-    helpfulBtn.className = "dt-fb-btn";
-    helpfulBtn.innerHTML = '👍';
-    helpfulBtn.title = '有幫助';
-    helpfulBtn.setAttribute('data-feedback', 'helpful');
-    helpfulBtn.setAttribute('data-message-id', messageId);
-    
-    const notHelpfulBtn = document.createElement("button");
-    notHelpfulBtn.type = "button";
-    notHelpfulBtn.className = "dt-fb-btn";
-    notHelpfulBtn.innerHTML = '👎';
-    notHelpfulBtn.title = '需改進';
-    notHelpfulBtn.setAttribute('data-feedback', 'not-helpful');
-    notHelpfulBtn.setAttribute('data-message-id', messageId);
-    
-    const handleFeedback = (e) => {
-      const btn = e.currentTarget;
-      const feedback = btn.getAttribute('data-feedback');
-      const msgId = btn.getAttribute('data-message-id');
-      
-      helpfulBtn.disabled = true;
-      notHelpfulBtn.disabled = true;
-      btn.classList.add('active');
-      
-      trackChatbotEvent('response_feedback', {
-        message_id: msgId,
-        feedback: feedback,
-        helpful: feedback === 'helpful'
-      });
-      
-      if (conversationLogger) {
-        const msgIdx = conversationHistory.findIndex(m => m.id === msgId);
-        if (msgIdx >= 0) {
-          conversationLogger.addFeedback(msgIdx, {
-            helpful: feedback === 'helpful',
-            rating: feedback === 'helpful' ? 5 : 2,
-            text: '',
-            timestamp: new Date().toISOString()
-          });
-        }
-      }
-      
-      btn.innerHTML = '✓';
-    };
-    
-    helpfulBtn.addEventListener('click', handleFeedback);
-    notHelpfulBtn.addEventListener('click', handleFeedback);
-    
-    feedbackDiv.appendChild(helpfulBtn);
-    feedbackDiv.appendChild(notHelpfulBtn);
-    bubble.appendChild(feedbackDiv);
-  }
-  
   function isProjectRelatedText(text) {
     const t = String(text || "").toLowerCase();
     return (
@@ -1501,17 +1280,7 @@
     isBusy = v;
     sendBtn.disabled = v;
     input.disabled = v;
-    
-    if (v && !isStreaming) {
-      sendBtn.textContent = "…";
-    } else if (isStreaming) {
-      sendBtn.innerHTML = '⏹️';
-      sendBtn.title = '停止生成';
-      sendBtn.disabled = false;
-    } else {
-      sendBtn.textContent = "Send";
-      sendBtn.title = '發送';
-    }
+    sendBtn.textContent = v ? "…" : "Send";
   }
 
   function updateJumpVisibility() {
@@ -1582,85 +1351,7 @@
     }
   }
   
-  // SSE Streaming API support
-  async function sendToApiStreaming(bodyJson, onChunk, onComplete, onError) {
-    streamController = new AbortController();
-    
-    try {
-      const headers = { "Content-Type": "application/json" };
-      if (CFG.CLIENT_TOKEN) headers["x-client-token"] = CFG.CLIENT_TOKEN;
-      
-      // Add streaming flag
-      bodyJson.stream = true;
-      
-      console.debug("DTZ-AGENT: streaming request", {
-        url: CFG.CHAT_API_URL,
-        body: bodyJson,
-      });
 
-      const res = await fetch(CFG.CHAT_API_URL, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(bodyJson),
-        signal: streamController.signal,
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let fullText = '';
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) break;
-        
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-        
-        for (const line of lines) {
-          if (!line.trim() || !line.startsWith('data: ')) continue;
-          
-          const data = line.slice(6);
-          if (data === '[DONE]') {
-            if (onComplete) onComplete({ answer: fullText });
-            return;
-          }
-          
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.token) {
-              fullText += parsed.token;
-              if (onChunk) onChunk(parsed.token, fullText);
-            } else if (parsed.answer) {
-              // Fallback: complete answer in one chunk
-              fullText = parsed.answer;
-              if (onChunk) onChunk(parsed.answer, fullText);
-              if (onComplete) onComplete(parsed);
-              return;
-            }
-          } catch (e) {
-            console.warn('Failed to parse SSE data:', data, e);
-          }
-        }
-      }
-      
-      if (onComplete) onComplete({ answer: fullText });
-      
-    } catch (e) {
-      if (e.name === 'AbortError') {
-        console.log('Streaming aborted by user');
-      } else if (onError) {
-        onError(e);
-      }
-      throw e;
-    }
-  }
 
   // Optional local demo if API missing
   async function demoAnswer(message) {
@@ -1686,41 +1377,7 @@
     };
   }
   
-  // Demo streaming simulation
-  async function demoAnswerStreaming(message, onChunk, onComplete) {
-    await sleep(300);
-    const text = "（Demo mode）我現在在模擬流式導覽。\n\n你可以問：推薦 3 個專案 / 介紹 Ken / 從哪裡開始看。";
-    const words = text.split('');
-    let fullText = '';
-    
-    for (let i = 0; i < words.length; i++) {
-      if (!isStreaming) break;
-      fullText += words[i];
-      if (onChunk) onChunk(words[i], fullText);
-      await sleep(30);
-    }
-    
-    if (onComplete) {
-      onComplete({
-        answer: fullText,
-        citations: [],
-        mode: "GUIDE",
-        suggestions: ["介紹 Ken", "推薦 3 個專案", "我該從哪裡開始看？"],
-        cards: {
-          project_cards: [
-            {
-              title: "AI Agent / RAG 專案",
-              path: "kb/docs/projects-detail.md",
-              chunk_id: "projects-detail#agent",
-              one_liner: "KB 驅動的導覽型 Agent，支援 citations 與 minimal memory。",
-            },
-          ],
-          search_hit_cards: [],
-          identity_cards: [],
-        },
-      });
-    }
-  }
+
 
   async function sendPayload(payload) {
     if (!payload || isBusy) return;
@@ -1743,197 +1400,84 @@
     showTyping();
     
     const requestStartTime = Date.now();
-    const useStreaming = CFG.ENABLE_STREAMING !== false; // Default: enabled
     const useDemo = CFG.DEMO_MODE || !CFG.CHAT_API_URL;
 
     try {
       // Load relevant KB chunks for this specific query (lazy loading)
       const relevantChunks = !useDemo ? await loadRelevantKBChunks(userText) : null;
       
-      // ----- STREAMING MODE -----
-      if (useStreaming) {
-        isStreaming = true;
-        hideTyping();
-        
-        // Create streaming message
-        const messageId = `msg-${Date.now()}-${messageIdCounter++}`;
-        const streamMsg = createStreamingMessage('assistant', messageId);
-        currentStreamingMessage = streamMsg;
-        setBusy(true); // Update button to show stop icon
-        
-        let fullText = '';
-        let responseData = null;
-        
-        const onChunk = (token, accumulated) => {
-          fullText = accumulated;
-          streamMsg.bubble.textContent = accumulated;
-          streamMsg.bubble.appendChild(streamMsg.cursor);
-          
-          const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 200;
-          if (nearBottom) scrollBottom();
-        };
-        
-        const onComplete = (data) => {
-          responseData = data;
-          isStreaming = false;
-          
-          const answer = fullText || (data.answer || "").trim() || "Repo/KB 中沒有提供足夠資訊。";
-          const citations = Array.isArray(data.citations) ? data.citations : [];
-          const cards = data.cards || null;
-          const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
-          
-          finishStreamingMessage(streamMsg, answer, citations, cards);
-          
-          const responseTime = Date.now() - requestStartTime;
-          trackChatbotEvent('api_response_received', {
-            response_time_ms: responseTime,
-            answer_length: answer.length,
-            citation_count: citations.length,
-            has_cards: cards !== null,
-            suggestion_count: suggestions.length,
-            is_demo: useDemo,
-            is_streaming: true
-          });
-          
-          if (conversationLogger) {
-            const turn = Math.floor(conversationHistory.length / 2);
-            conversationLogger.logMessage(turn, userText, answer, citations, 'streaming');
-          }
-          
-          if (data.mode && modeSelect) {
-            const m = String(data.mode).toUpperCase();
-            if (["GUIDE", "CHAT", "STRICT"].includes(m)) {
-              currentMode = m;
-              modeSelect.value = m;
-            }
-          }
-          
-          if (suggestions.length) {
-            renderDynamicChips(suggestions);
-          }
-        };
-        
-        const onError = (e) => {
-          isStreaming = false;
-          streamMsg.cursor.remove();
-          streamMsg.bubble.textContent = fullText || "系統暫時無法取得回應，請稍後再試。";
-          addFeedbackButtons(streamMsg.bubble, messageId);
-        };
-        
-        // Execute streaming request
-        if (useDemo) {
-          await demoAnswerStreaming(userText, onChunk, onComplete);
-        } else {
-          const bodyJson = {
-            session_id: SID,
-            message: userText,
-            mode: currentMode,
-          };
-          
-          if (relevantChunks && relevantChunks.length > 0) {
-            bodyJson.relevant_kb_chunks = relevantChunks.map(chunk => ({
-              path: chunk.path,
-              chunk_id: chunk.chunk_id,
-              title: chunk.title,
-              relevance_score: chunk.relevance_score,
-              tags: chunk.tags
-            }));
-          }
-          
-          const kbSummary = getKBSummary();
-          if (kbSummary) {
-            bodyJson.kb_context = kbSummary;
-          }
-          
-          if (conversationHistory.length > 0) {
-            bodyJson.conversation_history = conversationHistory
-              .slice(-10)
-              .map(h => ({
-                role: h.role,
-                content: h.content,
-                timestamp: h.timestamp
-              }));
-          }
-          
-          await sendToApiStreaming(bodyJson, onChunk, onComplete, onError);
-        }
-        
-      // ----- NON-STREAMING MODE (Fallback) -----
+      let data;
+      if (useDemo) {
+        data = await demoAnswer(userText);
       } else {
-        let data;
-        if (useDemo) {
-          data = await demoAnswer(userText);
-        } else {
-          const bodyJson = {
-            session_id: SID,
-            message: userText,
-            mode: currentMode,
-          };
-          
-          if (relevantChunks && relevantChunks.length > 0) {
-            bodyJson.relevant_kb_chunks = relevantChunks.map(chunk => ({
-              path: chunk.path,
-              chunk_id: chunk.chunk_id,
-              title: chunk.title,
-              relevance_score: chunk.relevance_score,
-              tags: chunk.tags
-            }));
-          }
-          
-          const kbSummary = getKBSummary();
-          if (kbSummary) {
-            bodyJson.kb_context = kbSummary;
-          }
-          
-          if (conversationHistory.length > 0) {
-            bodyJson.conversation_history = conversationHistory
-              .slice(-10)
-              .map(h => ({
-                role: h.role,
-                content: h.content,
-                timestamp: h.timestamp
-              }));
-          }
-          
-          data = await sendToApi(bodyJson);
-        }
-
-        const responseTime = Date.now() - requestStartTime;
-        const answer = (data.answer || "").trim() || "Repo/KB 中沒有提供足夠資訊。";
-        const citations = Array.isArray(data.citations) ? data.citations : [];
-        const cards = data.cards || null;
-        const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
-
-        trackChatbotEvent('api_response_received', {
-          response_time_ms: responseTime,
-          answer_length: answer.length,
-          citation_count: citations.length,
-          has_cards: cards !== null,
-          suggestion_count: suggestions.length,
-          is_demo: useDemo
-        });
+        const bodyJson = {
+          session_id: SID,
+          message: userText,
+          mode: currentMode,
+        };
         
-        if (conversationLogger) {
-          const turn = Math.floor(conversationHistory.length / 2);
-          conversationLogger.logMessage(turn, userText, answer, citations, 'lazy_load_kb_match');
+        if (relevantChunks && relevantChunks.length > 0) {
+          bodyJson.relevant_kb_chunks = relevantChunks.map(chunk => ({
+            path: chunk.path,
+            chunk_id: chunk.chunk_id,
+            title: chunk.title,
+            relevance_score: chunk.relevance_score,
+            tags: chunk.tags
+          }));
         }
-
-        if (data.mode && modeSelect) {
-          const m = String(data.mode).toUpperCase();
-          if (["GUIDE", "CHAT", "STRICT"].includes(m)) {
-            currentMode = m;
-            modeSelect.value = m;
-          }
+        
+        const kbSummary = getKBSummary();
+        if (kbSummary) {
+          bodyJson.kb_context = kbSummary;
         }
+        
+        if (conversationHistory.length > 0) {
+          bodyJson.conversation_history = conversationHistory
+            .slice(-10)
+            .map(h => ({
+              role: h.role,
+              content: h.content,
+              timestamp: h.timestamp
+            }));
+        }
+        
+        data = await sendToApi(bodyJson);
+      }
 
-        hideTyping();
-        addMessage("assistant", answer, citations, cards);
+      const responseTime = Date.now() - requestStartTime;
+      const answer = (data.answer || "").trim() || "Repo/KB 中沒有提供足夠資訊。";
+      const citations = Array.isArray(data.citations) ? data.citations : [];
+      const cards = data.cards || null;
+      const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
 
-        if (suggestions.length) {
-          renderDynamicChips(suggestions);
+      trackChatbotEvent('api_response_received', {
+        response_time_ms: responseTime,
+        answer_length: answer.length,
+        citation_count: citations.length,
+        has_cards: cards !== null,
+        suggestion_count: suggestions.length,
+        is_demo: useDemo
+      });
+      
+      if (conversationLogger) {
+        const turn = Math.floor(conversationHistory.length / 2);
+        conversationLogger.logMessage(turn, userText, answer, citations, 'lazy_load_kb_match');
+      }
+
+      if (data.mode && modeSelect) {
+        const m = String(data.mode).toUpperCase();
+        if (["GUIDE", "CHAT", "STRICT"].includes(m)) {
+          currentMode = m;
+          modeSelect.value = m;
         }
       }
-      
+
+      hideTyping();
+      addMessage("assistant", answer, citations, cards);
+
+      if (suggestions.length) {
+        renderDynamicChips(suggestions);
+      }
     } catch (e) {
       const responseTime = Date.now() - requestStartTime;
       
@@ -1942,7 +1486,6 @@
         response_time_ms: responseTime
       });
       
-      isStreaming = false;
       hideTyping();
       addMessage(
         "assistant",
@@ -1951,7 +1494,6 @@
         null
       );
     } finally {
-      isStreaming = false;
       setBusy(false);
       const nearBottom =
         body.scrollHeight - body.scrollTop - body.clientHeight < 160;
