@@ -110,22 +110,92 @@
   // KB Manifest (for agent context)
   // -------------------------
   let kbIndexCache = null;
+  let kbLoadingPromise = null;
 
   async function loadKBIndex() {
     if (kbIndexCache) return kbIndexCache;
+    if (kbLoadingPromise) return kbLoadingPromise;
     if (!CFG.KB_INDEX_URL) return null;
 
-    try {
-      const resp = await fetch(CFG.KB_INDEX_URL);
-      const data = await resp.json();
-      if (data && data.chunks && Array.isArray(data.chunks)) {
-        kbIndexCache = data;
-        return data;
+    kbLoadingPromise = (async () => {
+      try {
+        const resp = await fetch(CFG.KB_INDEX_URL);
+        const data = await resp.json();
+        if (data && data.chunks && Array.isArray(data.chunks)) {
+          kbIndexCache = data;
+          return data;
+        }
+      } catch {
+        console.warn("Failed to load KB index:", CFG.KB_INDEX_URL);
       }
-    } catch {
-      console.warn("Failed to load KB index:", CFG.KB_INDEX_URL);
-    }
-    return null;
+      return null;
+    })();
+    
+    return kbLoadingPromise;
+  }
+  
+  // Extract tags from query for smart KB filtering
+  function extractRelevantTags(query) {
+    const q = String(query || "").toLowerCase();
+    const tags = [];
+    
+    // Project related
+    if (q.match(/專案|project|作品|案例|portfolio/)) tags.push('projects');
+    
+    // Tech/Skills related
+    if (q.match(/技能|skill|能力|技術|tech/)) tags.push('skills');
+    
+    // About/Resume related  
+    if (q.match(/關於|about|ken|個人|簡介|intro/)) tags.push('about');
+    if (q.match(/履歷|resume|經驗|experience|work/)) tags.push('resume');
+    
+    // Specific tech
+    if (q.match(/ai|人工智慧|gpt|machine learning/)) tags.push('ai');
+    if (q.match(/aws|serverless|lambda|cloud/)) tags.push('aws');
+    if (q.match(/專案管理|pm|gantt|scrum|agile/)) tags.push('pm');
+    
+    // Default to overview if no specific tags
+    if (tags.length === 0) tags.push('guide', 'overview');
+    
+    return tags;
+  }
+  
+  // Lazy load relevant KB chunks based on query
+  async function loadRelevantKBChunks(query) {
+    const kb = await loadKBIndex();
+    if (!kb || !kb.chunks) return [];
+    
+    const relevantTags = extractRelevantTags(query);
+    const q = String(query || "").toLowerCase();
+    
+    // Score and filter chunks
+    const scoredChunks = kb.chunks.map(chunk => {
+      let score = 0;
+      
+      // Tag matching (high priority)
+      if (chunk.tags && Array.isArray(chunk.tags)) {
+        chunk.tags.forEach(tag => {
+          if (relevantTags.includes(tag)) score += 3;
+        });
+      }
+      
+      // Text matching in title (medium priority)
+      if (chunk.title && chunk.title.toLowerCase().includes(q)) {
+        score += 2;
+      }
+      
+      // Text matching in content (low priority)
+      if (chunk.text && chunk.text.toLowerCase().includes(q)) {
+        score += 1;
+      }
+      
+      return { ...chunk, relevance_score: score };
+    })
+    .filter(chunk => chunk.relevance_score > 0)
+    .sort((a, b) => b.relevance_score - a.relevance_score)
+    .slice(0, 15); // Limit to top 15 most relevant chunks
+    
+    return scoredChunks;
   }
 
   function getKBSummary() {
@@ -389,15 +459,15 @@
 
   /* Agent cards */
   .dt-cardWrap{
-    margin-top: 10px;
+    margin-top: 8px;
     display: grid;
-    gap: 8px;
+    gap: 6px;
   }
   .dt-card{
     border: 1px solid var(--line);
     background: ${THEME === "dark" ? "rgba(255,255,255,.04)" : "#fff"};
-    border-radius: 14px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 8px;
     cursor: pointer;
     transition: transform .12s ease, background .12s ease;
   }
@@ -407,32 +477,87 @@
   }
   .dt-cardTitle{
     font-weight: 900;
-    font-size: 12.5px;
+    font-size: 11px;
     color: var(--text);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
   .dt-cardSub{
-    font-size: 12px;
+    font-size: 10.5px;
     color: var(--muted);
-    line-height: 1.45;
+    line-height: 1.4;
   }
   .dt-cardMeta{
-    margin-top: 8px;
+    margin-top: 6px;
     display:flex;
-    gap:8px;
+    gap:6px;
     align-items:center;
     justify-content: space-between;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--muted);
   }
   .dt-pill{
-    font-size: 11px;
-    padding: 3px 8px;
+    font-size: 9.5px;
+    padding: 2px 6px;
     border-radius: 999px;
     border: 1px solid var(--line);
     background: var(--chip);
     color: var(--muted);
     white-space: nowrap;
+  }
+
+  /* Feedback buttons */
+  .dt-feedback{
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .dt-feedback-label{
+    font-size: 10px;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .dt-fb-btn{
+    border: 1px solid var(--line);
+    background: var(--chip);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .15s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .dt-fb-btn:hover{
+    background: var(--chipHover);
+    transform: translateY(-1px);
+  }
+  .dt-fb-btn.active{
+    background: var(--btn);
+    color: var(--btnText);
+    border-color: var(--btn);
+  }
+  .dt-fb-btn:disabled{
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Loading skeleton */
+  .dt-skeleton{
+    background: linear-gradient(90deg, var(--chip) 25%, var(--chipHover) 50%, var(--chip) 75%);
+    background-size: 200% 100%;
+    animation: dt-shimmer 1.5s infinite;
+    border-radius: 8px;
+    height: 12px;
+    margin: 4px 0;
+  }
+  @keyframes dt-shimmer{
+    0%{ background-position: 200% 0; }
+    100%{ background-position: -200% 0; }
   }
 
 
@@ -666,7 +791,64 @@
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 180) + "px";
   }
-  input.addEventListener("input", autoResize);
+  
+  // Input debounce for instant suggestions
+  let inputDebounceTimer = null;
+  let suggestionCache = new Map();
+  
+  async function showInstantSuggestions(query) {
+    if (!query || query.length < 3) {
+      return; // Don't show suggestions for short queries
+    }
+    
+    // Check cache first
+    if (suggestionCache.has(query)) {
+      const cached = suggestionCache.get(query);
+      if (cached && cached.length > 0) {
+        renderDynamicChips(cached);
+      }
+      return;
+    }
+    
+    try {
+      // Load relevant KB chunks for suggestions
+      const relevantChunks = await loadRelevantKBChunks(query);
+      
+      if (relevantChunks && relevantChunks.length > 0) {
+        const suggestions = relevantChunks
+          .slice(0, 4)
+          .map(chunk => chunk.title || chunk.path)
+          .filter(Boolean);
+        
+        // Cache suggestions
+        suggestionCache.set(query, suggestions);
+        
+        if (suggestions.length > 0) {
+          renderDynamicChips(suggestions);
+          trackChatbotEvent('instant_suggestions_shown', {
+            query_length: query.length,
+            suggestion_count: suggestions.length
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load instant suggestions:', e);
+    }
+  }
+  
+  input.addEventListener("input", (e) => {
+    autoResize();
+    
+    // Debounced instant suggestions
+    clearTimeout(inputDebounceTimer);
+    const query = input.value.trim();
+    
+    if (query.length >= 3) {
+      inputDebounceTimer = setTimeout(() => {
+        showInstantSuggestions(query);
+      }, 400); // 400ms debounce
+    }
+  });
 
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -783,6 +965,18 @@
   }
 
   // -------------------------
+  // Conversation tracking
+  // -------------------------
+  let conversationHistory = [];
+  let messageIdCounter = 0;
+  
+  // Initialize conversation logger if available
+  let conversationLogger = null;
+  if (typeof window.ConversationLogger === 'function') {
+    conversationLogger = new window.ConversationLogger();
+  }
+
+  // -------------------------
   // GA Event Tracking (Chatbot Analytics)
   // -------------------------
   function trackChatbotEvent(eventName, parameters = {}) {
@@ -829,14 +1023,28 @@
     const bubble = document.createElement("div");
     bubble.className = "dt-bubble";
     bubble.textContent = text || "";
+    
+    // Generate unique message ID
+    const messageId = `msg-${Date.now()}-${messageIdCounter++}`;
+    row.setAttribute('data-message-id', messageId);
 
     // Track message view
     trackChatbotEvent('message_added', {
       role: role,
+      message_id: messageId,
       text_length: (text || "").length,
       has_citations: Array.isArray(citations) && citations.length > 0,
       citation_count: Array.isArray(citations) ? citations.length : 0,
       has_cards: cards !== null && cards !== undefined
+    });
+    
+    // Add to conversation history
+    conversationHistory.push({
+      id: messageId,
+      role: role,
+      content: text,
+      citations: citations,
+      timestamp: new Date().toISOString()
     });
 
     // Agent cards (V2)
@@ -886,6 +1094,79 @@
       bubble.appendChild(meta);
       bubble.appendChild(sources);
     }
+    
+    // Feedback buttons (only for assistant messages)
+    if (role !== "user") {
+      const feedbackDiv = document.createElement("div");
+      feedbackDiv.className = "dt-feedback";
+      
+      const feedbackLabel = document.createElement("span");
+      feedbackLabel.className = "dt-feedback-label";
+      feedbackLabel.textContent = "有幫助嗎？";
+      
+      const helpfulBtn = document.createElement("button");
+      helpfulBtn.type = "button";
+      helpfulBtn.className = "dt-fb-btn";
+      helpfulBtn.innerHTML = '👍 有幫助';
+      helpfulBtn.setAttribute('data-feedback', 'helpful');
+      helpfulBtn.setAttribute('data-message-id', messageId);
+      
+      const notHelpfulBtn = document.createElement("button");
+      notHelpfulBtn.type = "button";
+      notHelpfulBtn.className = "dt-fb-btn";
+      notHelpfulBtn.innerHTML = '👎 需改進';
+      notHelpfulBtn.setAttribute('data-feedback', 'not-helpful');
+      notHelpfulBtn.setAttribute('data-message-id', messageId);
+      
+      // Feedback click handler
+      const handleFeedback = (e) => {
+        const btn = e.currentTarget;
+        const feedback = btn.getAttribute('data-feedback');
+        const msgId = btn.getAttribute('data-message-id');
+        
+        // Disable both buttons
+        helpfulBtn.disabled = true;
+        notHelpfulBtn.disabled = true;
+        
+        // Highlight selected
+        btn.classList.add('active');
+        
+        // Track feedback
+        trackChatbotEvent('response_feedback', {
+          message_id: msgId,
+          feedback: feedback,
+          helpful: feedback === 'helpful'
+        });
+        
+        // Log to conversation logger if available
+        if (conversationLogger) {
+          const msgIdx = conversationHistory.findIndex(m => m.id === msgId);
+          if (msgIdx >= 0) {
+            conversationLogger.addFeedback(msgIdx, {
+              helpful: feedback === 'helpful',
+              rating: feedback === 'helpful' ? 5 : 2,
+              text: '',
+              timestamp: new Date().toISOString()
+            });
+          }
+        }
+        
+        // Show thank you message briefly
+        const originalHTML = feedbackLabel.innerHTML;
+        feedbackLabel.innerHTML = feedback === 'helpful' ? '✓ 感謝反饋！' : '✓ 已記錄，我們會改進';
+        setTimeout(() => {
+          feedbackLabel.innerHTML = originalHTML;
+        }, 2000);
+      };
+      
+      helpfulBtn.addEventListener('click', handleFeedback);
+      notHelpfulBtn.addEventListener('click', handleFeedback);
+      
+      feedbackDiv.appendChild(feedbackLabel);
+      feedbackDiv.appendChild(helpfulBtn);
+      feedbackDiv.appendChild(notHelpfulBtn);
+      bubble.appendChild(feedbackDiv);
+    }
 
     row.appendChild(avatar);
     row.appendChild(bubble);
@@ -896,6 +1177,8 @@
       body.scrollHeight - body.scrollTop - body.clientHeight < 140;
     if (nearBottom) scrollBottom();
     updateJumpVisibility();
+    
+    return messageId;
   }
 
   function renderCards(cards) {
@@ -929,7 +1212,9 @@
       head.textContent = g.title;
       wrap.appendChild(head);
 
-      g.items.slice(0, 6).forEach((it) => {
+      // 項目卡片最多顯示3張，其他類型最多6張
+      const maxCards = g.kind === "project" ? 3 : 6;
+      g.items.slice(0, maxCards).forEach((it) => {
         const card = document.createElement("div");
         card.className = "dt-card";
 
@@ -1121,17 +1406,42 @@
       if (useDemo) {
         data = await demoAnswer(userText);
       } else {
-        // V2 payload includes session_id + mode + optional KB context
+        // Load relevant KB chunks for this specific query (lazy loading)
+        const relevantChunks = await loadRelevantKBChunks(userText);
+        
+        // V2 payload includes session_id + mode + KB context + conversation history
         const bodyJson = {
           session_id: SID,
           message: userText,
           mode: currentMode,
         };
         
-        // Include KB context if available
+        // Include relevant KB chunks (lazy loaded)
+        if (relevantChunks && relevantChunks.length > 0) {
+          bodyJson.relevant_kb_chunks = relevantChunks.map(chunk => ({
+            path: chunk.path,
+            chunk_id: chunk.chunk_id,
+            title: chunk.title,
+            relevance_score: chunk.relevance_score,
+            tags: chunk.tags
+          }));
+        }
+        
+        // Include KB summary as fallback
         const kbSummary = getKBSummary();
         if (kbSummary) {
           bodyJson.kb_context = kbSummary;
+        }
+        
+        // Include recent conversation history (last 5 rounds)
+        if (conversationHistory.length > 0) {
+          bodyJson.conversation_history = conversationHistory
+            .slice(-10) // Last 10 messages (5 rounds)
+            .map(h => ({
+              role: h.role,
+              content: h.content,
+              timestamp: h.timestamp
+            }));
         }
         
         data = await sendToApi(bodyJson);
@@ -1150,8 +1460,21 @@
         citation_count: citations.length,
         has_cards: cards !== null,
         suggestion_count: suggestions.length,
-        is_demo: useDemo
+        is_demo: useDemo,
+        kb_chunks_used: data.relevant_kb_chunks ? data.relevant_kb_chunks.length : 0
       });
+      
+      // Log to conversation logger if available
+      if (conversationLogger) {
+        const turn = Math.floor(conversationHistory.length / 2);
+        conversationLogger.logMessage(
+          turn,
+          userText,
+          answer,
+          citations,
+          'lazy_load_kb_match'
+        );
+      }
 
       // backend may return mode/suggestions; sync client mode if present
       if (data.mode && modeSelect) {
@@ -1250,8 +1573,21 @@
 
   function seed() {
     trackChatbotEvent('session_reset', {
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      previous_message_count: conversationHistory.length
     });
+    
+    // Clear conversation history
+    conversationHistory = [];
+    messageIdCounter = 0;
+    
+    // Clear suggestion cache
+    suggestionCache.clear();
+    
+    // Reset conversation logger if available
+    if (conversationLogger && typeof conversationLogger.reset === 'function') {
+      conversationLogger.reset();
+    }
     
     body.innerHTML = "";
     body.appendChild(jumpBtn);

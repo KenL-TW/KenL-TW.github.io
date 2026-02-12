@@ -297,6 +297,23 @@ class ConversationLogger {
       console.error('Error uploading conversation:', e);
     }
   }
+
+  /**
+   * 重置對話記錄（開始新對話）
+   */
+  reset() {
+    // Save current conversation before reset
+    if (this.messages.length > 0) {
+      this.persistConversation();
+    }
+    
+    // Reset for new conversation
+    this.currentConversationId = this.generateConversationId();
+    this.sessionStartTime = new Date();
+    this.messages = [];
+    
+    console.log('Conversation logger reset, new conversation ID:', this.currentConversationId);
+  }
 }
 
 // 全局實例
