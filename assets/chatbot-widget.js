@@ -398,13 +398,13 @@
   }
   .dt-bubble{
     max-width: 78%;
-    padding: 14px 16px;
-    border-radius: 16px;
+    padding: 12px 14px;
+    border-radius: 14px;
     border: 1px solid var(--line);
     background: ${THEME === "dark" ? "rgba(255,255,255,.06)" : "#fff"};
     color: var(--text);
-    line-height: 1.65;
-    font-size: 14px;
+    line-height: 1.6;
+    font-size: 13.5px;
     white-space: pre-wrap;
     word-break: break-word;
   }
@@ -434,20 +434,20 @@
   .dt-dot:nth-child(3){ animation-delay: .30s; }
   @keyframes dtb { 0%, 80%, 100% { transform: translateY(0); opacity:.55; } 40% { transform: translateY(-3px); opacity:1; } }
 
-  .dt-meta{ margin-top: 10px; font-size: 12px; color: var(--muted); }
+  .dt-meta{ margin-top: 6px; margin-bottom: 4px; font-size: 11px; color: var(--muted); font-weight: 600; }
   .dt-sources{
-    margin-top: 8px;
-    padding-top: 8px;
+    margin-top: 6px;
+    padding-top: 6px;
     border-top: 1px dashed ${THEME === "dark" ? "rgba(255,255,255,.14)" : "rgba(15,23,42,.16)"};
     display:grid;
-    gap: 6px;
+    gap: 4px;
   }
   .dt-src{
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-    font-size: 12px;
-    padding: 7px 9px;
+    font-size: 11px;
+    padding: 5px 7px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--srcBg);
     color: ${THEME === "dark" ? "rgba(255,255,255,.86)" : "rgba(15,23,42,.85)"};
     white-space: nowrap;
@@ -459,15 +459,15 @@
 
   /* Agent cards */
   .dt-cardWrap{
-    margin-top: 8px;
+    margin-top: 6px;
     display: grid;
-    gap: 6px;
+    gap: 4px;
   }
   .dt-card{
     border: 1px solid var(--line);
     background: ${THEME === "dark" ? "rgba(255,255,255,.04)" : "#fff"};
-    border-radius: 10px;
-    padding: 8px;
+    border-radius: 8px;
+    padding: 6px 8px;
     cursor: pointer;
     transition: transform .12s ease, background .12s ease;
   }
@@ -477,27 +477,33 @@
   }
   .dt-cardTitle{
     font-weight: 900;
-    font-size: 11px;
+    font-size: 10.5px;
     color: var(--text);
-    margin-bottom: 3px;
+    margin-bottom: 2px;
+    line-height: 1.3;
   }
   .dt-cardSub{
-    font-size: 10.5px;
+    font-size: 10px;
     color: var(--muted);
-    line-height: 1.4;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .dt-cardMeta{
-    margin-top: 6px;
+    margin-top: 4px;
     display:flex;
-    gap:6px;
+    gap:4px;
     align-items:center;
     justify-content: space-between;
-    font-size: 10px;
+    font-size: 9px;
     color: var(--muted);
   }
   .dt-pill{
-    font-size: 9.5px;
-    padding: 2px 6px;
+    font-size: 9px;
+    padding: 1px 5px;
     border-radius: 999px;
     border: 1px solid var(--line);
     background: var(--chip);
@@ -507,39 +513,37 @@
 
   /* Feedback buttons */
   .dt-feedback{
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--line);
+    margin-top: 5px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--line);
     display: flex;
-    gap: 8px;
+    gap: 3px;
     align-items: center;
-  }
-  .dt-feedback-label{
-    font-size: 10px;
-    color: var(--muted);
-    margin-right: 4px;
+    justify-content: flex-end;
   }
   .dt-fb-btn{
     border: 1px solid var(--line);
     background: var(--chip);
     color: var(--text);
-    border-radius: 8px;
-    padding: 4px 10px;
-    font-size: 11px;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 14px;
     cursor: pointer;
-    transition: all .15s ease;
-    display: flex;
+    transition: all .12s ease;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    min-width: 32px;
   }
   .dt-fb-btn:hover{
     background: var(--chipHover);
-    transform: translateY(-1px);
+    transform: scale(1.05);
   }
   .dt-fb-btn.active{
     background: var(--btn);
     color: var(--btnText);
     border-color: var(--btn);
+    font-weight: 600;
   }
   .dt-fb-btn:disabled{
     opacity: 0.5;
@@ -1100,21 +1104,19 @@
       const feedbackDiv = document.createElement("div");
       feedbackDiv.className = "dt-feedback";
       
-      const feedbackLabel = document.createElement("span");
-      feedbackLabel.className = "dt-feedback-label";
-      feedbackLabel.textContent = "有幫助嗎？";
-      
       const helpfulBtn = document.createElement("button");
       helpfulBtn.type = "button";
       helpfulBtn.className = "dt-fb-btn";
-      helpfulBtn.innerHTML = '👍 有幫助';
+      helpfulBtn.innerHTML = '👍';
+      helpfulBtn.title = '有幫助';
       helpfulBtn.setAttribute('data-feedback', 'helpful');
       helpfulBtn.setAttribute('data-message-id', messageId);
       
       const notHelpfulBtn = document.createElement("button");
       notHelpfulBtn.type = "button";
       notHelpfulBtn.className = "dt-fb-btn";
-      notHelpfulBtn.innerHTML = '👎 需改進';
+      notHelpfulBtn.innerHTML = '👎';
+      notHelpfulBtn.title = '需改進';
       notHelpfulBtn.setAttribute('data-feedback', 'not-helpful');
       notHelpfulBtn.setAttribute('data-message-id', messageId);
       
@@ -1151,18 +1153,13 @@
           }
         }
         
-        // Show thank you message briefly
-        const originalHTML = feedbackLabel.innerHTML;
-        feedbackLabel.innerHTML = feedback === 'helpful' ? '✓ 感謝反饋！' : '✓ 已記錄，我們會改進';
-        setTimeout(() => {
-          feedbackLabel.innerHTML = originalHTML;
-        }, 2000);
+        // Show checkmark briefly
+        btn.innerHTML = '✓';
       };
       
       helpfulBtn.addEventListener('click', handleFeedback);
       notHelpfulBtn.addEventListener('click', handleFeedback);
       
-      feedbackDiv.appendChild(feedbackLabel);
       feedbackDiv.appendChild(helpfulBtn);
       feedbackDiv.appendChild(notHelpfulBtn);
       bubble.appendChild(feedbackDiv);
