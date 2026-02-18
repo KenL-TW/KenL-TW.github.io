@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF Stamp & eSign Editor (Mode A)</title>
+  <link rel="stylesheet" href="./pdf_style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="toolbar">
+    <label class="btn">
+      上傳PDF
+      <input id="fileInput" type="file" accept="application/pdf" hidden>
+    </label>
+
+    <button id="btnPrev" class="btn">上一頁</button>
+    <button id="btnNext" class="btn">下一頁</button>
+
+    <button id="btnZoomOut" class="btn">-</button>
+    <span id="zoomLabel" class="mono">100%</span>
+    <button id="btnZoomIn" class="btn">+</button>
+
+    <span class="sep"></span>
+
+    <label class="btn">
+      上傳印章/章圖
+      <input id="stampInput" type="file" accept="image/png,image/svg+xml,image/jpeg" hidden>
+    </label>
+    <button id="btnAddBuiltinStamp" class="btn">內建章</button>
+    <button id="btnAddSign" class="btn">手寫簽名</button>
+    <button id="btnAddText" class="btn">加入文字</button>
+    <button id="btnAddRect" class="btn">加入框框</button>
+
+    <span class="sep"></span>
+
+    <button id="btnUndo" class="btn">Undo</button>
+    <button id="btnRedo" class="btn">Redo</button>
+
+    <span class="sep"></span>
+
+    <button id="btnExport" class="btn primary">匯出PDF</button>
+  </div>
+
+  <div class="statusbar">
+    <span id="pageLabel" class="mono">- / -</span>
+  </div>
+</header>
+
+<main class="workspace">
+  <div class="leftpanel">
+    <div class="panel-title">屬性</div>
+    <div class="panel-body">
+      <div class="row">
+        <label>透明度</label>
+        <input id="opacityRange" type="range" min="0" max="1" step="0.05" value="1">
+        <span id="opacityLabel" class="mono">1.00</span>
+      </div>
+
+      <div class="row">
+        <label>旋轉</label>
+        <input id="rotateRange" type="range" min="-180" max="180" step="1" value="0">
+        <span id="rotateLabel" class="mono">0°</span>
+      </div>
+
+      <div class="row">
+        <label>顏色</label>
+        <input id="colorInput" type="color" value="#111111">
+        <span id="colorLabel" class="mono">#111111</span>
+      </div>
+
+      <div class="row">
+        <label>粗細</label>
+        <input id="thicknessRange" type="range" min="1" max="24" step="1" value="4">
+        <span id="thicknessLabel" class="mono">4</span>
+      </div>
+
+      <div class="row">
+        <button id="btnBringFront" class="btn small">置頂</button>
+        <button id="btnSendBack" class="btn small">置底</button>
+      </div>
+
+      <div class="row">
+        <button id="btnLock" class="btn small">鎖定/解鎖</button>
+        <button id="btnDelete" class="btn small danger">刪除</button>
+      </div>
+
+      <div class="hint">
+        操作提示：<br>
+        - 點選元素後可拖曳、縮放、旋轉（或滑桿）<br>
+        - 雙擊文字可編輯<br>
+        - Delete / Backspace 可刪除選取元素<br>
+        - 拖曳時會吸附（貼邊/置中）
+      </div>
+    </div>
+  </div>
+
+  <div class="centerpanel">
+    <div id="stage" class="stage">
+      <canvas id="pdfCanvas"></canvas>
+      <div id="overlay"></div>
+      <div id="guides"></div>
+    </div>
+  </div>
+</main>
+
+<!-- 簽名彈窗 -->
+<dialog id="signDialog" class="dialog">
+  <div class="dialog-head">
+    <div class="title">手寫簽名（透明背景）</div>
+    <button id="btnSignClose" class="btn">關閉</button>
+  </div>
+  <div class="dialog-body">
+    <canvas id="signCanvas" width="900" height="320"></canvas>
+    <div class="dialog-actions">
+      <button id="btnSignClear" class="btn">清除</button>
+      <button id="btnSignUse" class="btn primary">套用簽名</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Mode A: no bundler/import. Use CDN scripts. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.3.122/pdf.min.js"></script>
+<script>
+  const pdfjsLib = window["pdfjs-dist/build/pdf"];
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.3.122/pdf.worker.min.js";
+  window.pdfjsLib = pdfjsLib;
+</script>
+
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+<!-- app -->
+<script src="./pdf.js"></script>
+
+</body>
+</html>
