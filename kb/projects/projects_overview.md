@@ -1,24 +1,23 @@
 # Portfolio 概覽
 
-以下是 Ken 的主要作品集，代表不同專業與技術面的實作經驗。 :contentReference[oaicite:6]{index=6}
+本頁整理 Ken 的重點專案，涵蓋 AI、系統分析與前端互動工具。
 
 ## AI 市場分析系統
-一個由前端與後端整合的 AI 市場分析平台，結合 OpenAI API、AWS Lambda 與 Chart.js 實現動態分析圖表。  
-- 技術：GitHub Pages → 前端部署、API Gateway + Lambda、OpenAI、Chart.js  
-- 特色：可即時輸入產業主題，生成市場分析與 SWOT 報告。 :contentReference[oaicite:7]{index=7}
+整合 GitHub Pages 與 AWS Serverless 的 AI 市場研究平台，可輸出產業分析、SWOT、競品比較與成長趨勢圖。
+- 技術：API Gateway、Lambda、OpenAI、Chart.js
+- 價值：縮短市場研究時間、提升決策效率
 
-## CTSS 平台在地化導入
-作為技術顧問與分析師協助客戶累計多項業務整合、流程自動化與系統設計。  
-- 負責跨文化溝通與需求設計  
-- 人力策略與市場分析建議  
-- 堆疊自動化與實務分析管道 :contentReference[oaicite:8]{index=8}
+## Archi 可驗證導覽型 Agent
+以 KB-first、Tool-first 為核心的導覽型 Agent，強調可引用、可驗證與低幻覺風險。
+- 技術：GitHub Pages、Lambda、DynamoDB、OpenAI Responses API
+- 價值：讓回答建立在可追溯知識來源之上
 
 ## STRATOS PM 甘特圖工具
-一個互動式甘特圖工具，整合任務矩陣與時間線，可進行風險標示、 Auto Schedule、JSON 匯入/匯出。  
-- 技術：React 18、TailwindCSS  
-- 部署方式：GitHub Pages :contentReference[oaicite:9]{index=9}
+互動式專案管理工具，將 WBS 與甘特圖聯動，支援依賴關係與自動排程。
+- 技術：React 18、Vanilla JS、Tailwind、localStorage
+- 價值：提升專案規劃與排程可視化效率
 
-## ARCHI Agent 架構設計
-一個以工具為核心的 Agent 架構，強調可驗證性、結構化與長期維護性。
-- 核心原則：Tool-first、Deterministic Retrieval、Citations Whitelist、Guard 機制
-- 技術：AWS Lambda、OpenAI GPT、Github Repo As Knowledge base[oaicite:10]{index=10}
+## PDF Free Sign Editor
+瀏覽器端 PDF 簽章工具，支援印章、手寫簽名、文字與框線，並可直接匯出 PDF。
+- 技術：PDF.js、pdf-lib、Canvas
+- 價值：免安裝、免後端即可快速完成文件簽核

@@ -1,42 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- 首頁 -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Core pages -->
+  <url>
+    <loc>https://kenl-tw.github.io/</loc>
+    <lastmod>2026-02-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
   <url>
     <loc>https://kenl-tw.github.io/index.html</loc>
-    <priority>1.0</priority>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
-  <!-- 部落格頁面 -->
+  <url>
+    <loc>https://kenl-tw.github.io/ai-business-analyzer.html</loc>
+    <lastmod>2026-02-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Blog hub -->
   <url>
     <loc>https://kenl-tw.github.io/blog/blog.html</loc>
-    <priority>0.9</priority>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kenl-tw.github.io/blog/post.html</loc>
-    <priority>0.8</priority>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>weekly</changefreq>
-  </url>
-  <!-- 教學頁面 -->
-  <url>
-    <loc>https://kenl-tw.github.io/it/networkAttack.html</loc>
     <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
   </url>
+
+  <!-- Blog content pages -->
   <url>
-    <loc>https://kenl-tw.github.io/it/awsServerless.html</loc>
-    <priority>0.7</priority>
+    <loc>https://kenl-tw.github.io/blog/content/aiModal.html</loc>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kenl-tw.github.io/it/awsThreeTier.html</loc>
-    <priority>0.7</priority>
+    <loc>https://kenl-tw.github.io/blog/content/api.html</loc>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kenl-tw.github.io/it/api.html</loc>
-    <priority>0.7</priority>
+    <loc>https://kenl-tw.github.io/blog/content/awsServerless.html</loc>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
-  <!-- 依你的教學頁面補充更多 -->
+  <url>
+    <loc>https://kenl-tw.github.io/blog/content/awsThreeTier.html</loc>
+    <lastmod>2026-02-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kenl-tw.github.io/blog/content/hello-world.html</loc>
+    <lastmod>2026-02-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kenl-tw.github.io/blog/content/networkAttack.html</loc>
+    <lastmod>2026-02-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kenl-tw.github.io/blog/content/ngrok.html</loc>
+    <lastmod>2026-02-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Interactive tools -->
+  <url>
+    <loc>https://kenl-tw.github.io/tools/gantt.html</loc>
+    <lastmod>2026-02-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kenl-tw.github.io/tools/pdf_doc_sign.html</loc>
+    <lastmod>2026-02-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

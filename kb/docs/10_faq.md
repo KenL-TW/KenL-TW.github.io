@@ -1,13 +1,24 @@
 # FAQ — 常見問題
 
-## 我是誰？
-Ken 是一名數位轉型系統分析師，擅長系統分析、專案管理、AI 解決方案整合。 :contentReference[oaicite:15]{index=15}
+## Ken 的職能定位是什麼？
+Ken 的定位是數位轉型系統分析師，主要工作是把商業需求轉成可開發、可驗收、可維運的系統方案。
 
-## 我提供什麼類型的服務？
-- 系統分析與架構設計  
-- 技術顧問與流程優化  
-- 自動化與 AI 驅動應用支援 :contentReference[oaicite:16]{index=16}
+## 提供哪些服務類型？
+- 系統分析與規格文件撰寫
+- 專案管理與跨部門協作
+- 流程優化與自動化設計
+- AI 工具導入與落地建議
 
-## 我常用哪些技術？
-- Python、React、AWS Serverless 架構  
-- OpenAI 與 AI 交互式分析工具 :contentReference[oaicite:17]{index=17}
+## 常用技術與工具有哪些？
+- 雲端與後端：AWS Lambda、API Gateway、Secrets Manager
+- 前端與互動：Vanilla JS、React、Chart.js
+- AI 相關：OpenAI API、知識庫導向 Agent 架構
+
+## PDF Free Sign Editor 會上傳檔案到伺服器嗎？
+目前設計為瀏覽器端處理，PDF 讀取、標註與匯出在前端完成，不需上傳後端服務。
+
+## PDF 工具適合哪些情境？
+合約簽核、申請文件補章、內部審批備註與教學示範。
+
+## 若內容與實際網站不同，應以哪個為準？
+以網站最新頁面為準，並於每次版本更新後同步修正知識庫與索引檔。

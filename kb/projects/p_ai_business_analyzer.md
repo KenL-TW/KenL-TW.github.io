@@ -1,19 +1,32 @@
 # 專案：AI Business Analyzer 市場分析工具
 
 ## 一句話摘要
-一個結合 AWS Serverless 與 AI 的市場分析/競品分析平台，可針對任意產業進行自動分析。 :contentReference[oaicite:20]{index=20}
+以 AWS Serverless 與 OpenAI 為核心的市場研究工具，協助快速產出可視化分析與競品洞察。
 
-## 背景與問題
-提供快速市場分析管道，減少人力與時間成本。
+## 問題背景
+傳統市場研究流程常仰賴人工蒐集與整理，耗時且不易標準化，不利於快速驗證商業假設。
 
-## 方案
-- 前端頁面：可輸入產業、地區與年份  
-- 後端架構：API Gateway → Lambda → OpenAI → JSON 結果  
-- 可視化：Chart.js 動態圖表  
-- 產出格式：Summary / SWOT / 競品列表 :contentReference[oaicite:21]{index=21}
+## 解決方案
+- 前端提供產業主題輸入與分析結果展示
+- 後端採 API Gateway + Lambda 串接 AI 分析流程
+- 結果以結構化 JSON 回傳，便於渲染與再利用
+- 圖表層採 Chart.js 呈現市場成長與細分資訊
 
-## 技術
-API Gateway, AWS Lambda, Secrets Manager, OpenAI GPT, Chart.js :contentReference[oaicite:22]{index=22}
+## 主要輸出
+- 市場摘要（Summary）
+- 市場規模與成長趨勢
+- SWOT 分析
+- 競品比較與差異化觀察
+- AI 應用場景建議
 
-## 成果
-提供交互式市場成長趨勢與競品分析能力。 :contentReference[oaicite:23]{index=23}
+## 技術堆疊
+- AWS API Gateway
+- AWS Lambda（Python）
+- AWS Secrets Manager
+- OpenAI API
+- Chart.js
+
+## 成效與價值
+- 將分析流程從「人工彙整」轉為「半自動生成」
+- 降低前期研究時間成本
+- 讓創業提案、內部簡報與商業評估有更快的起始版本

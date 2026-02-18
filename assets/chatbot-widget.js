@@ -2,12 +2,14 @@
   const DEFAULT_CONFIG = {
     CHAT_API_URL: "",
     BRAND_NAME: "Archi",
-    SUBTITLE: "Structured · Verified · Guided",
+    SUBTITLE: "簡潔引導助理",
     WELCOME_MESSAGE:
-      "你好！我是 Archi，Ken 的知識架構導覽 Agent 🧭\n\n我不是一般聊天機器人，而是幫你有系統地認識 Ken 的專業、專案與經歷。每個回答都有來源支援。\n\n選擇導覽模式：\n🧭 GUIDE：快速瀏覽\n🧪 STRICT：驗證模式（附 citations）\n💬 CHAT：自由提問",
+      "你好！我是 Archi 👋\n\n我會用簡單方式引導你快速了解 Ken 的履歷與專案。\n\n你可以直接問：\n- 先推薦我看哪 3 個專案\n- 幫我整理 Ken 的履歷重點\n- 這個專案適合什麼情境",
     THEME: "auto",
     POSITION: "right",
     MAX_CITATIONS: 6,
+    SHOW_CITATIONS: false,
+    AUTO_MODE_ROUTING: true,
 
     // Repo link building
     GITHUB_REPO_URL: "",
@@ -25,7 +27,7 @@
     // Session / agent
     SESSION_STORAGE_KEY: "dtz_session_id",
     DEFAULT_MODE: "GUIDE", // GUIDE | CHAT | STRICT
-    ENABLE_MODE_TOGGLE: true,
+    ENABLE_MODE_TOGGLE: false,
 
     // Security optional
     CLIENT_TOKEN: "",
@@ -213,15 +215,15 @@
   const css = `
   :root{ --dtz:2147483000; }
   .dt-chatbot, .dt-chatbot * { box-sizing: border-box; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-  .dt-chatbot { position: fixed; right: 18px; top: 50%; bottom: auto; transform: translateY(-50%); z-index: var(--dtz); }
+  .dt-chatbot { position: fixed; right: 18px; top: auto; bottom: 18px; transform: none; z-index: var(--dtz); }
 
   .dt-chatbot[data-theme="light"]{
     --bg: #0b1220; --bg2:#111c33;
     --card:#ffffff; --soft:#f8fafc;
     --line: rgba(15,23,42,.12);
     --text: #0f172a; --muted: rgba(15,23,42,.65);
-    --shadow: 0 18px 60px rgba(2,6,23,.22);
-    --shadow2: 0 10px 30px rgba(0,0,0,.25);
+    --shadow: 0 10px 30px rgba(2,6,23,.16);
+    --shadow2: 0 8px 20px rgba(0,0,0,.18);
     --chip: rgba(248,250,252,.92);
     --chipHover: rgba(241,245,249,.96);
     --btn: #0b1220;
@@ -234,8 +236,8 @@
     --card:#0b1220; --soft:#070b14;
     --line: rgba(255,255,255,.10);
     --text: rgba(255,255,255,.92); --muted: rgba(255,255,255,.62);
-    --shadow: 0 18px 60px rgba(0,0,0,.55);
-    --shadow2: 0 10px 30px rgba(0,0,0,.55);
+    --shadow: 0 10px 30px rgba(0,0,0,.45);
+    --shadow2: 0 8px 20px rgba(0,0,0,.45);
     --chip: rgba(255,255,255,.06);
     --chipHover: rgba(255,255,255,.10);
     --btn: #ffffff;
@@ -245,7 +247,7 @@
   }
 
   .dt-fab{
-    width: 54px; height: 54px; border-radius: 999px;
+    width: 50px; height: 50px; border-radius: 999px;
     border: 1px solid rgba(255,255,255,.12);
     background: var(--bg);
     color: #fff;
@@ -261,30 +263,30 @@
   .dt-panel{
     position: fixed;
     right: 18px;
-    top: 50%;
-    bottom: auto;
+    top: auto;
+    bottom: 78px;
     width: min(420px, calc(100vw - 36px));
     height: min(780px, calc(100vh - 120px));
-    border-radius: 18px;
+    border-radius: 14px;
     overflow: hidden;
     border: 1px solid var(--line);
     background: var(--card);
     box-shadow: var(--shadow);
     display: none;
     flex-direction: column;
-    transform: translate(8px, -50%);
+    transform: translate(8px, 0);
     opacity: 0;
     transition: transform .18s ease, opacity .18s ease;
   }
   .dt-panel.open{
     display:flex;
-    transform: translate(0, -50%);
+    transform: translate(0, 0);
     opacity: 1;
   }
 
   .dt-header{
-    padding: 14px;
-    background: linear-gradient(135deg, var(--bg), var(--bg2));
+    padding: 12px;
+    background: var(--bg);
     color: #fff;
     display:flex; align-items:center; justify-content: space-between; gap:12px;
   }
@@ -399,9 +401,9 @@
   .dt-bubble{
     max-width: 78%;
     padding: 12px 14px;
-    border-radius: 14px;
+    border-radius: 12px;
     border: 1px solid var(--line);
-    background: ${THEME === "dark" ? "rgba(255,255,255,.06)" : "#fff"};
+    background: ${THEME === "dark" ? "rgba(255,255,255,.04)" : "#fff"};
     color: var(--text);
     line-height: 1.6;
     font-size: 13.5px;
@@ -665,7 +667,7 @@
     : "";
 
   root.innerHTML = `
-    <button class="dt-fab" type="button" aria-label="Open Chat">🤖</button>
+    <button class="dt-fab" type="button" aria-label="Open Chat">💬</button>
 
     <div class="dt-panel" role="dialog" aria-label="Chatbot Panel">
       <div class="dt-header">
@@ -1009,6 +1011,30 @@
     );
   }
 
+  function inferModeFromUserText(text) {
+    const t = String(text || "").toLowerCase();
+
+    const strictHints = [
+      "履歷", "resume", "經歷", "工作經驗", "學歷", "證照", "pmp", "aws", "toeic",
+      "專案", "project", "作品", "案例", "portfolio",
+      "只根據", "不要猜", "查核", "驗證", "百分百", "100%"
+    ];
+    if (strictHints.some((k) => t.includes(k))) return "STRICT";
+
+    const guideHints = ["導覽", "推薦", "先看", "從哪開始", "新手", "快速了解"];
+    if (guideHints.some((k) => t.includes(k))) return "GUIDE";
+
+    return "CHAT";
+  }
+
+  function cleanAssistantAnswer(text) {
+    const raw = String(text || "");
+    return raw
+      .replace(/\n{0,2}(citations?|sources?)\s*:[\s\S]*$/i, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
   function selectProjectCards(text, cards) {
     if (!cards || !Array.isArray(cards.project_cards)) return null;
     if (!cards.project_cards.length) return null;
@@ -1058,46 +1084,7 @@
       if (cardWrap) bubble.appendChild(cardWrap);
     }
 
-    // citations
-    if (role !== "user" && Array.isArray(citations) && citations.length > 0) {
-      const meta = document.createElement("div");
-      meta.className = "dt-meta";
-      meta.textContent = "Sources (repo):";
-
-      const sources = document.createElement("div");
-      sources.className = "dt-sources";
-
-      citations
-        .slice(0, clamp(CFG.MAX_CITATIONS || 6, 1, 12))
-        .forEach((c) => {
-          const a = document.createElement("a");
-          a.className = "dt-src";
-          const label = `${c.path || ""} · ${c.chunk_id || ""}`.trim();
-          a.textContent = label || "source";
-          const url = buildCitationLink(c);
-          if (url) {
-            a.href = url;
-            a.target = "_blank";
-            a.rel = "noreferrer";
-            a.title = url;
-          } else {
-            a.href = "javascript:void(0)";
-            a.title = label;
-          }
-          // Track source link click
-          a.addEventListener('click', () => {
-            trackChatbotEvent('source_link_clicked', {
-              source_path: c.path || '',
-              source_chunk_id: c.chunk_id || '',
-              source_label: label
-            });
-          });
-          sources.appendChild(a);
-        });
-
-      bubble.appendChild(meta);
-      bubble.appendChild(sources);
-    }
+    // citations intentionally hidden for simpler UX
     
     // Feedback buttons (only for assistant messages)
     if (role !== "user") {
@@ -1358,7 +1345,7 @@
     await sleep(280);
     return {
       answer:
-        "（Demo mode）我現在在模擬導覽。\n\n你可以問：推薦 3 個專案 / 介紹 Ken / 從哪裡開始看。\n\nCitations:\n(none)",
+        "（Demo mode）我現在在模擬導覽。\n\n你可以問：推薦 3 個專案 / 介紹 Ken / 從哪裡開始看。",
       citations: [],
       mode: "GUIDE",
       suggestions: ["介紹 Ken", "推薦 3 個專案", "我該從哪裡開始看？"],
@@ -1406,6 +1393,11 @@
       // Load relevant KB chunks for this specific query (lazy loading)
       const relevantChunks = !useDemo ? await loadRelevantKBChunks(userText) : null;
       
+      const resolvedMode = CFG.AUTO_MODE_ROUTING
+        ? inferModeFromUserText(userText)
+        : currentMode;
+      currentMode = resolvedMode;
+
       let data;
       if (useDemo) {
         data = await demoAnswer(userText);
@@ -1413,7 +1405,12 @@
         const bodyJson = {
           session_id: SID,
           message: userText,
-          mode: currentMode,
+          mode: resolvedMode,
+          response_preferences: {
+            simple: true,
+            hide_citations: true,
+            tone: "friendly-guide"
+          }
         };
         
         if (relevantChunks && relevantChunks.length > 0) {
@@ -1445,7 +1442,7 @@
       }
 
       const responseTime = Date.now() - requestStartTime;
-      const answer = (data.answer || "").trim() || "Repo/KB 中沒有提供足夠資訊。";
+      const answer = cleanAssistantAnswer(data.answer || "") || "Repo/KB 中沒有提供足夠資訊。";
       const citations = Array.isArray(data.citations) ? data.citations : [];
       const cards = data.cards || null;
       const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
