@@ -1147,7 +1147,16 @@ document.addEventListener('DOMContentLoaded', function() {
   <script>
   // 頁面 render 完成後自動打開 chatbot
   (function autoOpenChatbot(){
+    const isMobile = () => {
+      try {
+        return window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+      } catch {
+        return window.innerWidth <= 900;
+      }
+    };
+
     const tryOpen = () => {
+      if (isMobile()) return true;
       if (window.DTZ_CHATBOT && typeof window.DTZ_CHATBOT.open === 'function') {
         window.DTZ_CHATBOT.open();
         return true;

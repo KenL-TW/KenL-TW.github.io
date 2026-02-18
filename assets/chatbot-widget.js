@@ -10,6 +10,9 @@
     MAX_CITATIONS: 6,
     SHOW_CITATIONS: false,
     AUTO_MODE_ROUTING: true,
+    SHOW_RECOMMENDATION_BLOCK: false,
+    SHOW_CARDS: false,
+    SHOW_FEEDBACK: false,
 
     // Repo link building
     GITHUB_REPO_URL: "",
@@ -266,7 +269,7 @@
     top: auto;
     bottom: 78px;
     width: min(420px, calc(100vw - 36px));
-    height: min(780px, calc(100vh - 120px));
+    height: min(860px, calc(100vh - 80px));
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid var(--line);
@@ -626,15 +629,34 @@
 
   @media (max-width: 520px){
     .dt-panel{
-      right: 12px; top: auto; bottom: 78px;
+      right: 10px; top: auto; bottom: 58px;
       transform: translateX(8px);
-      width: calc(100vw - 24px);
-      height: calc(100vh - 130px);
+      width: calc(100vw - 40px);
+      height: calc(100vh - 200px);
     }
     .dt-panel.open{
       transform: translateX(0);
     }
-    .dt-chatbot{ right: 12px; top: auto; bottom: 12px; transform: none; }
+    .dt-chatbot{ right: 10px; top: auto; bottom: 10px; transform: none; }
+  }
+
+  @media (max-width: 900px){
+    .dt-fab{ width: 40px; height: 40px; font-size: 14px; }
+    .dt-panel{
+      width: min(340px, calc(100vw - 32px));
+      height: min(680px, calc(100vh - 150px));
+      border-radius: 12px;
+    }
+    .dt-header{ padding: 10px; }
+    .dt-title strong{ font-size: 13px; }
+    .dt-title span{ font-size: 11px; }
+    .dt-body{ padding: 10px; }
+    .dt-msg{ margin: 14px 0; gap: 10px; }
+    .dt-avatar{ width: 30px; height: 30px; font-size: 11px; }
+    .dt-bubble{ font-size: 12.5px; padding: 10px 12px; }
+    .dt-footer{ padding: 8px; }
+    .dt-textarea{ font-size: 12px; }
+    .dt-send{ min-width: 56px; height: 34px; font-size: 12px; }
   }
   `;
 
@@ -666,6 +688,13 @@
     `
     : "";
 
+  const recommendationBlockHtml = CFG.SHOW_RECOMMENDATION_BLOCK
+    ? `
+      <div class="dt-topActions" data-slot="top-actions"></div>
+      <div class="dt-chips" data-slot="chips"></div>
+    `
+    : "";
+
   root.innerHTML = `
     <button class="dt-fab" type="button" aria-label="Open Chat">💬</button>
 
@@ -682,9 +711,7 @@
         </div>
       </div>
 
-      <div class="dt-topActions" data-slot="top-actions"></div>
-
-      <div class="dt-chips" data-slot="chips"></div>
+      ${recommendationBlockHtml}
 
       <div class="dt-body" data-slot="body">
         <button class="dt-jump" type="button" data-action="jump">⤓ 回到最新</button>
@@ -724,6 +751,7 @@
   // Render helpers
   // -------------------------
   function renderTopActions() {
+    if (!topActionsSlot) return;
     topActionsSlot.innerHTML = "";
     const list = Array.isArray(CFG.TOP_ACTIONS)
       ? CFG.TOP_ACTIONS.slice(0, 3)
@@ -1031,6 +1059,9 @@
     const raw = String(text || "");
     return raw
       .replace(/\n{0,2}(citations?|sources?)\s*:[\s\S]*$/i, "")
+      .replace(/[（(]\s*kb\/[\s\S]*?[）)]/gi, "")
+      .replace(/\bkb\/[\w\-./]+#[\w\-#]+/gi, "")
+      .replace(/[（(]\s*#?[\w\-]+#\d+\s*[）)]/gi, "")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
   }
@@ -1078,7 +1109,7 @@
     });
 
     // Agent cards (V2)
-    if (role !== "user" && cards) {
+    if (role !== "user" && cards && CFG.SHOW_CARDS) {
       const cardsToRender = selectProjectCards(text, cards);
       const cardWrap = renderCards(cardsToRender);
       if (cardWrap) bubble.appendChild(cardWrap);
@@ -1087,7 +1118,7 @@
     // citations intentionally hidden for simpler UX
     
     // Feedback buttons (only for assistant messages)
-    if (role !== "user") {
+    if (role !== "user" && CFG.SHOW_FEEDBACK) {
       const feedbackDiv = document.createElement("div");
       feedbackDiv.className = "dt-feedback";
       
@@ -1409,6 +1440,8 @@
           response_preferences: {
             simple: true,
             hide_citations: true,
+            concise: true,
+            guided: true,
             tone: "friendly-guide"
           }
         };
