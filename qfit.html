@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高互動果凍精靈</title>
+    <style>
+        :root {
+            --bg-color-1: #1a0b2e;
+            --bg-color-2: #4b1d52;
+            --jelly-color: rgba(255, 154, 206, 0.85);
+            --jelly-glow: rgba(255, 105, 180, 0.6);
+            --eye-color: #2d1b2e;
+            --blush-color: rgba(255, 77, 109, 0.6);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg-color-1), var(--bg-color-2));
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none; /* 禁用預設觸控行為以便於自訂互動 */
+        }
+
+        /* 背景漸變動畫 */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 粒子畫布 */
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 讓點擊穿透畫布 */
+            z-index: 1;
+        }
+
+        /* UI 提示文字 */
+        .ui-text {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            animation: fadeInOut 3s infinite alternate;
+        }
+
+        @keyframes fadeInOut {
+            from { opacity: 0.5; transform: translateY(0); }
+            to { opacity: 1; transform: translateY(5px); }
+        }
+
+        /* 角色容器 (處理 3D 視差) */
+        #scene {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            z-index: 5;
+        }
+
+        .character-wrapper {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out; /* 平滑的視差跟隨 */
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 角色本體 (處理懸浮與變形動畫) */
+        .jelly {
+            width: 200px;
+            height: 180px;
+            background: var(--jelly-color);
+            border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; /* 不規則果凍形狀 */
+            box-shadow: 
+                inset 10px 10px 20px rgba(255, 255, 255, 0.5), /* 內部高光 */
+                inset -10px -10px 20px rgba(0, 0, 0, 0.1),    /* 內部陰影 */
+                0 0 30px var(--jelly-glow),                    /* 外部發光 */
+                0 20px 40px rgba(0,0,0,0.3);                   /* 底部投影 */
+            backdrop-filter: blur(5px);
+            position: relative;
+            animation: float 4s ease-in-out infinite, morph 8s ease-in-out infinite;
+            transform-origin: bottom center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 點擊時的擠壓效果 */
+        .jelly.squish {
+            transform: scaleX(1.3) scaleY(0.7) translateY(20px);
+            background: rgba(255, 180, 220, 0.95);
+            box-shadow: 0 0 50px rgba(255, 180, 220, 0.8);
+            border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
+        }
+
+        /* 懸浮動畫 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-25px) scale(0.98); }
+        }
+
+        /* 形狀微調呼吸動畫 */
+        @keyframes morph {
+            0%, 100% { border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; }
+            33% { border-radius: 55% 45% 60% 40% / 45% 55% 40% 60%; }
+            66% { border-radius: 40% 60% 55% 45% / 60% 40% 45% 55%; }
+        }
+
+        /* 臉部容器 */
+        .face {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2;
+        }
+
+        /* 眼睛 */
+        .eye {
+            width: 24px;
+            height: 32px;
+            background: var(--eye-color);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            transition: height 0.2s, top 0.2s;
+        }
+
+        /* 眨眼動畫 */
+        .eye::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--jelly-color);
+            transform: translateY(-100%);
+            animation: blink 4s infinite;
+            z-index: 2;
+        }
+
+        @keyframes blink {
+            0%, 95%, 100% { transform: translateY(-100%); }
+            97.5% { transform: translateY(0); }
+        }
+
+        /* 眼球高光 / 瞳孔 (會隨滑鼠移動) */
+        .pupil {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            transition: transform 0.1s ease-out;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        /* 腮紅 */
+        .blush {
+            position: absolute;
+            top: 35px;
+            width: 25px;
+            height: 12px;
+            background: var(--blush-color);
+            border-radius: 50%;
+            filter: blur(2px);
+            opacity: 0.7;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .blush.left { left: -15px; }
+        .blush.right { right: -15px; }
+
+        /* 嘴巴 */
+        .mouth {
+            position: absolute;
+            top: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 10px;
+            border: 3px solid var(--eye-color);
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* --- 狀態表情變化 --- */
+        
+        /* 開心狀態 (Hover 或 Click) */
+        .is-happy .mouth {
+            width: 24px;
+            height: 20px;
+            background: #ff6b6b;
+            border-radius: 10px 10px 30px 30px;
+            border: none;
+            top: 30px;
+        }
+        .is-happy .mouth::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 8px;
+            background: #ffa8a8;
+            border-radius: 50%;
+        }
+        .is-happy .eye { height: 28px; top: 2px; }
+        .is-happy .eye::before { display: none; } /* 開心時不眨眼 */
+        .is-happy .pupil { transform: scale(1.2); }
+        .is-happy .blush { opacity: 1; transform: scale(1.2); background: #ff1a4a;}
+
+        /* 睡覺狀態 (Idle) */
+        .is-sleeping .eye { height: 4px; top: 14px; border-radius: 4px; }
+        .is-sleeping .pupil { display: none; }
+        .is-sleeping .mouth { width: 10px; height: 10px; border-radius: 50%; border: 3px solid var(--eye-color); }
+        .is-sleeping .jelly { animation: float 6s ease-in-out infinite, morph 10s ease-in-out infinite; } /* 呼吸變慢 */
+
+        /* 暈眩狀態 (快速移動滑鼠) */
+        .is-dizzy .eye { 
+            background: transparent; 
+            border: 3px solid var(--eye-color); 
+            animation: spin 0.5s linear infinite;
+        }
+        .is-dizzy .eye::before { display: none; }
+        .is-dizzy .pupil { display: none; }
+        .is-dizzy .mouth { 
+            width: 20px; 
+            height: 15px; 
+            border-radius: 50%; 
+            border: 3px solid var(--eye-color);
+            animation: wobble 1s ease-in-out infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes wobble { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.2, 0.8); } }
+
+        /* 陰影 */
+        .floor-shadow {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: shadowFloat 4s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes shadowFloat {
+            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+            50% { transform: translateX(-50%) scale(0.7); opacity: 0.2; }
+        }
+
+        /* 漂浮文字 (點擊時出現) */
+        .floating-text {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            pointer-events: none;
+            z-index: 20;
+            animation: floatUp 1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.5) rotate(calc(var(--rot) * 1deg)); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.2) rotate(calc(var(--rot) * 1deg)); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="ui-text">✨ 嘗試移動滑鼠、點擊、或撫摸果凍精靈！ ✨</div>
+    
+    <!-- 粒子系統畫布 -->
+    <canvas id="canvas"></canvas>
+
+    <div id="scene">
+        <div class="character-wrapper" id="character-wrapper">
+            <div class="floor-shadow" id="shadow"></div>
+            <div class="jelly" id="jelly">
+                <div class="face" id="face">
+                    <div class="blush left"></div>
+                    <div class="eye left">
+                        <div class="pupil"></div>
+                    </div>
+                    <div class="mouth"></div>
+                    <div class="eye right">
+                        <div class="pupil"></div>
+                    </div>
+                    <div class="blush right"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素
+        const jelly = document.getElementById('jelly');
+        const wrapper = document.getElementById('character-wrapper');
+        const face = document.getElementById('face');
+        const pupils = document.querySelectorAll('.pupil');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 狀態與變數
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let isHovering = false;
+        let isClicking = false;
+        let idleTimer = null;
+        let isSleeping = false;
+        let isDizzy = false;
+        
+        // 滑鼠速度追蹤 (用於判斷暈眩)
+        let lastMouseX = mouseX;
+        let lastMouseY = mouseY;
+        let mouseSpeed = 0;
+        let dizzyTimer = null;
+
+        const expressions = ['Boop!', '好癢！', 'Yay!', '✨', '💖', '噗嘰！'];
+
+        // --- 畫布與粒子系統設定 ---
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 粒子類別
+        class Particle {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.type = type; // 'trail' (拖尾), 'burst' (點擊爆發), 'zzz' (睡覺)
+                
+                if (type === 'trail') {
+                    this.size = Math.random() * 4 + 1;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 2 + 1;
+                    this.life = 1;
+                    this.decay = Math.random() * 0.02 + 0.02;
+                    this.color = `hsla(${Math.random() * 60 + 280}, 100%, 75%, `; // 紫粉色系
+                } else if (type === 'burst') {
+                    this.size = Math.random() * 8 + 4;
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 8 + 2;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed - 5; // 向上噴發
+                    this.gravity = 0.4;
+                    this.friction = 0.95;
+                    this.life = 1;
+                    this.decay = Math.random() * 0.01 + 0.01;
+                    this.isHeart = Math.random() > 0.5;
+                    this.color = this.isHeart ? '#ff4d6d' : '#ffd166'; // 紅心或黃星
+                    this.rotation = Math.random() * 360;
+                    this.rotSpeed = (Math.random() - 0.5) * 10;
+                } else if (type === 'zzz') {
+                    this.size = Math.random() * 10 + 10;
+                    this.vx = (Math.random() - 0.5) * 1;
+                    this.vy = -Math.random() * 1 - 1;
+                    this.life = 1;
+                    this.decay = 0.01;
+                    this.text = 'Z';
+                }
+            }
+
+            update() {
+                if (this.type === 'burst') {
+                    this.vy += this.gravity;
+                    this.vx *= this.friction;
+                    this.vy *= this.friction;
+                    this.rotation += this.rotSpeed;
+                    // 地板彈跳
+                    if (this.y > height - 20 && this.vy > 0) {
+                        this.vy *= -0.6;
+                        this.y = height - 20;
+                    }
+                }
+                
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                if (this.type === 'trail') {
+                    ctx.globalAlpha = this.life;
+                    ctx.fillStyle = this.color + this.life + ')';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (this.type === 'burst') {
+                    ctx.globalAlpha = this.life;
+                    ctx.rotate((this.rotation * Math.PI) / 180);
+                    ctx.fillStyle = this.color;
+                    
+                    if (this.isHeart) {
+                        // 畫愛心
+                        const s = this.size / 10;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 3*s);
+                        ctx.bezierCurveTo(0, -2*s, -10*s, -7*s, -10*s, -1*s);
+                        ctx.bezierCurveTo(-10*s, 5*s, 0, 9*s, 0, 12*s);
+                        ctx.bezierCurveTo(0, 9*s, 10*s, 5*s, 10*s, -1*s);
+                        ctx.bezierCurveTo(10*s, -7*s, 0, -2*s, 0, 3*s);
+                        ctx.fill();
+                    } else {
+                        // 畫星星
+                        ctx.beginPath();
+                        for (let i = 0; i < 5; i++) {
+                            ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * this.size, 
+                                     -Math.sin((18 + i * 72) * Math.PI / 180) * this.size);
+                            ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * (this.size/2), 
+                                     -Math.sin((54 + i * 72) * Math.PI / 180) * (this.size/2));
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                } else if (this.type === 'zzz') {
+                    ctx.globalAlpha = this.life;
+                    ctx.fillStyle = 'white';
+                    ctx.font = `bold ${this.size}px Arial`;
+                    ctx.fillText(this.text, 0, 0);
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        // 動畫循環
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            // 更新與繪製粒子
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw();
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // 睡覺狀態產生 Zzz
+            if (isSleeping && Math.random() < 0.05) {
+                const rect = jelly.getBoundingClientRect();
+                particles.push(new Particle(rect.left + rect.width/2 + 30, rect.top + 20, 'zzz'));
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- 互動邏輯 ---
+
+        // 喚醒精靈
+        function wakeUp() {
+            if (isSleeping) {
+                isSleeping = false;
+                wrapper.classList.remove('is-sleeping');
+            }
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                if (!isHovering && !isClicking) {
+                    isSleeping = true;
+                    wrapper.classList.add('is-sleeping');
+                }
+            }, 4000); // 4秒不動就睡覺
+        }
+
+        // 追蹤滑鼠與視差效果
+        function handleMouseMove(e) {
+            mouseX = e.clientX || (e.touches && e.touches[0].clientX);
+            mouseY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            wakeUp();
+
+            // 產生滑鼠拖尾粒子
+            if (Math.random() < 0.5) {
+                particles.push(new Particle(mouseX, mouseY, 'trail'));
+            }
+
+            // 計算滑鼠移動速度 (判斷暈眩)
+            if (isHovering) {
+                const dx = mouseX - lastMouseX;
+                const dy = mouseY - lastMouseY;
+                mouseSpeed = Math.sqrt(dx*dx + dy*dy);
+                
+                if (mouseSpeed > 50 && !isDizzy) {
+                    triggerDizzy();
+                }
+            }
+            lastMouseX = mouseX;
+            lastMouseY = mouseY;
+
+            // 1. 3D 視差傾斜 (包裹器)
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const percentX = (mouseX - centerX) / centerX;
+            const percentY = (mouseY - centerY) / centerY;
+            
+            // 限制傾斜角度
+            const maxRotX = 15;
+            const maxRotY = 20;
+            const rotX = -percentY * maxRotX;
+            const rotY = percentX * maxRotY;
+            
+            if (!isClicking && !isDizzy) {
+                wrapper.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(30px)`;
+            }
+
+            // 2. 眼球(瞳孔)追蹤
+            if (!isSleeping && !isDizzy) {
+                const faceRect = face.getBoundingClientRect();
+                const faceCenterX = faceRect.left + faceRect.width / 2;
+                const faceCenterY = faceRect.top + faceRect.height / 2;
+                
+                const angle = Math.atan2(mouseY - faceCenterY, mouseX - faceCenterX);
+                const distance = Math.min(6, Math.hypot(mouseX - faceCenterX, mouseY - faceCenterY) / 20); // 限制眼球移動範圍
+                
+                const pupilX = Math.cos(angle) * distance;
+                const pupilY = Math.sin(angle) * distance;
+
+                pupils.forEach(pupil => {
+                    pupil.style.transform = `translate(${pupilX}px, ${pupilY}px)`;
+                });
+            }
+        }
+
+        // 觸發暈眩
+        function triggerDizzy() {
+            isDizzy = true;
+            wrapper.classList.remove('is-happy');
+            wrapper.classList.add('is-dizzy');
+            wrapper.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`; // 重置視差
+            
+            clearTimeout(dizzyTimer);
+            dizzyTimer = setTimeout(() => {
+                isDizzy = false;
+                wrapper.classList.remove('is-dizzy');
+                if (isHovering) wrapper.classList.add('is-happy');
+            }, 2000); // 暈2秒
+        }
+
+        // 產生漂浮文字
+        function createFloatingText(x, y) {
+            const text = document.createElement('div');
+            text.className = 'floating-text';
+            text.innerText = expressions[Math.floor(Math.random() * expressions.length)];
+            text.style.left = (x - 20) + 'px';
+            text.style.top = (y - 50) + 'px';
+            // 隨機旋轉角度
+            text.style.setProperty('--rot', (Math.random() - 0.5) * 40);
+            document.body.appendChild(text);
+
+            setTimeout(() => {
+                text.remove();
+            }, 1000);
+        }
+
+        // --- 事件監聽器 ---
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('touchmove', handleMouseMove, {passive: false});
+
+        // 進入/離開精靈
+        wrapper.addEventListener('mouseenter', () => {
+            isHovering = true;
+            if (!isDizzy) wrapper.classList.add('is-happy');
+            wakeUp();
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            isHovering = false;
+            if (!isClicking && !isDizzy) {
+                wrapper.classList.remove('is-happy');
+            }
+        });
+
+        // 點擊精靈 (擠壓與爆發)
+        wrapper.addEventListener('mousedown', (e) => {
+            isClicking = true;
+            wakeUp();
+            jelly.classList.add('squish');
+            wrapper.classList.add('is-happy');
+            wrapper.classList.remove('is-dizzy'); // 點擊打斷暈眩
+            isDizzy = false;
+
+            // 視覺中心點
+            const rect = jelly.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            // 產生爆發粒子
+            for (let i = 0; i < 20; i++) {
+                particles.push(new Particle(cx, cy, 'burst'));
+            }
+
+            // 產生對話文字
+            createFloatingText(e.clientX || cx, e.clientY || cy);
+
+            // 稍微往下壓的 3D 效果
+            wrapper.style.transform = `perspective(1000px) rotateX(-10deg) translateZ(-20px)`;
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isClicking) {
+                isClicking = false;
+                jelly.classList.remove('squish');
+                if (!isHovering && !isDizzy) {
+                    wrapper.classList.remove('is-happy');
+                }
+                // 恢復當前滑鼠位置的視差
+                handleMouseMove({clientX: mouseX, clientY: mouseY});
+            }
+        });
+
+        // 觸控支援
+        wrapper.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            wrapper.dispatchEvent(new MouseEvent('mouseenter'));
+            wrapper.dispatchEvent(new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            }));
+        }, {passive: false});
+
+        window.addEventListener('touchend', () => {
+            wrapper.dispatchEvent(new MouseEvent('mouseleave'));
+            window.dispatchEvent(new MouseEvent('mouseup'));
+        });
+
+        // 啟動初始待機計時器
+        wakeUp();
+
+    </script>
+</body>
+</html>
