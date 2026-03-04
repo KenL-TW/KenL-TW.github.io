@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wedding Ops Digitalization Studio | 婚禮營運與體驗的數位化共創</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue.js 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Playfair Display & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --ivory:#FCFAFA;
+      --champagne-gold:#D4AF37;
+      --soft-rose:#EED9D1;
+      --warm-gray:#4A4A4A;
+      --ink:#111827;
+      --muted:#6B7280;
+      --bg2:#F5F0E8;
+    }
+    body{
+      font-family:'Inter','Noto Sans TC',sans-serif;
+      background-color:var(--ivory);
+      color:var(--warm-gray);
+      scroll-behavior:smooth;
+    }
+    .font-serif{font-family:'Playfair Display',serif;}
+    .text-gold{color:var(--champagne-gold);}
+    .bg-gold{background-color:var(--champagne-gold);}
+    .bg-ivory{background-color:var(--ivory);}
+    .border-gold{border-color:var(--champagne-gold);}
+
+    .hero-gradient{background:linear-gradient(135deg,#FCFAFA 0%,#F5F0E8 100%);}
+    .glass-card{
+      background:rgba(255,255,255,.72);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(212,175,55,.12);
+    }
+    .nav-scrolled{
+      background:rgba(252,250,250,.92);
+      backdrop-filter:blur(10px);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+    }
+
+    /* Anchor offset for fixed nav */
+    section{scroll-margin-top:96px;}
+
+    /* Animations */
+    @keyframes fade-in{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    .animate-fade-in{animation:fade-in 1s ease-out forwards;}
+    @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .animate-floaty{animation:floaty 4.6s ease-in-out infinite;}
+    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    .shimmer{
+      background:linear-gradient(90deg,rgba(212,175,55,0.05),rgba(212,175,55,0.18),rgba(212,175,55,0.05));
+      background-size:200% 100%;
+      animation:shimmer 6s linear infinite;
+    }
+    @keyframes spin-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .animate-spin-slow{animation:spin-slow 24s linear infinite;}
+  </style>
+</head>
+
+<body>
+<div id="app">
+
+  <!-- Sticky mini CTA bar (shows after scroll) -->
+  <div v-show="showStickyCTA" class="fixed bottom-4 left-0 right-0 z-50 px-4">
+    <div class="max-w-5xl mx-auto bg-white/90 backdrop-blur border border-gold/20 shadow-2xl rounded-2xl px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center text-gold">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">把婚禮「做得更漂亮」也「做得更省心」</p>
+          <p class="text-xs text-gray-500">30 分鐘交流｜了解數位化的優勢</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <a href="#cases" class="w-1/2 sm:w-auto text-center px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold hover:bg-gray-50 transition">
+          看實例
+        </a>
+        <a href="#contact" class="w-1/2 sm:w-auto text-center px-4 py-2 rounded-xl bg-gold text-white text-sm font-semibold hover:shadow-lg hover:-translate-y-0.5 transition">
+          預約交流
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav :class="['fixed w-full z-50 transition-all duration-500 py-4 px-6 md:px-12 flex justify-between items-center', isScrolled ? 'nav-scrolled' : 'bg-transparent']">
+    <a href="#home" class="flex items-center gap-2">
+      <div class="w-9 h-9 bg-gold rounded-full flex items-center justify-center">
+        <i data-lucide="sparkles" class="text-white w-5 h-5"></i>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-xl font-serif font-bold tracking-tight text-gray-900">Wedding Ops</span>
+        <span class="text-[10px] uppercase tracking-[0.22em] text-gray-400 -mt-1">Digitalization Studio</span>
+      </div>
+    </a>
+
+    <!-- Desktop Menu -->
+    <div class="hidden lg:flex items-center gap-8">
+      <a v-for="link in navLinks" :key="link.id" :href="'#' + link.id" class="text-sm font-medium text-gray-700 hover:text-gold transition-colors">
+        {{ link.text }}
+      </a>
+
+      <button @click="openLead('nav')" class="bg-gold text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2">
+        預約交流 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Toggle -->
+    <button class="lg:hidden" @click="mobileMenu = !mobileMenu" aria-label="Open menu">
+      <i :data-lucide="mobileMenu ? 'x' : 'menu'"></i>
+    </button>
+  </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div v-if="mobileMenu" class="fixed inset-0 bg-white z-40 flex flex-col items-center justify-center gap-8">
+    <a v-for="link in navLinks" :key="link.id" :href="'#' + link.id" @click="mobileMenu = false"
+       class="text-2xl font-serif hover:text-gold transition">
+      {{ link.text }}
+    </a>
+    <button class="bg-gold text-white px-10 py-4 rounded-full text-lg font-semibold" @click="() => { mobileMenu=false; openLead('mobile'); }">
+      預約交流
+    </button>
+    <p class="text-xs text-gray-400 mt-2">我們不賣模板，賣的是「能長出差異化服務」的數位能力。</p>
+  </div>
+
+  <!-- 1) HERO -->
+  <section id="home" class="min-h-screen hero-gradient flex items-center pt-24 px-6 md:px-12 lg:px-24">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+      <div class="space-y-8 animate-fade-in">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-gold/30 text-gold text-xs font-bold tracking-widest uppercase">
+            Wedding Experience + Ops
+          </span>
+          <span class="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white/70 border border-gray-200 text-gray-600 text-xs font-semibold">
+            <i data-lucide="badge-check" class="w-4 h-4 text-gold"></i>
+            可客製化｜可落地｜可快速上線
+          </span>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-serif leading-[1.05] text-gray-900">
+          婚禮營運與體驗的<br>
+          <span class="text-gold">數位化共創</span>
+        </h1>
+
+        <p class="text-xl text-gray-500 leading-relaxed max-w-xl">
+          你不是在找一個「電子喜帖工具」，你在找一種能力：把婚禮做得更有記憶點、讓團隊更有餘裕，並把這份差異化變成可複製的服務。
+        </p>
+
+        <!-- Value bullets -->
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="glass-card rounded-2xl p-4">
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-400">體驗差異化</p>
+            <p class="text-sm font-semibold text-gray-900 mt-1">互動留言牆、跨屏輪播、婚禮數位空間</p>
+          </div>
+          <div class="glass-card rounded-2xl p-4">
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-400">資訊一致性</p>
+            <p class="text-sm font-semibold text-gray-900 mt-1">新人、婚顧、賓客看到同一份最新資訊</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-4 pt-2">
+          <button @click="scrollTo('contact')" class="bg-gold text-white px-8 py-4 rounded-xl font-bold hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2">
+            了解合作方式 <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </button>
+          <button @click="scrollTo('cases')" class="bg-white border border-gray-200 px-8 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all">
+            查看實際案例
+          </button>
+        </div>
+
+        <div class="text-xs text-gray-400 leading-relaxed max-w-xl">
+          * 這是一個「共創式」工作室：你保有品牌與風格，我們提供可落地的數位能力與交付品質。
+        </div>
+      </div>
+
+      <!-- Hero Visual -->
+      <div class="relative">
+        <div class="absolute -z-10 w-[120%] h-[120%] bg-soft-rose/25 rounded-full blur-3xl -top-10 -right-10"></div>
+
+        <div class="relative bg-white rounded-3xl shadow-2xl p-4 border border-gold/10 transform lg:rotate-2 hover:rotate-0 transition-transform duration-700">
+          <div class="bg-gray-50 rounded-2xl overflow-hidden aspect-video relative">
+            <!-- 建議換成你「案例網站」的截圖或拼貼 mock -->
+            <!-- 圖片備註：建議使用你自己的實例截圖（桌機版 + 手機版），比 Unsplash 更有說服力 -->
+            <img
+              src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1400"
+              alt="Wedding Ops Preview"
+              class="w-full h-full object-cover opacity-85"
+            />
+            <div class="absolute inset-0 bg-black/10 flex items-center justify-center">
+              <div class="glass-card p-6 rounded-2xl border border-white/50 text-center space-y-2">
+                <div class="w-12 h-12 bg-gold/20 rounded-full mx-auto flex items-center justify-center text-gold">
+                  <i data-lucide="layout-dashboard"></i>
+                </div>
+                <p class="text-xs font-bold uppercase tracking-widest text-gray-700">Experience + Ops</p>
+                <p class="text-sm font-semibold text-gray-900">婚禮互動網站 × 婚顧交付能力</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-4 gap-4 mt-4">
+            <div class="h-2 bg-gray-100 rounded-full"></div>
+            <div class="h-2 bg-gray-100 rounded-full"></div>
+            <div class="h-2 bg-gray-100 rounded-full"></div>
+            <div class="h-2 bg-gray-100 rounded-full"></div>
+          </div>
+        </div>
+
+        <!-- Floating proof cards -->
+        <div class="absolute -bottom-10 -left-6 bg-white p-5 rounded-2xl shadow-xl border border-gold/10 hidden md:block animate-floaty">
+          <div class="flex items-center gap-4">
+            <div class="bg-gold/15 p-2 rounded-xl">
+              <i data-lucide="message-square-heart" class="text-gold w-5 h-5"></i>
+            </div>
+            <div>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Guest Interaction</p>
+              <p class="text-sm font-bold text-gray-900">留言牆輪播｜現場氛圍升級</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="absolute -top-10 right-6 bg-white p-5 rounded-2xl shadow-xl border border-gold/10 hidden md:block animate-floaty" style="animation-delay: .8s;">
+          <div class="flex items-center gap-4">
+            <div class="bg-green-100 p-2 rounded-xl">
+              <i data-lucide="badge-check" class="text-green-600 w-5 h-5"></i>
+            </div>
+            <div>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Delivery</p>
+              <p class="text-sm font-bold text-gray-900">輕量導入｜快速上線</p>
+            </div>
+          </div>
+        </div>
+    </div>
+  </section>
+
+  <!-- 2) Problem -->
+  <section id="why" class="py-24 px-6 md:px-12 bg-white">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-4xl font-serif mb-6 text-gray-900">為什麼婚顧需要的不是工具，而是「能力升級」？</h2>
+        <p class="text-gray-500 leading-relaxed">
+          婚禮追求的是極致體驗，但後台往往仍用 LINE + Excel 勉強維持。
+          當案件量增加、變動加速、多人協作變多，痛點會從「麻煩」變成「風險」。
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-10">
+        <div v-for="prob in problems" :key="prob.title" class="group p-10 rounded-3xl border border-transparent hover:border-gold/20 hover:bg-ivory transition-all duration-500">
+          <div class="w-16 h-16 bg-soft-rose/30 rounded-2xl flex items-center justify-center text-gold mb-8 group-hover:bg-gold group-hover:text-white transition-all">
+            <i :data-lucide="prob.icon" class="w-8 h-8"></i>
+          </div>
+          <h3 class="text-2xl font-bold mb-4 text-gray-900">{{ prob.title }}</h3>
+          <p class="text-gray-500 leading-relaxed mb-6">{{ prob.desc }}</p>
+
+          <div class="space-y-3">
+            <div v-for="b in prob.bullets" :key="b" class="flex items-start gap-2 text-sm text-gray-600">
+              <i data-lucide="dot" class="w-4 h-4 mt-0.5 text-gold"></i>
+              <span>{{ b }}</span>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mt-6">
+            <span v-for="tag in prob.tags" :key="tag" class="text-[10px] font-bold uppercase px-3 py-1 bg-gray-100 rounded-full text-gray-400">{{ tag }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3) Solution / Core -->
+  <section id="solutions" class="py-24 bg-[#F5F0E8]/50 px-6 overflow-hidden">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <h2 class="text-4xl font-serif mb-6 text-gray-900">Wedding Ops：把體驗與交付，放在同一個節奏上</h2>
+          <p class="text-lg text-gray-500 mb-10 leading-relaxed">
+            婚禮的價值不只在「美」，也在「順」。
+            Wedding Ops 用一致的資訊節點，讓賓客體驗、婚顧協作、與交付品質能彼此支撐。
+          </p>
+
+          <div class="space-y-5">
+            <div v-for="sol in solutions" :key="sol.title" class="flex gap-5 p-6 rounded-2xl bg-white shadow-sm border border-gold/10">
+              <div class="text-gold font-serif text-3xl opacity-30">{{ sol.id }}</div>
+              <div>
+                <h4 class="font-bold text-lg mb-1 text-gray-900">{{ sol.title }}</h4>
+                <p class="text-sm text-gray-500">{{ sol.desc }}</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <span v-for="tag in sol.tags" :key="tag" class="text-[10px] font-bold uppercase px-3 py-1 bg-ivory rounded-full text-gray-500 border border-gray-100">
+                    {{ tag }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-10 flex items-center gap-3 text-sm text-gray-600">
+            <i data-lucide="sparkles" class="w-5 h-5 text-gold"></i>
+            <span><b class="text-gray-900">產品哲學：</b> 先做出「能立刻提升體驗」的前台，再逐步把它延伸成你可交付的服務能力。</span>
+          </div>
+        </div>
+
+        <!-- Core diagram -->
+        <div class="relative flex justify-center">
+          <div class="relative w-full max-w-xl">
+            <div class="absolute inset-0 -z-10">
+              <div class="w-full h-full rounded-[48px] bg-white/60 blur-2xl"></div>
+            </div>
+
+            <div class="rounded-[48px] bg-white border border-gold/10 shadow-2xl p-8">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-[11px] uppercase tracking-[0.25em] text-gray-400 font-bold">Concept Map</p>
+                  <h3 class="text-2xl font-serif text-gray-900 mt-2">Experience ↔ Ops</h3>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-gold/15 flex items-center justify-center text-gold">
+                  <i data-lucide="network" class="w-5 h-5"></i>
+                </div>
+              </div>
+
+              <div class="mt-8 relative">
+                <div class="w-full aspect-square border-2 border-dashed border-gold/20 rounded-full animate-spin-slow"></div>
+
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="bg-gold text-white px-7 py-6 rounded-3xl shadow-2xl text-center">
+                    <i data-lucide="sparkles" class="w-9 h-9 mx-auto mb-2"></i>
+                    <p class="font-bold leading-tight">Wedding Ops<br>Central System</p>
+                    <p class="text-[11px] opacity-90 mt-1">讓每個觸點一致</p>
+                  </div>
+                </div>
+
+                <!-- Nodes -->
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-4 py-3 rounded-2xl shadow-lg border border-gold/10 flex items-center gap-3">
+                  <i data-lucide="users" class="text-gold w-5 h-5"></i>
+                  <div>
+                    <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Guest</p>
+                    <p class="text-xs font-semibold text-gray-800">互動與資訊入口</p>
+                  </div>
+                </div>
+
+                <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white px-4 py-3 rounded-2xl shadow-lg border border-gold/10 flex items-center gap-3">
+                  <i data-lucide="layout-dashboard" class="text-gold w-5 h-5"></i>
+                  <div>
+                    <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Planner</p>
+                    <p class="text-xs font-semibold text-gray-800">交付節奏與品質</p>
+                  </div>
+                </div>
+
+                <div class="absolute top-1/2 -translate-y-1/2 -left-3 bg-white px-4 py-3 rounded-2xl shadow-lg border border-gold/10 flex items-center gap-3">
+                  <i data-lucide="globe" class="text-gold w-5 h-5"></i>
+                  <div>
+                    <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Website</p>
+                    <p class="text-xs font-semibold text-gray-800">婚禮數位空間</p>
+                  </div>
+                </div>
+
+                <div class="absolute top-1/2 -translate-y-1/2 -right-3 bg-white px-4 py-3 rounded-2xl shadow-lg border border-gold/10 flex items-center gap-3">
+                  <i data-lucide="party-popper" class="text-gold w-5 h-5"></i>
+                  <div>
+                    <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Onsite</p>
+                    <p class="text-xs font-semibold text-gray-800">現場氛圍升級</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 4) Capability (make it more product-like) -->
+  <section id="capabilities" class="py-24 px-6 md:px-12 bg-white">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-4xl font-serif mb-4 text-gray-900">全方位的產品能力</h2>
+        <p class="text-gray-500">不是「功能清單」，而是婚禮體驗與婚顧交付可以一起升級的能力組合。</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div v-for="cap in capabilities" :key="cap.title" class="p-8 rounded-3xl border border-gray-100 hover:shadow-2xl transition-all flex flex-col h-full bg-white">
+          <div class="mb-6 h-44 bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden relative">
+            <div class="absolute inset-0 opacity-60"></div>
+            <div class="w-16 h-16 rounded-2xl bg-gold/15 flex items-center justify-center text-gold">
+              <i :data-lucide="cap.icon" class="w-8 h-8"></i>
+            </div>
+          </div>
+
+          <h4 class="text-xl font-bold mb-2 text-gray-900">{{ cap.title }}</h4>
+          <p class="text-sm text-gray-500 mb-5 leading-relaxed">{{ cap.desc }}</p>
+
+          <ul class="space-y-3 flex-grow">
+            <li v-for="feature in cap.features" :key="feature" class="flex items-start gap-2 text-sm text-gray-600">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-gold mt-0.5"></i>
+              <span>{{ feature }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 5) Real Case (fix RSVP claim, strengthen proof, add story & metrics placeholders) -->
+  <section id="cases" class="py-20 bg-ivory px-6 md:px-12 border-y border-gold/10">
+    <div class="max-w-7xl mx-auto">
+
+      <div class="grid lg:grid-cols-2 gap-14 items-center">
+        <div class="space-y-8">
+          <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-gold/10 text-gold text-xs font-bold tracking-widest uppercase">
+            <i data-lucide="trophy" class="w-4 h-4"></i>
+            Real Case
+          </div>
+
+          <h2 class="text-4xl md:text-5xl font-serif text-gray-900">客製化婚禮互動網站</h2>
+
+          <p class="text-lg text-gray-600 leading-relaxed">
+            這不是「一頁式邀請函」，而是一個能把祝福、照片與故事留住的婚禮數位空間。
+            賓客可以在婚禮前後留下祝福，留言也能於現場跨屏輪播，直接把氣氛拉滿。
+          </p>
+
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div class="p-4 bg-white rounded-2xl border border-gray-100">
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">婚禮前</p>
+              <p class="text-sm font-semibold text-gray-900">資訊集中、祝福先暖場</p>
+            </div>
+            <div class="p-4 bg-white rounded-2xl border border-gray-100">
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">婚禮中</p>
+              <p class="text-sm font-semibold text-gray-900">留言輪播、氛圍升級</p>
+            </div>
+            <div class="p-4 bg-white rounded-2xl border border-gray-100">
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">婚禮後</p>
+              <p class="text-sm font-semibold text-gray-900">回憶保存、可長期分享</p>
+            </div>
+          </div>
+
+          <!-- What it includes -->
+          <div class="rounded-3xl bg-white border border-gold/10 p-6">
+            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4 text-gold"></i>
+              本案例包含的體驗模組
+            </h3>
+            <div class="grid sm:grid-cols-2 gap-3 mt-4">
+              <div v-for="m in caseModules" :key="m" class="flex items-start gap-2 text-sm text-gray-600">
+                <i data-lucide="check" class="w-4 h-4 text-gold mt-0.5"></i>
+                <span>{{ m }}</span>
+              </div>
+            </div>
+          </div>
+
+          <a href="https://digitools-studio.github.io/index/wedding_invitation" target="_blank" class="inline-flex items-center gap-3 text-gold font-bold group">
+            <span class="border-b-2 border-gold pb-1 group-hover:opacity-70 transition-all">預覽線上實機案例</span>
+            <i data-lucide="external-link" class="w-5 h-5"></i>
+          </a>
+
+          <!-- Optional: mini testimonial block -->
+          <div class="rounded-[28px] bg-gray-900 text-white p-7 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10 pointer-events-none">
+              <div class="w-[420px] h-[420px] rounded-full bg-gold absolute -top-40 -right-40"></div>
+            </div>
+            <div class="relative">
+              <p class="text-sm text-gray-300 uppercase tracking-[0.25em] font-bold">Client Voice</p>
+              <p class="mt-3 text-lg font-serif leading-relaxed">
+                「我們原本以為只是一個喜帖頁面，結果現場留言輪播讓所有人都參與進來，氣氛完全不一樣。」
+              </p>
+              <p class="mt-3 text-sm text-gray-400">— 實務案例新人回饋</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Case images -->
+         <div class="grid grid-cols-1 xl:grid-cols-[0.95fr_1.05fr] gap-4 items-start">
+          <div class="space-y-4">
+             <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white h-64 md:h-72">
+              <!-- 建議換成案例網站「桌機版截圖」 -->
+              <img src="assets/img/wedding_digital/desktop_full.png"
+                   alt="Case Desktop Screenshot"
+               class="block w-full h-full object-contain bg-gray-50">
+            </div>
+
+             <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white h-64 md:h-72">
+              <img src="assets/img/wedding_digital/mobile_view.png"
+                   alt="Case Mobile Screenshot"
+               class="block w-full h-full object-contain bg-gray-50">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white h-64 md:h-72">
+              <img src="assets/img/wedding_digital/message_wall.png"
+                   alt="Case Message Wall"
+               class="block w-full h-full object-contain bg-gray-50">
+            </div>
+
+             <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white h-64 md:h-72">
+              <img src="assets/img/wedding_digital/photo_wall.png"
+                   alt="Case Photo Wall"
+               class="block w-full h-full object-contain bg-gray-50">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 6) Business Advantage (more product-centric, add value ladder) -->
+  <section id="advantage" class="py-24 px-6 md:px-12 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center max-w-3xl mx-auto">
+        <h2 class="text-4xl font-serif mb-5 text-gray-900">數位化帶來的不是「省人力」，而是「服務升級」</h2>
+        <p class="text-gray-500 leading-relaxed">
+          當婚顧把數位能力變成標配，你會得到三種很真實的好處：更穩定的交付、更可加值的方案、更鮮明的品牌差異。
+        </p>
+      </div>
+
+      <div class="mt-14 grid lg:grid-cols-3 gap-6">
+        <div v-for="p in payoffCards" :key="p.title" class="rounded-[28px] bg-ivory border border-gold/10 p-8">
+          <div class="w-12 h-12 rounded-2xl bg-gold/15 flex items-center justify-center text-gold">
+            <i :data-lucide="p.icon" class="w-6 h-6"></i>
+          </div>
+          <h3 class="mt-4 text-lg font-bold text-gray-900">{{ p.title }}</h3>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">{{ p.desc }}</p>
+          <div class="mt-4 space-y-2">
+            <div v-for="b in p.bullets" :key="b" class="flex items-start gap-2 text-sm text-gray-600">
+              <i data-lucide="check" class="w-4 h-4 mt-0.5 text-gold"></i>
+              <span>{{ b }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="mt-14 bg-ivory rounded-[40px] shadow-sm border border-gold/10 overflow-hidden">
+        <div class="p-8 border-b border-gray-100 flex items-start justify-between gap-6">
+          <div>
+            <h3 class="text-2xl font-serif text-gray-900">傳統交付 vs 數位化交付</h3>
+            <p class="text-sm text-gray-600 mt-2">
+              這張表不是在「踩傳統」，而是在說：你可以把高端服務做得更穩、更好賣。
+            </p>
+          </div>
+          <div class="hidden md:flex items-center gap-2 text-gold text-sm font-semibold">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+            讓差異化變成可賣的方案
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-[760px] w-full text-left">
+            <thead>
+              <tr class="bg-gold text-white font-bold">
+                <th class="p-6">面向</th>
+                <th class="p-6">傳統做法（常見）</th>
+                <th class="p-6">Wedding Ops（交付升級）</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 bg-white">
+              <tr v-for="adv in advantages" :key="adv.item">
+                <td class="p-6 font-bold text-gray-900">{{ adv.item }}</td>
+                <td class="p-6 text-gray-500 italic">{{ adv.old }}</td>
+                <td class="p-6 text-gray-900">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-gold"></i>
+                    <span class="font-semibold">{{ adv.new }}</span>
+                  </div>
+                  <p class="text-[11px] text-gray-400 mt-1 leading-relaxed">{{ adv.note }}</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="p-8 bg-ivory border-t border-gray-100">
+          <p class="text-xl font-serif italic text-gray-700 leading-relaxed">
+            「當別人賣的是『服務』，你可以賣『服務＋數位體驗』。差異化不是口號，是交付物本身。」
+          </p>
+        </div>
+      </div>
+
+
+  <!-- 6) Deployment (make it more confidence + timeline) -->
+  <section id="deployment" class="py-24 px-6 md:px-12 bg-[#F5F0E8]/30 overflow-hidden">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col lg:flex-row gap-14">
+        <div class="lg:w-1/3">
+          <h2 class="text-4xl font-serif mb-6 text-gray-900">輕量化導入，<br>讓你「立刻用得起來」</h2>
+          <p class="text-gray-600 mb-8 leading-relaxed">
+            婚顧最怕導入新東西會卡住。這裡的設計原則很簡單：先從「最能提升體驗」的前台開始，
+            讓你在短時間內拿到可以交付給新人的成果，再逐步把它延伸成可複製的交付流程。
+          </p>
+
+          <div class="rounded-3xl bg-white border border-gold/10 p-6">
+            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-4 h-4 text-gold"></i>
+              導入時你會得到的安心感
+            </h3>
+            <div class="mt-4 space-y-3">
+              <div v-for="g in guardrails" :key="g" class="flex items-start gap-2 text-sm text-gray-700">
+                <i data-lucide="check" class="w-4 h-4 text-gold mt-0.5"></i>
+                <span>{{ g }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:w-2/3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div v-for="(step, idx) in deploymentSteps" :key="step.title" class="bg-white p-8 rounded-3xl relative border border-gray-100 hover:shadow-2xl transition">
+              <div class="absolute -top-4 -left-4 w-12 h-12 bg-gold text-white rounded-full flex items-center justify-center font-serif text-xl font-bold shadow-lg">
+                {{ idx + 1 }}
+              </div>
+              <h4 class="text-xl font-bold mb-3 mt-4 text-gray-900">{{ step.title }}</h4>
+              <p class="text-sm text-gray-600 leading-relaxed">{{ step.desc }}</p>
+
+              <div class="mt-6 rounded-2xl bg-ivory border border-gray-100 p-4">
+                <p class="text-[11px] uppercase tracking-widest text-gray-400 font-bold">交付物（示例）</p>
+                <p class="text-sm text-gray-700 mt-2 leading-relaxed">{{ step.deliverable }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7) FAQ (remove anxiety, non-technical) -->
+  <section id="faq" class="py-24 px-6 md:px-12 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <h2 class="text-4xl font-serif text-gray-900">常見問題</h2>
+        <p class="text-gray-500 mt-3">你心裡的疑慮，我們先替你寫出來。</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div v-for="(q, i) in faqs" :key="q.q" class="rounded-[28px] border border-gray-100 bg-ivory p-8">
+          <button class="w-full text-left flex items-start justify-between gap-4" @click="toggleFAQ(i)">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-gold/15 flex items-center justify-center text-gold shrink-0">
+                <i data-lucide="help-circle" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900">{{ q.q }}</h3>
+                <p class="text-sm text-gray-600 mt-1">{{ q.hint }}</p>
+              </div>
+            </div>
+            <i :data-lucide="openFAQs[i] ? 'chevron-up' : 'chevron-down'" class="w-5 h-5 text-gray-500 mt-2"></i>
+          </button>
+
+          <div v-show="openFAQs[i]" class="mt-5 text-sm text-gray-700 leading-relaxed">
+            {{ q.a }}
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-12 rounded-[32px] bg-ivory border border-gold/10 p-10">
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+          <div class="w-12 h-12 rounded-2xl bg-gold/15 flex items-center justify-center text-gold">
+            <i data-lucide="sparkles" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-serif text-gray-900">我們最在意的是：你能不能「拿去賣、拿去交付」</h3>
+            <p class="text-gray-600 mt-3 leading-relaxed">
+              如果你是婚顧公司，我們會優先設計「方案包」與「交付物」，確保你可以把這份數位能力當成服務差異化，
+              而不是做完一個網站就結束。你會得到的是一套可持續迭代的資產。
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 8) CTA / Contact -->
+  <section id="contact" class="py-28 px-6">
+    <div class="max-w-6xl mx-auto bg-gray-900 rounded-[52px] p-10 md:p-20 text-white relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+        <i data-lucide="sparkles" class="w-96 h-96 absolute -top-24 -right-24"></i>
+      </div>
+
+      <div class="relative z-10 grid lg:grid-cols-2 gap-12 items-start">
+        <div class="space-y-6">
+          <h2 class="text-4xl md:text-6xl font-serif leading-tight">探索婚禮數位化的可能</h2>
+          <p class="text-gray-300 text-lg leading-relaxed">
+            30 分鐘交流，我們會幫你釐清：你現在最需要的是「體驗升級」、「交付穩定」，還是「方案商品化」。
+            你不需要先準備一堆資料，帶著現況來就行。
+          </p>
+
+          <div class="rounded-3xl bg-white/10 border border-white/15 p-6">
+            <p class="text-sm font-bold uppercase tracking-[0.25em] text-gray-200">你會得到</p>
+            <div class="mt-4 space-y-3">
+              <div class="flex items-start gap-2 text-sm text-gray-200">
+                <i data-lucide="check" class="w-4 h-4 mt-0.5 text-gold"></i>
+                <span>一份「適合你」的數位化組合建議（先做哪個、為什麼）</span>
+              </div>
+              <div class="flex items-start gap-2 text-sm text-gray-200">
+                <i data-lucide="check" class="w-4 h-4 mt-0.5 text-gold"></i>
+                <span>你的服務如何包成「升級方案」的建議（更好賣、也更好交付）</span>
+              </div>
+              <div class="flex items-start gap-2 text-sm text-gray-200">
+                <i data-lucide="check" class="w-4 h-4 mt-0.5 text-gold"></i>
+                <span>可用案例參考與下一步落地路線（含你能拿去用的素材方向）</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <a href="#cases" class="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-sm font-semibold hover:bg-white/15 transition">
+              先看案例
+            </a>
+            <button @click="openLead('cta')" class="px-6 py-3 rounded-xl bg-gold text-white text-sm font-semibold hover:shadow-lg transition flex items-center gap-2">
+              直接預約交流 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Contact form -->
+        <div class="rounded-[32px] bg-white text-gray-900 p-8 border border-white/40 shadow-2xl">
+          <div class="flex items-start justify-between gap-6">
+            <div>
+              <p class="text-[11px] uppercase tracking-[0.25em] text-gray-400 font-bold">Contact</p>
+              <h3 class="text-2xl font-serif mt-2">留下資訊，我們用「產品方式」跟你談合作</h3>
+              <p class="text-sm text-gray-500 mt-2">不談技術名詞，只談你要賣的服務、你要交付的體驗。</p>
+            </div>
+            <div class="w-11 h-11 rounded-2xl bg-gold/15 flex items-center justify-center text-gold">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+            </div>
+          </div>
+
+          <form id="contact-form" action="https://formspree.io/f/xblyjogo" method="POST" class="mt-6 space-y-4" @submit.prevent="submitLead">
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs font-semibold text-gray-600">你的姓名</label>
+                <input v-model="lead.name" name="name" required class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(212,175,55,0.35)]" placeholder="例如：KenL">
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-gray-600">身份</label>
+                <select v-model="lead.role" name="role" class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(212,175,55,0.35)]">
+                  <option>婚禮顧問 / 婚禮公司</option>
+                  <option>新人</option>
+                  <option>場地 / 供應商</option>
+                  <option>其他</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-gray-600">聯絡方式（Email 或 LINE ID）</label>
+              <input v-model="lead.contact" name="contact" required class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(212,175,55,0.35)]" placeholder="例如：name@email.com / line_id">
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-gray-600">你最想先做哪一塊？</label>
+              <div class="mt-2 grid sm:grid-cols-2 gap-3">
+                <button type="button" v-for="opt in leadOptions" :key="opt" @click="toggleNeed(opt)"
+                        :class="['text-left rounded-xl border px-4 py-3 text-sm font-semibold transition',
+                                 lead.needs.includes(opt) ? 'border-gold bg-gold/10 text-gray-900' : 'border-gray-200 hover:bg-gray-50 text-gray-700']">
+                  <div class="flex items-center justify-between">
+                    <span>{{ opt }}</span>
+                    <i :data-lucide="lead.needs.includes(opt) ? 'check-circle-2' : 'circle'" class="w-4 h-4 text-gold"></i>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-gray-600">簡單說一下你的現況 / 目標</label>
+              <textarea v-model="lead.note" name="note" rows="4" class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(212,175,55,0.35)]" placeholder="例如：我希望把留言牆做成標配方案；或我想先做一個可交付的婚禮互動網站..."></textarea>
+            </div>
+
+            <input type="hidden" name="needs" :value="lead.needs.join('、')">
+            <input type="hidden" name="source_page" value="wedding_digital.html">
+
+            <button type="submit" :disabled="isSubmitting" class="w-full bg-gold text-white py-3.5 rounded-xl font-bold hover:shadow-lg hover:-translate-y-0.5 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0">
+              <template v-if="isSubmitting">送出中...</template>
+              <template v-else>
+                送出並預約交流 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </template>
+            </button>
+
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+              送出後會由系統寄送到聯絡信箱，我們會依你留下的資訊盡快回覆。
+            </p>
+
+            <div v-if="toast.show" :class="[
+                'mt-2 rounded-xl p-4 text-sm flex items-start gap-2 border',
+                toast.type === 'success'
+                  ? 'bg-green-50 border-green-100 text-green-800'
+                  : 'bg-red-50 border-red-100 text-red-800'
+              ]">
+              <i :data-lucide="toast.type === 'success' ? 'badge-check' : 'alert-circle'" class="w-4 h-4 mt-0.5"></i>
+              <span>{{ toast.message }}</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 px-6 md:px-12 border-t border-gray-100 bg-white">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-gold rounded-full"></div>
+        <div>
+          <span class="text-lg font-serif font-bold text-gray-900">Wedding Ops Studio</span>
+          <p class="text-[11px] text-gray-400 -mt-0.5">Digitools Studio</p>
+        </div>
+      </div>
+
+      <div class="text-sm text-gray-400 text-center">
+        &copy; 2026 Digitools Studio. 為追求極致體驗的婚顧團隊打造。
+      </div>
+
+      <div class="flex items-center gap-2 text-sm text-gray-400">
+        <i data-lucide="mail" class="w-4 h-4"></i>
+        <a href="mailto:digitalaaronl@gmail.com" class="hover:text-gold transition-colors">digitalaaronl@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  const { createApp, ref, onMounted, onUnmounted, watch, nextTick } = Vue;
+
+  const App = {
+    setup() {
+      const isScrolled = ref(false);
+      const mobileMenu = ref(false);
+      const showStickyCTA = ref(false);
+
+      const navLinks = [
+        { id: 'home', text: '首頁' },
+        { id: 'why', text: '轉型需求' },
+        { id: 'solutions', text: '核心概念' },
+        { id: 'capabilities', text: '產品能力' },
+        { id: 'cases', text: '實戰案例' },
+        { id: 'advantage', text: '商業優勢' },
+        { id: 'deployment', text: '導入流程' },
+        { id: 'faq', text: 'FAQ' },
+        { id: 'contact', text: '預約交流' }
+      ];
+
+      const problems = [
+        {
+          icon: 'message-square',
+          title: '資訊碎片化（共識難建立）',
+          desc: 'LINE 群組、Excel 表單、紙本筆記散落在不同地方，大家都很努力，但永遠像在追最新版本。',
+          bullets: [
+            '新人問「最新版本」要花時間對訊息與檔案',
+            '多人協作越多，越容易出現版本落差',
+            '小錯誤累積成現場風險（座位、時間、名單）'
+          ],
+          tags: ['LINE', 'EXCEL', '版本混亂']
+        },
+        {
+          icon: 'git-branch',
+          title: '人工流程沉重（可交付性不足）',
+          desc: '當案件量增加，靠「記得」與「手動整理」會拖垮品質。你需要的是可複製的交付方式。',
+          bullets: [
+            '每場婚禮都在重做一次整理流程',
+            '細節越多，越容易靠經驗硬扛',
+            '行政時間吞掉創意與成交時間'
+          ],
+          tags: ['手動整理', '高出錯率', '交付壓力']
+        },
+        {
+          icon: 'zap-off',
+          title: '缺乏互動（體驗差異化被稀釋）',
+          desc: '很多婚禮網站只是展示。真正的高級，是讓賓客參與、讓故事留存、讓現場更有記憶點。',
+          bullets: [
+            '賓客「看過就忘」：缺少參與感',
+            '現場氛圍靠主持硬撐，互動資產不足',
+            '婚禮結束後，回憶沒有一個可保存的家'
+          ],
+          tags: ['靜態展示', '互動不足', '差異化不明顯']
+        }
+      ];
+
+      const solutions = [
+        {
+          id: '01',
+          title: 'Wedding Experience（前台體驗）',
+          desc: '把婚禮資訊變成一個一致、漂亮、可分享的數位空間：賓客一看就懂、也願意參與。',
+          tags: ['婚禮網站', '資訊一致', '可分享']
+        },
+        {
+          id: '02',
+          title: 'Guest Interaction（互動氛圍）',
+          desc: '用留言牆、輪播、照片與內容模組，讓賓客從旁觀者變成參與者。',
+          tags: ['留言牆', '跨屏輪播', '氛圍升級']
+        },
+        {
+          id: '03',
+          title: 'Planner Delivery（交付節奏）',
+          desc: '把你的 SOP 變成可交付的方案包：每場婚禮都能穩定交付、也更好賣。',
+          tags: ['方案商品化', '交付物', '可複製']
+        }
+      ];
+
+      const capabilities = [
+        {
+          icon: 'smartphone',
+          title: '婚禮互動網站',
+          desc: '把「邀請」升級成「專屬婚禮數位空間」。',
+          features: ['客製化電子喜帖風格', '婚禮資訊與流程導引', '地點一鍵導航（賓客友善）', '照片/故事內容模組']
+        },
+        {
+          icon: 'screen-share',
+          title: '祝福留言牆',
+          desc: '把祝福變成現場氛圍的燃料。',
+          features: ['賓客手機留言', '現場即時輪播展示', '多樣化輪播模板', '可保存為婚禮回憶頁']
+        },
+        {
+          icon: 'edit-3',
+          title: '內容管理（可交付）',
+          desc: '讓更新內容變成「可控」而不是「臨時改」。',
+          features: ['簡易內容更新流程', '活動資訊與公告區塊', '素材與圖片整理規範', '一致性的視覺版型']
+        },
+        {
+          icon: 'briefcase',
+          title: '婚顧方案工具化',
+          desc: '把你的服務變成清楚的方案包，成交更容易。',
+          features: ['方案包組合建議', '交付物清單（新人看得懂）', '差異化賣點明確化', '案例素材規格化']
+        }
+      ];
+
+      const caseModules = [
+        '客製電子喜帖（風格可調）',
+        '婚禮資訊展示（時間／地點／流程）',
+        '賓客祝福留言（婚禮前後皆可）',
+        '即時留言輪播（適合現場大螢幕）',
+        '婚禮照片展示（回憶可保存）'
+      ];
+
+      const advantages = [
+        { item: '賓客資訊與婚禮資訊一致性', old: '多份訊息 + 多份檔案版本', new: '一個入口，一份最新資訊', note: '降低「問來問去」造成的時間成本與錯誤風險' },
+        { item: '新人感知價值', old: '看不到差異，只覺得你很忙', new: '看得到的交付物與體驗', note: '新人更容易理解你的價值，成交阻力更小' },
+        { item: '婚禮現場氛圍', old: '多靠主持、流程節奏', new: '互動內容帶動參與', note: '留言牆與輪播讓賓客參與感更強、記憶點更高' },
+        { item: '品牌擴散', old: '婚禮結束，曝光就結束', new: '網站長期存在，可持續分享', note: '婚禮後仍能被分享，帶來自然口碑與詢問' }
+      ];
+
+      const payoffCards = [
+        {
+          icon: 'sparkles',
+          title: '更好賣：方案差異更清楚',
+          desc: '當你的服務有「看得見」的交付物，新人更容易理解價值，也更願意選擇升級。',
+          bullets: ['把數位體驗做成升級包', '價差有理由、差異有形狀', '成交更聚焦、不必靠嘴巴說']
+        },
+        {
+          icon: 'shield-check',
+          title: '更穩：交付品質更一致',
+          desc: '避免每一場婚禮都像重新開發一次。用一致的交付節奏，把意外變少。',
+          bullets: ['資訊統一，減少版本風險', '交付物規格化，品質更穩定', '團隊協作更順，壓力更小']
+        },
+        {
+          icon: 'rocket',
+          title: '更有獨特性：體驗變成記憶點',
+          desc: '互動內容能讓婚禮從「漂亮」走向「難忘」。而難忘，是你真正的護城河。',
+          bullets: ['留言牆帶動參與感', '婚禮後回憶可保存', '自然分享帶來口碑與詢問']
+        }
+      ];
+
+      const packages = [
+        {
+          name: 'Classic｜婚禮互動網站',
+          badge: '入門特色',
+          desc: '把電子喜帖升級成專屬婚禮數位空間。',
+          features: ['客製視覺風格', '婚禮資訊頁（時間/地點/流程）', '照片與故事模組', '可分享網址（賓客一鍵開）']
+        },
+        {
+          name: 'Signature｜互動留言牆',
+          badge: '氛圍升級',
+          desc: '把祝福變成現場體驗，讓賓客參與進來。',
+          features: ['賓客留言入口', '現場留言輪播模板', '留言內容整理與保存', '可加婚禮後回憶頁']
+        },
+        {
+          name: 'Studio｜方案商品化（婚顧版）',
+          badge: '最強差異化',
+          desc: '把服務做成清楚的方案包，交付可複製、成交更有力。',
+          features: ['客制方案設計', '交付物清單與素材規格', '案例素材化（更好展示）', '可規劃升級路線（逐步加值）']
+        }
+      ];
+
+      const guardrails = [
+        '不需要推翻既有流程：先補強最痛的那一段',
+        '先交付可用成果：你能立刻拿去給新人、拿去賣',
+        '你保有品牌與風格：我們提供交付品質與數位能力',
+        '逐步擴充：每一步都是可量化、可感知的價值'
+      ];
+
+      const deploymentSteps = [
+        {
+          title: '流程診斷（30 分鐘）',
+          desc: '釐清你現在的服務流程、你最想強化的賣點、以及你最怕出錯的環節。',
+          deliverable: '一份「最適合你」的數位化組合建議（先做哪個、預期效益、素材需求）'
+        },
+        {
+          title: '方案設計（把獨特做出來）',
+          desc: '把數位能力包進你的服務方案：不是多做事情，而是把差異化做成可賣的升級包。',
+          deliverable: '方案包結構草案（Classic/Signature/Studio 等）＋每包交付物與賣點'
+        },
+        {
+          title: '原型建立（先交付一個成果）',
+          desc: '先做出能交付的婚禮互動網站或留言牆模組，讓你能開始展示與成交。',
+          deliverable: '可上線的互動網站（含必要內容模組）＋操作/素材清單'
+        },
+        {
+          title: '正式上線（讓它變成你的資產）',
+          desc: '把案例整理成「可展示、可複製」的素材，形成你的服務資產與口碑入口。',
+          deliverable: '案例展示素材規格（截圖/短片/一句話）＋下一步擴充路線建議'
+        }
+      ];
+
+      const faqs = [
+        {
+          q: '我已經有電子喜帖了，還需要嗎？',
+          hint: '差異在「互動與可交付性」。',
+          a: '如果你的喜帖只是資訊展示，那它很難形成差異化。我們更在意的是：你能不能把它變成可交付的體驗（留言牆/輪播/回憶保存），並且把這份能力包成你的升級方案。'
+        },
+        {
+          q: '會不會導入很麻煩、團隊學不會？',
+          hint: '我們的原則是：先做最有感的、最少負擔的。',
+          a: '不需要一次做完。我們會先交付你能立刻拿去給新人的成果，並且用清楚的素材清單與交付規格降低溝通成本。團隊只要照著做就能交付。'
+        },
+        {
+          q: '我想強調品牌風格與高端感，做得到嗎？',
+          hint: '可，這正是「客製化能力」的價值。',
+          a: '你不需要被模板綁住。我們可以用你的品牌語氣、視覺調性、服務定位去設計婚禮數位體驗，讓它看起來就是「你的作品」。'
+        },
+        {
+          q: '如果我想加上 RSVP / 更進階互動，可以嗎？',
+          hint: '可以，且適合做成升級包。',
+          a: '完全可以。更進階功能非常適合拿來做「價差」與「升級包」。你現在的案例沒有 RSVP 也沒關係，反而讓你有空間把下一版做成更明確的加值。'
+        }
+      ];
+
+      const openFAQs = ref([false, false, false, false]);
+
+      const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xblyjogo';
+
+      // Lead form
+      const lead = ref({
+        name: '',
+        role: '婚禮顧問 / 婚禮公司',
+        contact: '',
+        needs: [],
+        note: ''
+      });
+
+      const leadOptions = [
+        '婚禮互動網站（品牌化）',
+        '留言牆 / 跨屏輪播（氛圍升級）',
+        '把服務包成方案（更好賣）',
+        '下一版要加的功能規劃'
+      ];
+
+      const toast = ref({ show: false, message: '', type: 'success' });
+      const isSubmitting = ref(false);
+
+      const toggleNeed = (opt) => {
+        const i = lead.value.needs.indexOf(opt);
+        if (i >= 0) lead.value.needs.splice(i, 1);
+        else lead.value.needs.push(opt);
+        refreshIconsSoon();
+      };
+
+      const openLead = (src) => {
+        // For now just scroll to contact and prefill note
+        scrollTo('contact');
+        if (!lead.value.note) {
+          lead.value.note = `我想了解合作方式（來源：${src}）。我最在意的是：`;
+        }
+        refreshIconsSoon();
+      };
+
+      const submitLead = async () => {
+        if (isSubmitting.value) return;
+
+        const name = lead.value.name.trim();
+        const contact = lead.value.contact.trim();
+
+        if (!name || !contact) {
+          toast.value = {
+            show: true,
+            type: 'error',
+            message: '請先填寫姓名與聯絡方式。'
+          };
+          refreshIconsSoon();
+          return;
+        }
+
+        isSubmitting.value = true;
+        toast.value.show = false;
+        refreshIconsSoon();
+
+        const payload = new FormData();
+        payload.append('name', name);
+        payload.append('contact', contact);
+        payload.append('role', lead.value.role);
+        payload.append('needs', lead.value.needs.join('、') || '未填寫');
+        payload.append('note', lead.value.note.trim() || '未填寫');
+        payload.append('subject', `[Wedding Digital] 預約交流 - ${lead.value.role}`);
+        payload.append(
+          'message',
+          `姓名：${name}\n身份：${lead.value.role}\n聯絡方式：${contact}\n優先項目：${lead.value.needs.join('、') || '未填寫'}\n現況 / 目標：${lead.value.note.trim() || '未填寫'}`
+        );
+        payload.append('source_page', 'wedding_digital.html');
+
+        try {
+          const response = await fetch(FORMSPREE_ENDPOINT, {
+            method: 'POST',
+            body: payload,
+            headers: { Accept: 'application/json' }
+          });
+
+          if (response.ok) {
+            toast.value = {
+              show: true,
+              type: 'success',
+              message: '已收到你的預約需求，我們會盡快與你聯繫。'
+            };
+            lead.value = {
+              name: '',
+              role: '婚禮顧問 / 婚禮公司',
+              contact: '',
+              needs: [],
+              note: ''
+            };
+          } else {
+            let errorMessage = '送出失敗，請稍後再試。';
+            try {
+              const data = await response.json();
+              if (data?.error) errorMessage = data.error;
+              else if (Array.isArray(data?.errors) && data.errors[0]?.message) {
+                errorMessage = data.errors[0].message;
+              }
+            } catch (e) {}
+
+            toast.value = {
+              show: true,
+              type: 'error',
+              message: errorMessage
+            };
+          }
+        } catch (e) {
+          toast.value = {
+            show: true,
+            type: 'error',
+            message: '網路連線不穩，請稍後再試。'
+          };
+        } finally {
+          isSubmitting.value = false;
+          refreshIconsSoon();
+          setTimeout(() => {
+            toast.value.show = false;
+            refreshIconsSoon();
+          }, 5200);
+        }
+      };
+
+      const toggleFAQ = (idx) => {
+        openFAQs.value[idx] = !openFAQs.value[idx];
+        refreshIconsSoon();
+      };
+
+      const scrollTo = (id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (mobileMenu.value) mobileMenu.value = false;
+        refreshIconsSoon();
+      };
+
+      const handleScroll = () => {
+        isScrolled.value = window.scrollY > 18;
+        showStickyCTA.value = window.scrollY > 520;
+      };
+
+      const refreshIconsSoon = () => {
+        // lucide needs re-run when v-if/v-show toggles change DOM
+        nextTick(() => {
+          try { lucide.createIcons(); } catch (e) {}
+        });
+      };
+
+      onMounted(() => {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+        refreshIconsSoon();
+      });
+
+      onUnmounted(() => {
+        window.removeEventListener('scroll', handleScroll);
+      });
+
+      watch(mobileMenu, () => refreshIconsSoon());
+
+      return {
+        isScrolled,
+        mobileMenu,
+        showStickyCTA,
+
+        navLinks,
+        problems,
+        solutions,
+        capabilities,
+        caseModules,
+        advantages,
+        payoffCards,
+        packages,
+        guardrails,
+        deploymentSteps,
+        faqs,
+        openFAQs,
+
+        lead,
+        leadOptions,
+        toast,
+        isSubmitting,
+
+        toggleFAQ,
+        toggleNeed,
+        openLead,
+        submitLead,
+        scrollTo
+      };
+    }
+  };
+
+  createApp(App).mount('#app');
+</script>
+
+</body>
+</html>
