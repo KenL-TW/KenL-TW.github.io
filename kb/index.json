@@ -1,6 +1,6 @@
 {
   "version": "kb-index-v2",
-  "generated_at": "2026-02-18",
+  "generated_at": "2026-03-08",
   "source": "https://kenl-tw.github.io/",
   "chunks": [
     {
@@ -8,189 +8,396 @@
       "chunk_id": "start-here#0001",
       "title": "KB 起始導覽與維護節奏",
       "text": "知識庫提供網站導覽、專案摘要、履歷重點與常見問答。建議閱讀順序為 About、Skills、Projects、Resume、FAQ。每次新增內容後，需同步更新 kb/index.json 與 sitemap.xml。",
-      "tags": ["kb", "guide", "governance"]
+      "tags": [
+        "kb",
+        "guide",
+        "governance"
+      ]
     },
     {
       "path": "kb/docs/01_about-ken.md",
       "chunk_id": "about#0001",
       "title": "關於 Ken：定位與工作風格",
       "text": "Ken 是數位轉型系統分析師，專長是把商業需求轉成可落地、可驗收、可維運的系統方案。工作風格重視目標釐清、邊界管理、文件化與跨部門協作。",
-      "tags": ["about", "positioning", "system-analysis"]
+      "tags": [
+        "about",
+        "positioning",
+        "system-analysis"
+      ]
     },
     {
       "path": "kb/docs/02_skills.md",
       "chunk_id": "skills#matrix-0001",
       "title": "技能矩陣與能力轉化",
       "text": "技能矩陣包含 English 90%、IT 專案管理 80%、AI 應用與自動化 70%、Python 60%、系統文件與流程圖 80%、系統分析 75%。核心價值為將技能轉化為可交付成果。",
-      "tags": ["skills", "matrix", "delivery"]
+      "tags": [
+        "skills",
+        "matrix",
+        "delivery"
+      ]
     },
     {
       "path": "kb/docs/03_certifications.md",
       "chunk_id": "certs#0001",
       "title": "專業證照與能力對應",
       "text": "Ken 擁有 AWS Solutions Architect Associate、PMP、AWS AI Practitioner、AWS Cloud Practitioner 與 TOEIC 935。證照組合反映技術、管理與溝通的跨域能力。",
-      "tags": ["certifications", "aws", "pmp", "english"]
+      "tags": [
+        "certifications",
+        "aws",
+        "pmp",
+        "english"
+      ]
     },
     {
       "path": "kb/docs/03_contact.md",
       "chunk_id": "contact#0001",
       "title": "聯絡方式與合作主題",
       "text": "聯絡方式為 kenliao.applicant@gmail.com。合作主題包含系統分析、AI 工具導入、流程優化與專案管理。",
-      "tags": ["contact", "service", "collaboration"]
+      "tags": [
+        "contact",
+        "service",
+        "collaboration"
+      ]
     },
     {
       "path": "kb/docs/04_projects.md",
       "chunk_id": "docs-projects-entry#0001",
       "title": "專案入口導覽",
       "text": "專案入口整合 projects_overview、案例彙整與重點專案，提供一致的閱讀順序與快速導覽。",
-      "tags": ["docs", "projects", "entry"]
+      "tags": [
+        "docs",
+        "projects",
+        "entry"
+      ]
     },
     {
       "path": "kb/docs/05_resume.md",
       "chunk_id": "docs-resume-entry#0001",
       "title": "履歷入口導覽",
       "text": "履歷入口聚合摘要、完整履歷、成果亮點與技能矩陣，適合面試與查核情境快速切換。",
-      "tags": ["docs", "resume", "entry"]
+      "tags": [
+        "docs",
+        "resume",
+        "entry"
+      ]
     },
     {
       "path": "kb/docs/06_architecture.md",
       "chunk_id": "docs-architecture-entry#0001",
       "title": "架構入口導覽",
       "text": "架構入口連結 arch_overview 與 archi_agent，協助先理解資料流再理解設計策略。",
-      "tags": ["docs", "architecture", "entry"]
+      "tags": [
+        "docs",
+        "architecture",
+        "entry"
+      ]
     },
     {
       "path": "kb/docs/07_agent-governance.md",
       "chunk_id": "docs-agent-governance-entry#0001",
       "title": "Agent 規範入口",
       "text": "Agent 規範入口整合回覆政策、路由規則與維運規範，確保回答一致與可維護。",
-      "tags": ["docs", "agent", "governance"]
+      "tags": [
+        "docs",
+        "agent",
+        "governance"
+      ]
     },
     {
       "path": "kb/docs/10_faq.md",
       "chunk_id": "faq#0001",
       "title": "FAQ：服務範圍與工具問題",
       "text": "FAQ 涵蓋 Ken 的職能定位、服務類型、常用技術與 PDF Free Sign Editor 使用問題。PDF 工具採前端處理，不需上傳後端即可完成簽章與匯出。",
-      "tags": ["faq", "service", "pdf-tool"]
+      "tags": [
+        "faq",
+        "service",
+        "pdf-tool"
+      ]
     },
     {
       "path": "kb/docs/11_site-map.md",
       "chunk_id": "site-map#0001",
       "title": "知識庫地圖與導覽路線",
       "text": "網站地圖提供起手閱讀順序與內容分區，包含專案區、架構與規範、履歷區。專案區已納入 AI Business Analyzer、PDF Free Sign Editor 與 Archi Agent。",
-      "tags": ["site", "map", "navigation"]
+      "tags": [
+        "site",
+        "map",
+        "navigation"
+      ]
     },
     {
       "path": "kb/docs/12_glossary.md",
       "chunk_id": "glossary#0001",
       "title": "關鍵詞彙表",
       "text": "詞彙表定義 SA、SOW、Serverless、KB-first、Tool-first、Deterministic Retrieval、Guard 與 PDF Sign Editor 等術語，降低跨團隊理解落差。",
-      "tags": ["glossary", "terms", "knowledge"]
+      "tags": [
+        "glossary",
+        "terms",
+        "knowledge"
+      ]
     },
     {
       "path": "kb/docs/quickstart.md",
       "chunk_id": "quickstart#0001",
       "title": "快速開始",
       "text": "快速開始說明如何開啟聊天、提出問題與理解回覆引用。系統優先根據知識庫內容回答，資料不足時會明確告知。",
-      "tags": ["guide", "quickstart", "chat"]
+      "tags": [
+        "guide",
+        "quickstart",
+        "chat"
+      ]
     },
     {
       "path": "kb/docs/agent_policy.md",
       "chunk_id": "agent-policy#0001",
       "title": "Agent 回覆政策",
       "text": "Policy 定義不捏造、可追溯、身分一致三大原則，並規範 GUIDE、CHAT、STRICT 三種模式與禁止回答範圍。",
-      "tags": ["agent", "policy", "governance"]
+      "tags": [
+        "agent",
+        "policy",
+        "governance"
+      ]
     },
     {
       "path": "kb/docs/agent-routing.md",
       "chunk_id": "agent-routing#0001",
       "title": "Agent 路由規則",
       "text": "Routing 規範模式切換條件、工具啟用策略與資料不足處理流程。履歷與量化查核預設進入 STRICT。",
-      "tags": ["agent", "routing", "strict"]
+      "tags": [
+        "agent",
+        "routing",
+        "strict"
+      ]
     },
     {
       "path": "kb/docs/13_kb-maintenance.md",
       "chunk_id": "kb-maintenance#0001",
       "title": "知識庫維運規範",
       "text": "維運規範定義更新觸發、標準流程、命名規則與檢查清單，確保 markdown、index 與 sitemap 長期一致。",
-      "tags": ["kb", "maintenance", "operations"]
+      "tags": [
+        "kb",
+        "maintenance",
+        "operations"
+      ]
     },
     {
       "path": "kb/projects/projects_overview.md",
       "chunk_id": "projects#overview-0001",
       "title": "專案總覽",
       "text": "重點專案包含 AI 市場分析系統、Archi 可驗證導覽型 Agent、STRATOS PM 與 PDF Free Sign Editor，涵蓋 AI、系統分析與前端互動工具。",
-      "tags": ["projects", "overview", "portfolio"]
+      "tags": [
+        "projects",
+        "overview",
+        "portfolio"
+      ]
     },
     {
       "path": "kb/projects/p_ai_business_analyzer.md",
       "chunk_id": "projects#ai-business-analyzer-0001",
       "title": "AI Business Analyzer：問題與方案",
       "text": "AI Business Analyzer 透過 API Gateway、Lambda、OpenAI 與 Chart.js，快速輸出市場摘要、成長趨勢、SWOT 與競品比較，降低市場研究成本。",
-      "tags": ["projects", "ai", "serverless", "market-research"]
+      "tags": [
+        "projects",
+        "ai",
+        "serverless",
+        "market-research"
+      ]
     },
     {
       "path": "kb/projects/p_pdf_free_sign_editor.md",
       "chunk_id": "projects#pdf-free-sign-editor-0001",
       "title": "PDF Free Sign Editor：核心功能",
       "text": "PDF Free Sign Editor 支援上傳 PDF、印章、手寫簽名、文字與框線，並可調整透明度、旋轉、顏色與粗細，最終匯出新 PDF。",
-      "tags": ["projects", "pdf", "esign", "frontend-tool"]
+      "tags": [
+        "projects",
+        "pdf",
+        "esign",
+        "frontend-tool"
+      ]
     },
     {
       "path": "kb/projects/p_pdf_free_sign_editor.md",
       "chunk_id": "projects#pdf-free-sign-editor-0002",
       "title": "PDF Free Sign Editor：隱私與限制",
       "text": "工具採瀏覽器端處理模式，編輯流程不依賴後端儲存。限制為大型檔案可能受瀏覽器記憶體影響，且預設需連線 CDN 載入函式庫。",
-      "tags": ["projects", "pdf", "privacy", "constraints"]
+      "tags": [
+        "projects",
+        "pdf",
+        "privacy",
+        "constraints"
+      ]
     },
     {
       "path": "kb/projects/archi_agent.md",
       "chunk_id": "archi-agent#positioning",
       "title": "Archi Agent：定位與原則",
       "text": "Archi 是導覽型 KB-first Agent，採 Tool-first 與 Deterministic Retrieval，強調可驗證內容優先於自由生成。",
-      "tags": ["agent", "kb-first", "tool-first"]
+      "tags": [
+        "agent",
+        "kb-first",
+        "tool-first"
+      ]
     },
     {
       "path": "kb/architecture/arch_overview.md",
       "chunk_id": "arch-overview#flow",
       "title": "Archi 架構流程",
       "text": "整體流程為 Browser → Lambda → DynamoDB/GitHub KB → OpenAI → Guard → Writeback，記憶層只提供上下文，不作為事實來源。",
-      "tags": ["architecture", "flow", "serverless"]
+      "tags": [
+        "architecture",
+        "flow",
+        "serverless"
+      ]
     },
     {
       "path": "kb/resume/resume_summary.md",
       "chunk_id": "resume#summary-0001",
       "title": "履歷摘要",
       "text": "履歷摘要聚焦於系統分析、專案管理、AI 應用與跨部門協作成果，對應網站主要專案與實務經驗。",
-      "tags": ["resume", "summary", "career"]
+      "tags": [
+        "resume",
+        "summary",
+        "career"
+      ]
     },
     {
       "path": "kb/resume/skills_matrix.md",
       "chunk_id": "resume#skills-matrix-0001",
       "title": "履歷技能矩陣",
       "text": "技能矩陣文件提供語言、技術與分析能力的結構化整理，作為職能對照與專案分工參考。",
-      "tags": ["resume", "skills", "matrix"]
+      "tags": [
+        "resume",
+        "skills",
+        "matrix"
+      ]
     },
     {
       "path": "kb/projects/case_studies.md",
       "chunk_id": "projects#case-studies-0001",
       "title": "案例摘要：AI 分析、PM 工具與 PDF 簽章",
       "text": "案例文件整理 AI Business Analyzer、STRATOS PM 與 PDF Free Sign Editor 的目標、做法與結果，作為導覽與面試說明的快速入口。",
-      "tags": ["projects", "cases", "portfolio"]
+      "tags": [
+        "projects",
+        "cases",
+        "portfolio"
+      ]
     },
     {
       "path": "kb/resume/resume_full.md",
       "chunk_id": "resume#full-0001",
       "title": "完整履歷：經歷與技能",
       "text": "完整履歷收錄工作經歷、職務責任、教育背景與技術工具，並對應到主要專案文件，方便查核與交叉閱讀。",
-      "tags": ["resume", "full", "experience"]
+      "tags": [
+        "resume",
+        "full",
+        "experience"
+      ]
     },
     {
       "path": "kb/resume/achievements.md",
       "chunk_id": "resume#achievements-0001",
       "title": "成果亮點",
       "text": "成果亮點聚焦於需求到交付流程優化、跨部門協作效率提升，以及 AI 與前端工具實作在實務場景的應用價值。",
-      "tags": ["resume", "achievements", "impact"]
+      "tags": [
+        "resume",
+        "achievements",
+        "impact"
+      ]
+    },
+    {
+      "path": "kb/projects/p_a2a_mcp.md",
+      "chunk_id": "projects#a2a-mcp-0001",
+      "title": "從影片到實戰：我怎麼理解 A2A 與 MCP 在 AI Agent 架構中的角色（第二版）",
+      "text": "從技術分享、產品設計與實務應用角度，深度拆解 A2A 與 MCP 的差異、關係與落地方式。 文章聚焦 從影片到實戰：我怎麼理解 A2A 與 MCP 在 AI Agent 架構中的角色（第二版），可透過原文連結查看完整內容。",
+      "tags": [
+        "blog",
+        "ai",
+        "agent",
+        "mcp",
+        "a2a",
+        "architecture"
+      ]
+    },
+    {
+      "path": "kb/projects/p_hello_world.md",
+      "chunk_id": "projects#hello-world-0001",
+      "title": "從零打造個人部落格（純前端架構）",
+      "text": "純 HTML + JS + GitHub Pages，輕巧可維護。 文章聚焦 從零打造個人部落格（純前端架構），可透過原文連結查看完整內容。",
+      "tags": [
+        "blog",
+        "web",
+        "portfolio"
+      ]
+    },
+    {
+      "path": "kb/projects/p_system_analysis.md",
+      "chunk_id": "projects#system-analysis-0001",
+      "title": "系統分析師的思維與方法論",
+      "text": "需求、架構與交付之間的平衡術。 文章聚焦 系統分析師的思維與方法論，可透過原文連結查看完整內容。",
+      "tags": [
+        "blog",
+        "analysis",
+        "career"
+      ]
+    },
+    {
+      "path": "kb/projects/p_network_attack.md",
+      "chunk_id": "projects#network-attack-0001",
+      "title": "網路攻擊視覺化分享",
+      "text": "用動畫拆解 SQLi 與 XSS。 文章聚焦 網路攻擊視覺化分享，可透過原文連結查看完整內容。",
+      "tags": [
+        "blog",
+        "tutorials",
+        "security"
+      ]
+    },
+    {
+      "path": "kb/projects/p_aws_serverless.md",
+      "chunk_id": "projects#aws-serverless-0001",
+      "title": "AWS 架構視覺化：Serverless",
+      "text": "事件驅動與雲端原生的設計心法。 文章聚焦 AWS 架構視覺化：Serverless，可透過原文連結查看完整內容。",
+      "tags": [
+        "blog",
+        "tutorials",
+        "aws",
+        "architecture"
+      ]
+    },
+    {
+      "path": "kb/projects/p_api.md",
+      "chunk_id": "projects#api-0001",
+      "title": "API 設計與 OSI 的對位",
+      "text": "從用例到契約，從層到責任。 文章聚焦 API 設計與 OSI 的對位，可透過原文連結查看完整內容。",
+      "tags": [
+        "blog",
+        "tutorials",
+        "api",
+        "networking"
+      ]
+    },
+    {
+      "path": "kb/projects/p_ai_modal.md",
+      "chunk_id": "projects#ai-modal-0001",
+      "title": "AI 模型與提示工程：實用上手",
+      "text": "以專案視角快速導入 AI 能力。 文章聚焦 AI 模型與提示工程：實用上手，可透過原文連結查看完整內容。",
+      "tags": [
+        "blog",
+        "ai",
+        "prompting",
+        "tutorials"
+      ]
+    },
+    {
+      "path": "kb/projects/p_ngrok.md",
+      "chunk_id": "projects#ngrok-0001",
+      "title": "用 ngrok 快速公開本地服務",
+      "text": "本地端開發對外展示、Webhooks 測試超方便。 文章聚焦 用 ngrok 快速公開本地服務，可透過原文連結查看完整內容。",
+      "tags": [
+        "blog",
+        "devtool",
+        "networking",
+        "tutorials"
+      ]
     }
   ]
 }

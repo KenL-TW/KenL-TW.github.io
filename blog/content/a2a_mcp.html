@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>從影片到實戰：我怎麼理解 A2A 與 MCP 在 AI Agent 架構中的角色（第二版） | Ken Liao</title>
+  <meta name="description" content="從技術分享、產品設計與實務應用角度，深度拆解 A2A 與 MCP 的差異、關係、架構位置、落地方式與產品化思維。" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #121936;
+      --panel: rgba(18, 25, 54, 0.78);
+      --panel-2: rgba(255, 255, 255, 0.04);
+      --text: #eaf0ff;
+      --muted: #a8b3cf;
+      --line: rgba(255, 255, 255, 0.10);
+      --brand: #7c9cff;
+      --brand-2: #66e0c2;
+      --brand-3: #9f7cff;
+      --warn: #ffd166;
+      --danger: #ff8c8c;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      --radius: 24px;
+      --radius-sm: 16px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Inter", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(124, 156, 255, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(102, 224, 194, 0.12), transparent 26%),
+        radial-gradient(circle at center right, rgba(159, 124, 255, 0.10), transparent 24%),
+        linear-gradient(180deg, #070b16 0%, #0b1020 42%, #0e1427 100%);
+      line-height: 1.9;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    .container {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(7, 11, 22, 0.72);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #06101f;
+      font-weight: 900;
+      box-shadow: var(--shadow);
+    }
+
+    .nav {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a {
+      padding: 10px 14px;
+      color: var(--muted);
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: 0.2s ease;
+      font-size: 14px;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      border-color: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .hero {
+      padding: 72px 0 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.18fr 0.82fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .panel,
+    .diagram-card,
+    .table-wrap,
+    .quote-card,
+    .case-card,
+    .note-card,
+    .toc,
+    .insight-card,
+    .summary-card,
+    .callout-grid > article,
+    .timeline,
+    .stack-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
+
+    .hero-card {
+      padding: 38px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -80px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,156,255,0.22), transparent 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(124, 156, 255, 0.12);
+      color: #dbe5ff;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: 1px solid rgba(124,156,255,0.22);
+      margin-bottom: 18px;
+    }
+
+    h1, h2, h3, h4 {
+      line-height: 1.25;
+      margin: 0 0 14px;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: clamp(36px, 5vw, 60px);
+      max-width: 12ch;
+    }
+
+    h2 { font-size: clamp(28px, 3vw, 38px); margin-bottom: 18px; }
+    h3 { font-size: 22px; }
+    h4 { font-size: 18px; }
+
+    .lead {
+      color: #d6def8;
+      font-size: 18px;
+      max-width: 64ch;
+      margin-bottom: 22px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #dce4ff;
+      font-size: 13px;
+    }
+
+    .summary-card {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .summary-card ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .summary-card li + li { margin-top: 8px; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      background: var(--panel-2);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .metric .value {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 28px;
+      margin-top: 22px;
+      padding-bottom: 72px;
+    }
+
+    .toc {
+      position: sticky;
+      top: 84px;
+      align-self: start;
+      padding: 22px;
+    }
+
+    .toc h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .toc a {
+      display: block;
+      padding: 10px 12px;
+      color: var(--muted);
+      border-radius: 12px;
+      transition: 0.2s ease;
+      font-size: 14px;
+    }
+
+    .toc a:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .article {
+      display: grid;
+      gap: 24px;
+    }
+
+    .panel {
+      padding: 32px;
+    }
+
+    .panel p,
+    .panel li,
+    .quote-card p,
+    .note-card p,
+    .case-card p,
+    .timeline p,
+    .stack-card p,
+    .callout-grid p {
+      color: #d8e0f8;
+      margin-top: 0;
+    }
+
+    .panel ul, .panel ol {
+      padding-left: 22px;
+      color: #d8e0f8;
+      margin-top: 0;
+    }
+
+    .muted { color: var(--muted); }
+    .highlight { color: #ffffff; font-weight: 700; }
+    .brand-text { color: var(--brand-2); font-weight: 700; }
+    .danger-text { color: #ffd0d0; font-weight: 700; }
+
+    .insight-card {
+      padding: 22px;
+      border-left: 4px solid var(--brand-2);
+      background: linear-gradient(180deg, rgba(102,224,194,0.12), rgba(255,255,255,0.02));
+    }
+
+    .insight-card p:last-child,
+    .panel p:last-child,
+    .quote-card p:last-child,
+    .case-card p:last-child,
+    .note-card p:last-child,
+    .timeline p:last-child,
+    .stack-card p:last-child,
+    .callout-grid p:last-child { margin-bottom: 0; }
+
+    .diagram-card { padding: 26px; }
+
+    .diagram-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .diagram-tag {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--brand-2);
+    }
+
+    .flow {
+      display: grid;
+      gap: 18px;
+      padding: 10px 0 6px;
+    }
+
+    .flow.center { justify-items: center; }
+
+    .node {
+      min-width: 180px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      text-align: center;
+      position: relative;
+    }
+
+    .node strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .node span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .arrow {
+      width: 2px;
+      height: 26px;
+      background: linear-gradient(180deg, rgba(124,156,255,0.3), rgba(102,224,194,0.9));
+      border-radius: 999px;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    .arrow::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -2px;
+      transform: translateX(-50%) rotate(45deg);
+      width: 10px;
+      height: 10px;
+      border-right: 2px solid var(--brand-2);
+      border-bottom: 2px solid var(--brand-2);
+      background: transparent;
+    }
+
+    .row-2, .row-3, .row-4 {
+      display: grid;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .row-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .row-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .connector-label {
+      text-align: center;
+      font-size: 13px;
+      color: var(--brand-2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .compare-grid, .callout-grid, .stack-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .compare-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .callout-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .stack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .compare-card,
+    .stack-card,
+    .callout-grid > article {
+      padding: 22px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .compare-card h3,
+    .stack-card h3,
+    .callout-grid h3 { margin-bottom: 10px; }
+
+    .compare-card ul,
+    .stack-card ul,
+    .callout-grid ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .table-wrap { overflow: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      vertical-align: top;
+    }
+
+    th {
+      color: #ffffff;
+      font-size: 14px;
+      background: rgba(255,255,255,0.04);
+    }
+
+    td {
+      color: #d7def5;
+      font-size: 15px;
+    }
+
+    .quote-card {
+      padding: 28px;
+      position: relative;
+      background: linear-gradient(180deg, rgba(124,156,255,0.14), rgba(255,255,255,0.03));
+    }
+
+    .quote-mark {
+      font-size: 60px;
+      line-height: 1;
+      color: rgba(255,255,255,0.15);
+      position: absolute;
+      top: 14px;
+      left: 20px;
+      font-weight: 900;
+    }
+
+    .quote-card p {
+      position: relative;
+      padding-left: 22px;
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .case-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .case-card {
+      padding: 22px;
+      height: 100%;
+    }
+
+    .case-card .badge,
+    .note-card .badge,
+    .timeline .badge,
+    .stack-card .badge {
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(102,224,194,0.12);
+      border: 1px solid rgba(102,224,194,0.2);
+      color: #d7fff5;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .note-card {
+      padding: 22px;
+      background: linear-gradient(180deg, rgba(255,209,102,0.12), rgba(255,255,255,0.02));
+      border-left: 4px solid var(--warn);
+    }
+
+    .timeline {
+      padding: 24px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 18px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-step {
+      color: var(--brand-2);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 13px;
+      padding-top: 4px;
+    }
+
+    .footer-cta {
+      margin: 24px 0 72px;
+      padding: 34px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, rgba(124,156,255,0.18), rgba(102,224,194,0.12));
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: var(--shadow);
+    }
+
+    .footer-cta p {
+      color: #deebff;
+      max-width: 68ch;
+    }
+
+    .footer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .footer-meta span {
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: #ecf4ff;
+      font-size: 13px;
+    }
+
+    .site-footer {
+      padding: 24px 0 56px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .small { font-size: 13px; }
+
+    .article-figure {
+      margin: 22px 0;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .article-figure img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .article-figure figcaption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.01em;
+    }
+
+    .visual-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .visual-grid .article-figure {
+      margin: 0;
+      height: 100%;
+    }
+
+    @media (max-width: 1024px) {
+      .hero-grid,
+      .layout,
+      .case-grid,
+      .compare-grid,
+      .callout-grid,
+      .stack-grid,
+      .visual-grid,
+      .row-4,
+      .row-3,
+      .row-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .toc { position: static; }
+      h1 { max-width: none; }
+      .timeline-item { grid-template-columns: 1fr; gap: 8px; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-card,
+      .summary-card,
+      .panel,
+      .diagram-card,
+      .quote-card,
+      .case-card,
+      .note-card,
+      .toc,
+      .footer-cta,
+      .timeline,
+      .stack-card,
+      .callout-grid > article {
+        padding: 22px;
+        border-radius: 22px;
+      }
+
+      .topbar-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .meta,
+      .pill-group,
+      .footer-meta,
+      .nav {
+        gap: 8px;
+      }
+
+      .lead { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="#top" class="brand">
+        <span class="brand-badge">KL</span>
+        <span>Ken Liao · 技術實戰筆記</span>
+      </a>
+      <nav class="nav">
+        <a href="#intro">導讀</a>
+        <a href="#mcp">MCP</a>
+        <a href="#a2a">A2A</a>
+        <a href="#blueprint">藍圖</a>
+        <a href="#practice">實務</a>
+        <a href="#conclusion">結論</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <article class="hero-card">
+          <div class="eyebrow">AI Agent · MCP · A2A · Product Architecture</div>
+          <h1>從影片到實戰：我怎麼理解 A2A 與 MCP 在 AI Agent 架構中的角色</h1>
+          <p class="lead">
+            這篇文章不是要把 <span class="highlight">A2A</span> 與 <span class="highlight">MCP</span> 再重複翻成中文一次，而是試著從 <span class="brand-text">技術分享、產品設計與實務落地</span> 的角度，重新拆解它們各自在解什麼問題、為什麼會在這個時間點變重要，以及當我們真的要把 AI Agent 放進真實業務流程時，這兩層設計應該怎麼被安排進系統裡。
+          </p>
+          <p class="lead">
+            簡單說，這不是一篇「名詞解釋文」，而是一篇「<strong>把名詞轉成架構，再把架構轉成可交付方案</strong>」的實戰型思考整理。
+          </p>
+          <figure class="article-figure">
+            <img src="../../assets/img/blog/a2a_mcp.png" alt="A2A 與 MCP 架構主視覺" loading="eager" width="1200" height="675">
+            <figcaption>主題視覺：從單一 Agent 走向多 Agent 協作與工具接入分層。</figcaption>
+          </figure>
+          <div class="meta">
+            <span>作者：Ken Liao</span>
+            <span>版本：V2 深化版</span>
+            <span>文章定位：技術分享 × 架構拆解 × 產品化思維</span>
+          </div>
+          <div class="pill-group">
+            <span class="pill">AI Agent</span>
+            <span class="pill">System Design</span>
+            <span class="pill">Automation</span>
+            <span class="pill">Product Thinking</span>
+            <span class="pill">Applied Architecture</span>
+          </div>
+        </article>
+
+        <aside class="summary-card">
+          <div>
+            <h3>這篇文章會帶你看到什麼</h3>
+            <p class="muted">如果先看摘要，整篇的核心可以先記住下面幾件事。</p>
+          </div>
+          <ul>
+            <li><strong>MCP</strong> 的核心不是炫，而是讓 <strong>Agent 連工具</strong> 這件事變得有秩序、可替換、可擴充。</li>
+            <li><strong>A2A</strong> 的核心不是多，而是讓 <strong>Agent 彼此分工</strong> 這件事變得清楚、可編排、可維護。</li>
+            <li>當 AI 系統從單點能力走向多步驟流程時，<strong>工具層</strong> 與 <strong>協作層</strong> 必須拆開設計。</li>
+            <li>真正能長成產品的 Agent，不只是會回話，而是能接上工具、拆解角色、維持流程與持續演進。</li>
+          </ul>
+          <div class="summary-grid">
+            <div class="metric">
+              <div class="label">文章深度</div>
+              <div class="value">概念 × 架構 × 落地</div>
+            </div>
+            <div class="metric">
+              <div class="label">適合讀者</div>
+              <div class="value">SA / PO / Builder</div>
+            </div>
+            <div class="metric">
+              <div class="label">閱讀收益</div>
+              <div class="value">看懂差異與整合</div>
+            </div>
+            <div class="metric">
+              <div class="label">文章重點</div>
+              <div class="value">從 Demo 走向產品</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="container layout">
+      <aside class="toc">
+        <h3>文章目錄</h3>
+        <a href="#intro">01. 為什麼現在的 AI Agent 很容易卡住</a>
+        <a href="#mcp">02. MCP：工具接入層真正解的是什麼</a>
+        <a href="#a2a">03. A2A：多 Agent 協作不是多開 prompt</a>
+        <a href="#compare">04. MCP 與 A2A 的差異與互補</a>
+        <a href="#blueprint">05. 把兩者放進同一張架構藍圖</a>
+        <a href="#stack">06. 我會怎麼放進 AI 產品技術棧</a>
+        <a href="#practice">07. 實務應用：LINE / 顧問 / Lead 管理</a>
+        <a href="#pitfalls">08. 落地時最容易踩的坑</a>
+        <a href="#observation">09. 我的觀察與判斷</a>
+        <a href="#conclusion">10. 結論</a>
+      </aside>
+
+      <article class="article">
+        <section id="intro" class="panel">
+          <h2>為什麼現在的 AI Agent 很容易卡住</h2>
+          <p>
+            現在市場上很多人都在談 AI Agent，但如果我們把外層包裝先撥開一點，就會發現多數討論其實還停留在「這個模型能不能幫我多做幾件事」。於是大家開始讓它查資料、打 API、生成文案、排流程、做表單、回客服，看起來像是從聊天機器人進化成萬能數位員工。問題是，這種進化通常在 <strong>Demo 階段</strong> 很迷人，在 <strong>系統化交付階段</strong> 卻容易卡關。
+          </p>
+          <p>
+            為什麼？因為當系統開始真正碰到業務現場時，問題不再只是「模型能不能回答」，而是：<strong>它怎麼接工具、怎麼拿資料、怎麼在多個角色之間交棒、怎麼維持流程一致性、怎麼在功能持續增加的情況下還不崩掉</strong>。這些問題，不是多寫幾個 prompt 就會自然消失。很多時候，真正把產品拖垮的，不是模型智商，而是架構邏輯。
+          </p>
+          <p>
+            我自己會把這個問題拆成兩個方向來看。第一個方向是 <span class="brand-text">垂直能力接入</span>：Agent 到底如何存取外部世界，像是資料庫、CRM、Google Sheets、Calendar、Webhook、知識庫或內部系統。第二個方向是 <span class="brand-text">橫向角色協作</span>：當任務本身具備多步驟、多角色、多上下文的特性時，到底是同一個 Agent 什麼都扛，還是應該拆成多個職責清楚的 Agent 一起合作。
+          </p>
+          <p>
+            當這兩個問題被拆開後，A2A 與 MCP 的位置就清楚很多。<strong>MCP</strong> 比較接近第一類問題，它解的是 Agent 如何穩定接外部工具；<strong>A2A</strong> 比較接近第二類問題，它解的是 Agent 如何彼此協作。兩者看似都在談 Agent，但其實處理的是完全不同的設計面向。
+          </p>
+          <div class="insight-card">
+            <p>
+              很多團隊以為自己缺的是更強的模型，實際上缺的常常是更清楚的 <strong>系統分層</strong>。模型像引擎，架構才像底盤。底盤沒穩，馬力再大也只是比較快地晃。
+            </p>
+          </div>
+        </section>
+
+        <section class="quote-card">
+          <div class="quote-mark">“</div>
+          <p>
+            我現在更傾向把 A2A 與 MCP 視為 AI Agent 產品成熟度的兩個訊號：一個提醒你怎麼協作，一個提醒你怎麼接世界。
+          </p>
+        </section>
+
+        <section class="diagram-card">
+          <div class="diagram-title">
+            <div>
+              <div class="diagram-tag">Visual Snapshot</div>
+              <h3>文章快速導讀圖卡</h3>
+            </div>
+            <span class="muted small">Overview Cards</span>
+          </div>
+          <div class="visual-grid">
+            <figure class="article-figure">
+              <img src="../../assets/img/blog/a2a_mcp.png" alt="A2A 與 MCP 主題圖" loading="lazy" width="1200" height="675">
+              <figcaption>主題總覽：A2A 與 MCP 的分工與整合。</figcaption>
+            </figure>
+            <figure class="article-figure">
+              <img src="../../assets/img/blog/system-analysis.png" alt="系統分析思維示意圖" loading="lazy" width="1200" height="675">
+              <figcaption>分析視角：先做分層，再談功能擴充。</figcaption>
+            </figure>
+            <figure class="article-figure">
+              <img src="../../assets/img/blog/network-attack.png" alt="流程風險與治理示意圖" loading="lazy" width="1200" height="675">
+              <figcaption>落地重點：可觀測、可治理、可維護。</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section id="mcp" class="panel">
+          <h2>MCP：工具接入層真正解的是什麼</h2>
+          <p>
+            先講 MCP。很多人第一次看到這個詞時，很容易把它當成某種新框架、新 SDK，或者是另一種工具包裝方式。但如果把名詞上的霧吹掉，MCP 真正處理的其實是一個非常務實、甚至有點樸素的問題：<strong>Agent 要怎麼用一種一致的方式去存取外部工具與資料源</strong>。
+          </p>
+          <p>
+            這個問題之所以重要，是因為當我們真的開始做一個可落地的 Agent 產品時，工具數量一定會逐漸上升。一開始可能只是讀 Google Sheet，後來多了 CRM，再來又接行事曆、付款通知、DB 查詢、內部知識庫、ERP API、客服平台 webhook。每接一個能力，系統就多一條接線。如果每條接線都長得不一樣，最後整個 Agent 架構就會變成一個 <span class="danger-text">功能很多但無法治理的混合體</span>。
+          </p>
+          <p>
+            也就是說，MCP 不是在替 Agent 加超能力，而是在替 Agent 建立一層比較穩定的「能力接入口」。這個接入口的價值在於，它讓外部工具不再只是零散存在，而能開始被視為一組可管理、可暴露、可替換、可擴充的能力集合。
+          </p>
+
+          <div class="callout-grid">
+            <article>
+              <h3>從技術角度看</h3>
+              <p>它讓工具接入的方式比較一致，避免每個工具都像獨立宇宙，各講各的 schema、參數與回傳格式。</p>
+            </article>
+            <article>
+              <h3>從產品角度看</h3>
+              <p>它讓 Agent 的工具能力開始模組化，未來要替換、升級、擴充，路徑會比較清楚。</p>
+            </article>
+            <article>
+              <h3>從營運角度看</h3>
+              <p>它幫助團隊更容易管理權限、審計來源、能力暴露範圍與風險邊界，而不是全部綁死在一段神祕程式裡。</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="diagram-card">
+          <div class="diagram-title">
+            <div>
+              <div class="diagram-tag">Diagram 01</div>
+              <h3>MCP Tool Integration Diagram</h3>
+            </div>
+            <span class="muted small">Agent ↔ Tools / Data</span>
+          </div>
+          <div class="flow center">
+            <div class="node">
+              <strong>User Request</strong>
+              <span>查詢、執行、寫入、通知</span>
+            </div>
+            <div class="arrow"></div>
+            <div class="node">
+              <strong>Agent</strong>
+              <span>判斷任務與所需能力</span>
+            </div>
+            <div class="arrow"></div>
+            <div class="node">
+              <strong>MCP Layer</strong>
+              <span>統一工具存取方式與能力暴露</span>
+            </div>
+            <div class="arrow"></div>
+            <div class="row-4">
+              <div class="node"><strong>Google Sheets</strong><span>名單、表單、簡易追蹤</span></div>
+              <div class="node"><strong>CRM</strong><span>Lead / Customer / Pipeline</span></div>
+              <div class="node"><strong>Calendar</strong><span>預約、時段查詢、提醒</span></div>
+              <div class="node"><strong>Database / API</strong><span>結構化查詢與系統整合</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>MCP 在實務上到底解掉哪些痛點</h3>
+          <p>
+            這裡我想把話講得更接地氣一點。很多時候，一個 Agent 專案會在第二階段開始失速，不是因為功能做不到，而是因為一開始的工具接法太手工。每多一個功能，就多一段 hardcode；每換一個工具，就要重寫一片 logic；每增加一個客戶變體，就多一份 if-else 枝葉。最後整個系統變成一棵長得非常努力，但自己也快看不懂自己的樹。
+          </p>
+          <p>
+            MCP 思維的好處，是它迫使我們在比較早的階段就思考：這個 Agent 需要哪些可被穩定調用的能力？哪些能力屬於讀取、哪些屬於寫入、哪些需要權限控制、哪些要附帶審計記錄？這種思考雖然看起來不如生成式內容那麼 flashy，但它其實是產品能不能長期活下來的地基。
+          </p>
+          <div class="compare-grid">
+            <div class="compare-card">
+              <h3>沒有 MCP 思維時</h3>
+              <ul>
+                <li>每個工具接法都各自長大，最後無人敢動。</li>
+                <li>同一個 Agent 同時知道太多工具細節。</li>
+                <li>工具替換成本高，MVP 容易變成技術債母體。</li>
+                <li>一旦要做權限與風險控制，會開始痛苦地回頭補洞。</li>
+              </ul>
+            </div>
+            <div class="compare-card">
+              <h3>有 MCP 思維時</h3>
+              <ul>
+                <li>工具能力能被抽象成可管理模組。</li>
+                <li>Agent 比較像在呼叫能力，而不是直接把手伸進系統內臟。</li>
+                <li>從 MVP 到進階版的擴充路徑更自然。</li>
+                <li>更有機會建立審計、權限、風險控制與可觀測性。</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="a2a" class="panel">
+          <h2>A2A：多 Agent 協作不是多開幾個 Prompt，而是角色分工</h2>
+          <p>
+            如果 MCP 解的是 Agent 怎麼接外部能力，那 A2A 解的就是另一個同樣麻煩的問題：<strong>當任務本身複雜到不是單一步驟時，Agent 之間要怎麼合作</strong>。
+          </p>
+          <p>
+            這件事非常重要，因為多數真實業務流程都不是「問一句、答一句」就結束。比方說，使用者想在 LINE 上預約諮詢，看似只是聊天，實際上內部流程可能包含：辨識意圖、確認身份、查詢 7 天內可用時段、檢查是否已有預約、必要時變更或取消、同步 CRM、發送提醒、建立後續跟進任務。這整個過程，如果全部塞進單一 Agent，會變得很難測、很難維護，也很難追查哪一段出了問題。
+          </p>
+          <p>
+            A2A 提供的核心觀念，就是讓一個系統不必靠單一 Agent 硬扛全部，而是可以由一個 <strong>Orchestrator</strong> 去理解需求、拆出任務，再交給不同 <strong>Specialist Agents</strong> 完成各自擅長的部分。這裡的本質不是把模型複製三份，而是把 <span class="brand-text">職責邏輯</span> 拆開。
+          </p>
+        </section>
+
+        <section class="diagram-card">
+          <div class="diagram-title">
+            <div>
+              <div class="diagram-tag">Diagram 02</div>
+              <h3>A2A Multi-Agent Collaboration Flow</h3>
+            </div>
+            <span class="muted small">Agent ↔ Agent</span>
+          </div>
+          <div class="flow center">
+            <div class="node">
+              <strong>User Request</strong>
+              <span>複合型需求進入</span>
+            </div>
+            <div class="arrow"></div>
+            <div class="node">
+              <strong>Orchestrator Agent</strong>
+              <span>理解需求、拆解任務、分配角色</span>
+            </div>
+            <div class="arrow"></div>
+            <div class="connector-label">A2A Coordination Layer</div>
+            <div class="row-3">
+              <div class="node"><strong>Research Agent</strong><span>查詢、萃取、整理背景</span></div>
+              <div class="node"><strong>Sales Agent</strong><span>對話策略、方案建議、轉化引導</span></div>
+              <div class="node"><strong>Ops Agent</strong><span>執行流程、通知、同步資料</span></div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node">
+              <strong>Final Response</strong>
+              <span>整合結果、回給使用者或系統</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>為什麼 A2A 對產品設計比想像中更重要</h3>
+          <p>
+            當一個 Agent 系統開始長大，最容易出現的問題之一，就是所有功能都被塞到同一個對話核心裡。這種做法在初期很快，但中期就會開始出現一種熟悉的味道：每改一個功能都怕牽一髮動全身、每加一條規則都不知道會不會讓其他流程突然抽風。這其實不是 AI 的問題，而是架構把所有責任摻在一起了。
+          </p>
+          <p>
+            A2A 的價值，在於把「一件複雜事情」拆成「一群角色清楚的事情」。一旦角色清楚，很多產品上的設計就會比較好做。例如：
+          </p>
+          <ul>
+            <li><strong>可維護性</strong>：不同能力分開演進，不需要每次都動到同一顆核心大腦。</li>
+            <li><strong>可測試性</strong>：每個 Agent 的任務邊界清楚，方便設計輸入輸出與異常場景。</li>
+            <li><strong>可治理性</strong>：可以為不同角色設不同權限、可用工具與責任範圍。</li>
+            <li><strong>可產品化</strong>：未來若做成可配置方案，較容易針對不同客戶組合不同 Agent 能力。</li>
+          </ul>
+          <p>
+            所以我不會把 A2A 看成「更酷的多 Agent buzzword」，而會把它看成是 AI 系統終於開始正視一件事情：<strong>真實工作本來就不是由單一角色完成的</strong>。既然企業流程本身有分工，系統設計也不該假裝世界上只有一顆萬能腦袋。
+          </p>
+        </section>
+
+        <section id="compare" class="panel">
+          <h2>MCP 與 A2A 的差異，不只是名詞不同，而是架構方向不同</h2>
+          <p>
+            我覺得很多人在理解這兩個概念時，最容易搞混的一點，就是覺得它們都跟 Agent 有關，所以好像差不多。但實際上，它們處理的是兩種完全不同的複雜度。
+          </p>
+          <p>
+            <strong>MCP 處理的是 Agent 與外部能力的複雜度</strong>；<strong>A2A 處理的是 Agent 與內部角色協作的複雜度</strong>。前者比較偏向垂直整合，後者比較偏向水平協作。你可以把 MCP 想成「往下接世界」，把 A2A 想成「往旁邊找同伴」。這樣理解會直覺很多。
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>比較面向</th>
+                  <th>MCP</th>
+                  <th>A2A</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>主要對象</td>
+                  <td>Agent ↔ Tools / Data Sources</td>
+                  <td>Agent ↔ Agent</td>
+                </tr>
+                <tr>
+                  <td>主要問題</td>
+                  <td>外部能力如何一致地被調用</td>
+                  <td>多角色如何協作、交棒與整合結果</td>
+                </tr>
+                <tr>
+                  <td>架構方向</td>
+                  <td>偏垂直：接到資料與工具世界</td>
+                  <td>偏水平：建立內部角色協作網路</td>
+                </tr>
+                <tr>
+                  <td>典型場景</td>
+                  <td>查 DB、寫 CRM、排 Calendar、讀 Sheet</td>
+                  <td>拆任務、派工、整合、回傳、重試</td>
+                </tr>
+                <tr>
+                  <td>產品價值</td>
+                  <td>模組化能力接入、降低整合成本</td>
+                  <td>模組化流程與角色、降低單體 Agent 過載</td>
+                </tr>
+                <tr>
+                  <td>常見誤解</td>
+                  <td>只是新 tool wrapper</td>
+                  <td>只是多開幾個 Agent 名稱</td>
+                </tr>
+                <tr>
+                  <td>更深的意義</td>
+                  <td>讓能力被治理</td>
+                  <td>讓協作被設計</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="blueprint" class="panel">
+          <h2>真正關鍵的不是分開懂，而是把兩者放進同一張架構藍圖</h2>
+          <p>
+            如果只停留在「我知道 A2A 是什麼、也知道 MCP 是什麼」，那其實還不夠。真正有價值的是，你能不能回答這個問題：<strong>當一個使用者需求進入系統後，這兩種設計會在什麼位置出現，彼此怎麼配合，最後如何變成完整流程</strong>？
+          </p>
+          <p>
+            這也是我自己在看 AI Agent 產品時最重視的點。因為一旦你要交付給客戶，或者做成真的內部系統，就不可能永遠只展示一段單點能力。你必須有一張可以說服自己，也說服團隊的結構圖。這張圖要回答的不只是「模型在哪」，而是：需求如何進來、誰先理解、誰負責拆解、哪些角色協作、工具在哪一層、資料如何被讀寫、異常如何被處理。
+          </p>
+        </section>
+
+        <section class="diagram-card">
+          <div class="diagram-title">
+            <div>
+              <div class="diagram-tag">Diagram 03</div>
+              <h3>Agentic Architecture Blueprint</h3>
+            </div>
+            <span class="muted small">A2A + MCP Together</span>
+          </div>
+          <div class="flow center">
+            <div class="node">
+              <strong>User / Channel</strong>
+              <span>Web、LINE OA、Email、內部表單</span>
+            </div>
+            <div class="arrow"></div>
+            <div class="node">
+              <strong>Orchestrator Agent</strong>
+              <span>意圖理解、流程路由、上下文管理</span>
+            </div>
+            <div class="arrow"></div>
+            <div class="connector-label">A2A Collaboration Layer</div>
+            <div class="row-3">
+              <div class="node"><strong>Lead Agent</strong><span>辨識客戶狀態與需求</span></div>
+              <div class="node"><strong>Sales Agent</strong><span>方案引導、互動策略、轉化話術</span></div>
+              <div class="node"><strong>Ops Agent</strong><span>排程、同步、執行與通知</span></div>
+            </div>
+            <div class="arrow"></div>
+            <div class="connector-label">MCP Tool Access Layer</div>
+            <div class="row-4">
+              <div class="node"><strong>CRM</strong><span>Lead / Customer 管理</span></div>
+              <div class="node"><strong>Google Sheets</strong><span>MVP 資料層 / 輕量後台</span></div>
+              <div class="node"><strong>Calendar</strong><span>預約與時段控管</span></div>
+              <div class="node"><strong>Database / APIs</strong><span>正式版整合核心</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="stack" class="panel">
+          <h2>如果是我來規劃，我會怎麼把它放進 AI 產品的技術棧</h2>
+          <p>
+            這一段我想再往前一步，不只談概念，而是談我自己會如何安排技術層次。因為對產品設計者來說，真正有用的不是知道名詞，而是知道它們各自應該站在什麼樓層。
+          </p>
+          <p>
+            我目前比較傾向把 Agent 系統拆成五層：<strong>互動層、協作層、能力層、資料／系統層、治理層</strong>。A2A 比較偏協作層，MCP 比較偏能力層。當這兩層被放正位置後，你在思考產品 Roadmap、MVP 邊界、客戶客製化、權限分層時，腦袋會清楚很多。
+          </p>
+          <div class="stack-grid">
+            <article class="stack-card">
+              <div class="badge">Layer 01</div>
+              <h3>互動層</h3>
+              <p>承接使用者入口，例如 Web Chat、LINE OA、Email、內部頁面。這一層主要處理的是互動體驗、輸入形式、身份識別與回應呈現。</p>
+            </article>
+            <article class="stack-card">
+              <div class="badge">Layer 02</div>
+              <h3>協作層（A2A）</h3>
+              <p>由 Orchestrator 與 Specialist Agents 組成，負責任務拆解、角色分工、結果整合與流程狀態傳遞。這裡是在設計「誰跟誰合作」。</p>
+            </article>
+            <article class="stack-card">
+              <div class="badge">Layer 03</div>
+              <h3>能力層（MCP）</h3>
+              <p>將外部工具、資料源與執行能力整理成可被調用的能力集合。這裡是在設計「角色能碰哪些工具，以及怎麼碰」。</p>
+            </article>
+            <article class="stack-card">
+              <div class="badge">Layer 04</div>
+              <h3>資料與系統層</h3>
+              <p>包含 CRM、Google Sheet、資料庫、Calendar、Webhook、內部 API 等，是最終資料落點與外部系統整合的承載層。</p>
+            </article>
+          </div>
+          <div class="timeline" style="margin-top:18px;">
+            <div class="badge">Design Thinking</div>
+            <h3>一個實際的規劃順序</h3>
+            <div class="timeline-item">
+              <div class="timeline-step">Step 01</div>
+              <div>
+                <p><strong>先定義流程，不先堆功能。</strong> 先確認使用者旅程與業務流程有哪幾段，再決定需要哪些 Agent 角色與工具能力。</p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-step">Step 02</div>
+              <div>
+                <p><strong>先分角色，再分工具。</strong> 把「誰來做」與「用什麼做」拆開，不要讓同一層同時決定兩件事。</p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-step">Step 03</div>
+              <div>
+                <p><strong>先做 MVP 工具集合。</strong> 例如只先接 Google Sheet、Calendar、Webhook，等流程跑穩再升級 CRM 或 DB。</p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-step">Step 04</div>
+              <div>
+                <p><strong>最後補治理層。</strong> 包含權限、審計、錯誤處理、重試機制與記錄追蹤，這一層往往決定能不能商業化。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="practice" class="panel">
+          <h2>實務應用：如果真的放進產品裡，會長什麼樣子？</h2>
+          <p>
+            概念與藍圖都講完後，最重要的還是回到應用場景。因為任何一個技術設計，如果無法在真實情境裡產生可理解的價值，那就很容易只是另一種漂漂亮亮的架構圖。我自己比較喜歡用三種場景來驗證這套思路：<strong>LINE 商家自動化、顧問型 Agent、Lead Management</strong>。這三種都很接近真實業務，而且都會自然地遇到多步驟流程、工具接入與角色分工的問題。
+          </p>
+          <div class="case-grid">
+            <article class="case-card">
+              <div class="badge">Scenario 01</div>
+              <h3>LINE 商家自動化</h3>
+              <p>
+                使用者從 LINE OA 進入後，系統先辨識是詢價、預約、追單還是諮詢。接著由 Sales Agent 進行引導，Booking Agent 負責時段查詢與預約規則，CRM Agent 負責標籤與建檔，Ops Agent 同步 Google Sheet、Calendar 或 Make.com 流程。這個場景特別適合拿來展示：一個簡單看似客服的入口，其實背後會自然延伸出多 Agent 協作與多工具接入。
+              </p>
+            </article>
+            <article class="case-card">
+              <div class="badge">Scenario 02</div>
+              <h3>顧問型 Consultant Agent</h3>
+              <p>
+                如果你做的是顧問導向服務，那就更不適合只有單一 Agent。因為需求探索、案例檢索、方案建議、預約諮詢、後續追蹤，本質上就不是同一種任務。這種情境下，把 Knowledge Agent、Proposal Agent、Scheduling Agent 與 Follow-up Agent 分開，會比讓一顆全能 Agent 撐全場來得穩定許多，也更貼近真實顧問服務的結構。
+              </p>
+            </article>
+            <article class="case-card">
+              <div class="badge">Scenario 03</div>
+              <h3>Lead Management Agent</h3>
+              <p>
+                對高單價服務或 B2B 服務來說，重點常常不只是回覆，而是判斷這個 Lead 值不值得追、下一步該怎麼接。這時可以讓 Intake Agent 做資訊擷取，Qualification Agent 做分級，Sales Agent 生成回覆策略，Ops Agent 則負責寫回 CRM 與安排後續任務。這種流程若沒有清楚的角色與工具層，很快就會變得很難維護。
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="diagram-card">
+          <div class="diagram-title">
+            <div>
+              <div class="diagram-tag">Diagram 04</div>
+              <h3>LINE 商家自動化的實務化流程示意</h3>
+            </div>
+            <span class="muted small">Practical Example</span>
+          </div>
+          <div class="flow center">
+            <div class="node"><strong>LINE User</strong><span>詢價 / 預約 / 查詢 / 方案諮詢</span></div>
+            <div class="arrow"></div>
+            <div class="node"><strong>Orchestrator Agent</strong><span>辨識意圖與決定流程分支</span></div>
+            <div class="arrow"></div>
+            <div class="row-3">
+              <div class="node"><strong>Sales Agent</strong><span>引導需求、回覆 QA、推薦方案</span></div>
+              <div class="node"><strong>Booking Agent</strong><span>查 7 天內時段、預約、改期、取消</span></div>
+              <div class="node"><strong>CRM Agent</strong><span>標籤分類、客戶建檔、同步狀態</span></div>
+            </div>
+            <div class="arrow"></div>
+            <div class="row-4">
+              <div class="node"><strong>Google Sheet</strong><span>MVP 記錄與列表管理</span></div>
+              <div class="node"><strong>Google Calendar</strong><span>時段控管與會議建立</span></div>
+              <div class="node"><strong>Make / Webhook</strong><span>通知、同步、後續流程觸發</span></div>
+              <div class="node"><strong>CRM / DB</strong><span>正式版資料中台</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="note-card">
+          <div class="badge">Practical Note</div>
+          <h3>很多 MVP 失敗，不是因為功能太少，而是因為一開始就把層次混在一起</h3>
+          <p>
+            我自己會很警惕一種常見情況：團隊急著把聊天、知識庫、預約、通知、CRM、報表全部塞進第一版，結果每一層都做了一點，但沒有一層真的被設計清楚。這種產品很容易在 demo 時看起來很熱鬧，進入真實使用就開始漏水。相反地，如果先把 <strong>協作層</strong> 與 <strong>能力層</strong> 拆清楚，即使一開始只接 Google Sheet 與 Calendar，系統也更有機會穩穩長大。
+          </p>
+        </section>
+
+        <section id="pitfalls" class="panel">
+          <h2>落地時最容易踩的坑：不是技術做不到，而是架構沒先講清楚</h2>
+          <p>
+            這一段我想特別寫給真的要做產品的人。因為很多時候，團隊在導入 AI Agent 時踩到的坑，不是因為工具不夠多、框架不夠新，而是太早沉迷於能力展示，太晚面對系統設計。以下是我認為最常見，也最值得提早避開的幾個問題。
+          </p>
+          <div class="callout-grid">
+            <article>
+              <h3>坑 1：把角色與工具混成同一層</h3>
+              <p>一個 Agent 同時知道流程邏輯、工具細節、資料格式與權限規則，最後就會變成一顆超肥的核心。這種設計改一處就可能動全身。</p>
+            </article>
+            <article>
+              <h3>坑 2：把多 Agent 理解成多模型</h3>
+              <p>多 Agent 的重點不是模型數量，而是角色分工與流程設計。沒有清楚邊界，只是把混亂複製好幾份。</p>
+            </article>
+            <article>
+              <h3>坑 3：太晚考慮治理</h3>
+              <p>權限、審計、重試、錯誤追蹤、手動接管這些看起來不浪漫，但一進商業場景就是主菜，不是配菜。</p>
+            </article>
+          </div>
+          <div class="callout-grid" style="margin-top:18px;">
+            <article>
+              <h3>坑 4：過度追求一步到位</h3>
+              <p>一開始就想做成萬能平台，通常只會得到一個很忙但不穩的 MVP。比較好的做法是先做一條跑得通的核心流程。</p>
+            </article>
+            <article>
+              <h3>坑 5：缺少可觀測性</h3>
+              <p>當流程變複雜後，如果你不知道哪個 Agent 做了什麼、調了什麼工具、在哪一步失敗，排錯會像在霧裡抓幽靈。</p>
+            </article>
+            <article>
+              <h3>坑 6：只看生成，不看流程價值</h3>
+              <p>很多人太關注模型說得像不像人，卻忽略系統到底有沒有幫團隊減少工作量、提高轉化率或降低遺漏率。</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="observation" class="panel">
+          <h2>我的觀察：從 Demo 到可交付系統，中間差的是「可治理的架構」</h2>
+          <p>
+            我愈來愈覺得，AI 時代最有價值的能力之一，不只是 prompt 寫得好，也不是把最新框架背得熟，而是能不能把這些新能力放進一個可治理、可維護、可持續進化的產品結構裡。這種能力本質上很像系統分析與產品設計的混血：既要懂流程，又要懂使用場景，還要知道技術應該在哪裡出手、在哪裡收手。
+          </p>
+          <p>
+            從這個角度看，A2A 與 MCP 有趣的地方，不只是它們本身，而是它們透露出一個更大的方向：AI 系統正在慢慢從「模型中心」走向「系統中心」。也就是說，未來大家比的可能不只是誰的模型更會說，而是誰能把模型、工具、資料、流程與角色，組成一個更穩定的生產系統。
+          </p>
+          <p>
+            這也是為什麼我不會把這些概念只當作技術名詞來看。對我來說，它們更像是一種設計信號：提醒我們，當 Agent 要進入真實業務時，<strong>流程設計、工具治理、角色分工與產品擴充性</strong> 這幾件事，必須被同時納入思考，而不能只靠模型能力單兵作戰。
+          </p>
+          <div class="insight-card">
+            <p>
+              真正成熟的 AI 產品，往往不是最像魔法的那個，而是最像系統的那個。魔法讓人驚呼一聲，系統才讓人願意每天用。
+            </p>
+          </div>
+        </section>
+
+        <section id="conclusion" class="panel">
+          <h2>結論：把名詞變成架構，把架構變成可落地的產品能力</h2>
+          <p>
+            如果要把整篇文章收斂成一句話，我會這樣說：<strong>MCP 幫 Agent 接世界，A2A 幫 Agent 接彼此</strong>。前者把外部能力整理成可被治理的能力層，後者把內部角色整理成可被設計的協作層。當這兩層一起被放進系統裡，AI Agent 才比較有機會從一個亮眼的展示，慢慢長成一個可被交付、可被維護、可被擴充的產品。
+          </p>
+          <p>
+            對我來說，這篇文章真正想談的，其實不是哪個協議比較厲害，而是我們應該用什麼樣的視角去理解 AI Agent 的未來。不是把它看成一個會回話的元件，而是把它看成一個要被放進真實商業流程中的系統角色。當視角改變後，很多設計判斷也會跟著改變：你會更在意分層、治理、權限、可觀測性與擴充路徑，而不是只在乎它今天又多會生成了幾段文字。
+          </p>
+          <p>
+            這也是我目前對 AI 產品設計最務實的理解：<strong>真正值得做的，不是最會炫的 Agent，而是最能穩定替團隊解決問題的那個系統</strong>。
+          </p>
+        </section>
+      </article>
+    </div>
+
+    <section class="container">
+      <div class="footer-cta">
+        <h2>後記：這篇文對我自己的實際意義</h2>
+        <p>
+          我自己目前也在持續把這類多 Agent 協作與工具接入的思路，放進 LINE 自動化、顧問型 Agent、Lead Management、知識庫導向服務與營運流程數位化的產品設計中。對我來說，A2A 與 MCP 的價值，不只是因為它們是熱門話題，而是因為它們真的幫助我把「AI 可以做什麼」往前推進成「這個系統應該怎麼被設計、怎麼被交付、怎麼被演進」。
+        </p>
+        <p>
+          如果說第一階段的 AI 熱潮，是大家驚訝模型會說話；那第二階段我更在意的，是如何把這些能力放進一個真正能產生商業價值的底層結構裡。這篇文章，就是我目前對這個方向的一次系統化整理。
+        </p>
+        <div class="footer-meta">
+          <span>AI Agent 架構設計</span>
+          <span>技術分享與實務應用</span>
+          <span>產品化思維</span>
+          <span>Automation & System Design</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>© 2026 Ken Liao. Built for technical sharing, practical architecture thinking, and product-minded experimentation.</div>
+    </div>
+  </footer>
+</body>
+</html>

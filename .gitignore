@@ -1,0 +1,8 @@
+# Local environment secrets
+.env
+.env.local
+.env.*.local
+
+# Node runtime artifacts
+node_modules/
+*.log

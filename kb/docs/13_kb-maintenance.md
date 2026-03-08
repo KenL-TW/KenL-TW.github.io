@@ -29,3 +29,19 @@
 ## 五、維護頻率
 - 每次重大更新即時維護
 - 每月固定盤點一次，清理過時內容
+
+## 六、半自動同步（Blog -> KB）
+- 指令（單篇）：`node scripts/sync-blog-to-kb.js --slug <post-slug>`
+- 指令（全部）：`node scripts/sync-blog-to-kb.js`
+- 指令（啟用 OpenAI 摘要）：`node scripts/sync-blog-to-kb.js --ai`
+- 腳本行為：
+	- 建立或更新 `kb/projects/p_<slug>.md`
+	- 自動補 `kb/index.json` 的 `chunks`
+	- 更新 `kb/index.json` 的 `generated_at`
+
+### 本機金鑰設定（不進 Git）
+- 建立本機檔案：`.env.local`（可參考 `.env.local.example`）
+- 建議設定：
+	- `OPENAI_API_KEY=...`
+	- `OPENAI_MODEL=gpt-4.1-mini`
+- `.gitignore` 已排除 `.env.local`，不會被推送到 GitHub。

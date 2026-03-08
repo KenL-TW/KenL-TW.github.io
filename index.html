@@ -886,6 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Teaching Articles Carousel
 document.addEventListener('DOMContentLoaded', () => {
   const teachingArticles = [
+    { file: 'a2a_mcp.html', title: 'A2A 與 MCP：AI Agent 架構實戰解析', icon: '🧠', desc: '從工具接入到多 Agent 協作，完整拆解落地架構與產品化思維' },
     { file: 'aiModal.html', title: 'AI 流程視覺化：電子商務顧客分析', icon: '🤖', desc: '用 Vue.js 與動畫展示 AI 在客戶分析中的應用流程' },
     { file: 'api.html', title: 'API 和 OSI 模型教學', icon: '🌐', desc: '深入理解 API 設計與網路七層模型的對應關係' },
     { file: 'awsServerless.html', title: 'AWS 無伺服器架構互動式教學', icon: '☁️', desc: '事件驅動架構的設計原理與實務應用' },
@@ -938,6 +939,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 雙模式載入：file:// 用內嵌資料，上線時抓 /blog/posts.json
   const USE_FETCH = location.protocol !== 'file:';
   const POSTS_INLINE = [
+    {slug:"a2a-mcp",title:"從影片到實戰：我怎麼理解 A2A 與 MCP 在 AI Agent 架構中的角色（第二版）",date:"2026-03-08",tags:["ai","agent","mcp","a2a","architecture"],excerpt:"從技術分享、產品設計與實務應用角度，深度拆解 A2A 與 MCP 的差異、關係與落地方式。",cover:"assets/img/blog/a2a_mcp.png"},
     {slug:"hello-world",title:"從零打造個人部落格（純前端架構）",date:"2025-10-08",tags:["blog","web"],excerpt:"純 HTML + JS + GitHub Pages，輕巧可維護。",cover:"assets/img/blog/hello-world.jpg"},
     {slug:"system-analysis",title:"系統分析師的思維與方法論",date:"2025-09-25",tags:["analysis","career"],excerpt:"需求、架構與交付之間的平衡術。",cover:"assets/img/blog/system-analysis.jpg"},
     {slug:"network-attack",title:"網路攻擊視覺化分享",date:"2025-08-31",tags:["tutorials","security"],excerpt:"用動畫拆解 SQLi 與 XSS。",cover:"assets/img/tutorials/network-attack.jpg"},
@@ -948,7 +950,12 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadPosts() {
     if (!USE_FETCH) return POSTS_INLINE;
     try {
-      const r = await fetch('/blog/posts.json', { cache:'no-store' });
+      // 先用相對路徑，避免 GitHub Pages 子路徑部署時抓到錯誤來源
+      let r = await fetch('blog/posts.json', { cache:'no-store' });
+      if (!r.ok) {
+        r = await fetch('/blog/posts.json', { cache:'no-store' });
+      }
+      if (!r.ok) throw new Error('Failed to load posts.json');
       return await r.json();
     } catch (e) {
       return POSTS_INLINE; // 線上抓失敗時退回

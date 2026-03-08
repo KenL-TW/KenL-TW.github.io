@@ -208,9 +208,17 @@
   </div>
 
 <script>
-  // ======= 設定區：請換成你的 API Gateway Endpoint & API Key =======
+  // ======= 設定區：請換成你的 API Gateway Endpoint =======
   const API_URL = "https://ukc5c7oi3k.execute-api.ap-northeast-1.amazonaws.com/prod/analyze"; // 你的 REST API URL
-  const API_KEY = "6HCuJVLwzt9OkEKVmBHuhXq1d4T2mTP3ApHbpMr6"; // Usage Plan 產出的 API Key
+
+  // API key 不應硬編碼在前端程式碼中。
+  // 可在部署時注入 window.__AI_ANALYZER_API_KEY__，或於本機先存入 localStorage。
+  function resolveApiKey() {
+    return (
+      (window.__AI_ANALYZER_API_KEY__ && String(window.__AI_ANALYZER_API_KEY__).trim()) ||
+      (localStorage.getItem("AI_ANALYZER_API_KEY") || "").trim()
+    );
+  }
 
   const form = document.getElementById("analyze-form");
   const statusLabel = document.getElementById("status-label");
@@ -401,13 +409,18 @@
     const industry = document.getElementById("industry").value.trim();
     const region   = document.getElementById("region").value.trim() || "未指定地區";
     const year     = document.getElementById("year").value.trim() || "2024–2025";
+    const apiKey   = resolveApiKey();
+
+    if (!apiKey) {
+      throw new Error("未設定 API Key。請以部署注入 window.__AI_ANALYZER_API_KEY__，或先在瀏覽器 Console 執行 localStorage.setItem('AI_ANALYZER_API_KEY','<your_key>')。");
+    }
 
     try {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-API-Key": API_KEY
+          "X-API-Key": apiKey
         },
         body: JSON.stringify({
           mode: "analyze",

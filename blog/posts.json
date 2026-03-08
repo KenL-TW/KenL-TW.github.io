@@ -1,5 +1,14 @@
 [
   {
+    "slug": "a2a-mcp",
+    "title": "從影片到實戰：我怎麼理解 A2A 與 MCP 在 AI Agent 架構中的角色（第二版）",
+    "date": "2026-03-08",
+    "tags": ["ai", "agent", "mcp", "a2a", "architecture"],
+    "excerpt": "從技術分享、產品設計與實務應用角度，深度拆解 A2A 與 MCP 的差異、關係與落地方式。",
+    "cover": "assets/img/blog/a2a_mcp.png",
+    "content": "blog/content/a2a_mcp.html"
+  },
+  {
     "slug": "hello-world",
     "title": "從零打造個人部落格（純前端架構）",
     "date": "2025-10-08",
