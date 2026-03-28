@@ -1,6 +1,6 @@
 {
   "version": "kb-index-v2",
-  "generated_at": "2026-03-08",
+  "generated_at": "2026-03-29",
   "source": "https://kenl-tw.github.io/",
   "chunks": [
     {
@@ -397,6 +397,34 @@
         "devtool",
         "networking",
         "tutorials"
+      ]
+    },
+    {
+      "path": "kb/projects/p_aws_fanout_archi.md",
+      "chunk_id": "projects#aws-fanout-archi-0001",
+      "title": "AWS SNS + SQS Fan-Out 架構互動演示",
+      "text": "以互動視覺化展示 SNS Fan-Out、Filtering、局部異常與 DLQ，幫助快速理解事件驅動架構的故障隔離與最終一致性。 文章聚焦 AWS SNS + SQS Fan-Out 架構互動演示，可透過原文連結查看完整內容。",
+      "tags": [
+        "blog",
+        "aws",
+        "architecture",
+        "event-driven",
+        "sqs",
+        "sns"
+      ]
+    },
+    {
+      "path": "kb/projects/p_aws_vpc.md",
+      "chunk_id": "projects#aws-vpc-0001",
+      "title": "AWS VPC 進階架構視覺化：真實流量模擬與安全設計",
+      "text": "AWS VPC 生產環境架構視覺化，整合 WAF、ALB、ASG、Bastion、NAT Gateway 與 S3 Gateway Endpoint。以 7 個互動情境模擬真實流量路徑：正常 HTTPS、DB 查詢、SSH Bastion、NAT 出口更新、WAF 攔截 SQLi、路由表錯誤導致 nat 失敗、EC2 走 NAT 打 S3 的高成本陷阱。適合學習 VPC subnet 規劃、route table 配置、安全群組、跨 AZ 高可用設計。",
+      "tags": [
+        "blog",
+        "aws",
+        "architecture",
+        "vpc",
+        "networking",
+        "security"
       ]
     }
   ]

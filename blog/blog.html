@@ -3,9 +3,49 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Blog | Ken Liao</title>
-  <meta name="description" content="Ken Liao 的技術部落格與教學文章彙整與全文搜尋。">
+  <title>技術部落格 | Ken Liao — AWS 架構 × AI Agent × 系統分析</title>
+  <meta name="description" content="Ken Liao 的技術部落格：AWS VPC、Serverless、SNS/SQS Fan-Out、AI Agent、MCP、系統分析與數位轉型的深度文章與互動演示。">
+  <meta name="keywords" content="AWS架構, VPC, Serverless, SNS, SQS, AI Agent, MCP, A2A, 系統分析, 數位轉型, 技術部落格, Ken Liao">
+  <meta name="author" content="Ken Liao">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
   <link rel="canonical" href="https://kenl-tw.github.io/blog/blog.html" />
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_TW">
+  <meta property="og:site_name" content="Ken Liao Portfolio">
+  <meta property="og:title" content="技術部落格 | Ken Liao — AWS 架構 × AI Agent × 系統分析">
+  <meta property="og:description" content="AWS VPC、Serverless、SNS/SQS、AI Agent、MCP 架構的深度技術文章與互動演示彙整。">
+  <meta property="og:image" content="https://kenl-tw.github.io/assets/img/profile-img.png">
+  <meta property="og:image:alt" content="Ken Liao 技術部落格">
+  <meta property="og:url" content="https://kenl-tw.github.io/blog/blog.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="技術部落格 | Ken Liao">
+  <meta name="twitter:description" content="AWS架構、AI Agent、系統分析深度文章與互動演示。">
+  <meta name="twitter:image" content="https://kenl-tw.github.io/assets/img/profile-img.png">
+
+  <!-- JSON-LD: Blog CollectionPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Ken Liao 技術部落格",
+    "description": "AWS VPC、Serverless、SNS/SQS Fan-Out、AI Agent、MCP、系統分析與數位轉型深度文章彙整",
+    "url": "https://kenl-tw.github.io/blog/blog.html",
+    "inLanguage": "zh-TW",
+    "author": {
+      "@type": "Person",
+      "name": "Ken Liao",
+      "url": "https://kenl-tw.github.io/"
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "首頁", "item": "https://kenl-tw.github.io/" },
+        { "@type": "ListItem", "position": 2, "name": "技術部落格", "item": "https://kenl-tw.github.io/blog/blog.html" }
+      ]
+    }
+  }
+  </script>
 
   <style>
     :root{--c:#0b5fff}
@@ -32,7 +72,6 @@
     .back-home{position:fixed;right:16px;bottom:16px;z-index:50}
     .back-home a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:#2563eb;color:#fff;border-radius:999px;text-decoration:none;box-shadow:0 4px 16px rgba(37,99,235,.12)}
     .back-home a:hover{background:#1d4ed8}
-    /* blog.content 內容樣式可在此擴充 */
     .blog-content {margin:32px 0;}
     .blog-content h2 {font-size:1.3em;margin:24px 0 12px;}
     .blog-content p {margin:8px 0;}
@@ -40,13 +79,6 @@
     .blog-content img {max-width:100%;border-radius:8px;margin:16px 0;}
     .blog-content pre {background:#f6f8fa;padding:12px;border-radius:8px;overflow-x:auto;}
   </style>
-
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Blog | Ken Liao">
-  <meta property="og:description" content="Ken Liao 的技術部落格與教學文章彙整與全文搜尋。">
-  <meta property="og:image" content="https://kenl-tw.github.io/assets/img/profile-img.png">
-  <meta property="og:url" content="https://kenl-tw.github.io/blog.html">
-  <meta name="twitter:card" content="summary_large_image">
 
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 </head>

@@ -1,5 +1,23 @@
 [
   {
+    "slug": "aws-vpc",
+    "title": "AWS VPC 進階架構視覺化：真實流量模擬與安全設計",
+    "date": "2026-03-29",
+    "tags": ["aws", "architecture", "vpc", "networking", "security"],
+    "excerpt": "整合 WAF、ALB、ASG、Bastion、NAT Gateway 與 S3 Endpoint，以互動式情境模擬真實 VPC 流量路徑，深入理解子網路規劃與常見配置陷阱。",
+    "cover": "assets/img/blog/auto_agent_flow.png",
+    "content": "blog/content/awsVPC.html"
+  },
+  {
+    "slug": "aws-fanout-archi",
+    "title": "AWS SNS + SQS Fan-Out 架構互動演示",
+    "date": "2026-03-28",
+    "tags": ["aws", "architecture", "event-driven", "sqs", "sns"],
+    "excerpt": "以互動視覺化展示 SNS Fan-Out、Filtering、局部異常與 DLQ，幫助快速理解事件驅動架構的故障隔離與最終一致性。",
+    "cover": "assets/img/blog/auto_agent_flow.png",
+    "content": "blog/content/aws_fanout_archi.html"
+  },
+  {
     "slug": "a2a-mcp",
     "title": "從影片到實戰：我怎麼理解 A2A 與 MCP 在 AI Agent 架構中的角色（第二版）",
     "date": "2026-03-08",
