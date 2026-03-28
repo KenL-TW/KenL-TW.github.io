@@ -951,6 +951,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Teaching Articles Carousel
 document.addEventListener('DOMContentLoaded', () => {
   const teachingArticles = [
+    { file: 'awsVPC.html', title: 'AWS VPC 進階架構視覺化：真實流量模擬', icon: '🔐', desc: '整合 WAF、ALB、ASG、Bastion、NAT Gateway 與 S3 Endpoint，互動模擬 7 種真實流量路徑與常見配置陷阱' },
+    { file: 'aws_fanout_archi.html', title: 'AWS SNS + SQS Fan-Out 架構互動演示', icon: '📡', desc: '以互動視覺化展示 SNS Fan-Out、Filtering、局部異常與 DLQ，深入理解事件驅動架構的故障隔離' },
     { file: 'a2a_mcp.html', title: 'A2A 與 MCP：AI Agent 架構實戰解析', icon: '🧠', desc: '從工具接入到多 Agent 協作，完整拆解落地架構與產品化思維' },
     { file: 'aiModal.html', title: 'AI 流程視覺化：電子商務顧客分析', icon: '🤖', desc: '用 Vue.js 與動畫展示 AI 在客戶分析中的應用流程' },
     { file: 'api.html', title: 'API 和 OSI 模型教學', icon: '🌐', desc: '深入理解 API 設計與網路七層模型的對應關係' },
@@ -1005,11 +1007,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const USE_FETCH = location.protocol !== 'file:';
   const POSTS_INLINE = [
     {slug:"a2a-mcp",title:"從影片到實戰：我怎麼理解 A2A 與 MCP 在 AI Agent 架構中的角色（第二版）",date:"2026-03-08",tags:["ai","agent","mcp","a2a","architecture"],excerpt:"從技術分享、產品設計與實務應用角度，深度拆解 A2A 與 MCP 的差異、關係與落地方式。",cover:"assets/img/blog/a2a_mcp.png"},
-    {slug:"hello-world",title:"從零打造個人部落格（純前端架構）",date:"2025-10-08",tags:["blog","web"],excerpt:"純 HTML + JS + GitHub Pages，輕巧可維護。",cover:"assets/img/blog/hello-world.jpg"},
-    {slug:"system-analysis",title:"系統分析師的思維與方法論",date:"2025-09-25",tags:["analysis","career"],excerpt:"需求、架構與交付之間的平衡術。",cover:"assets/img/blog/system-analysis.jpg"},
-    {slug:"network-attack",title:"網路攻擊視覺化分享",date:"2025-08-31",tags:["tutorials","security"],excerpt:"用動畫拆解 SQLi 與 XSS。",cover:"assets/img/tutorials/network-attack.jpg"},
-    {slug:"aws-serverless",title:"AWS 架構視覺化：Serverless",date:"2025-08-25",tags:["aws","architecture"],excerpt:"事件驅動與雲端原生的設計心法。",cover:"assets/img/tutorials/aws-serverless.jpg"},
-    {slug:"api-osi",title:"API 設計與 OSI 的對位",date:"2025-08-15",tags:["api","networking"],excerpt:"從用例到契約，從層到責任。",cover:"assets/img/tutorials/api-osi.jpg"}
+    {slug:"aws-vpc",title:"AWS VPC 進階架構視覺化：真實流量模擬與安全設計",date:"2026-03-29",tags:["aws","architecture","vpc","networking","security"],excerpt:"整合 WAF、ALB、ASG、Bastion、NAT Gateway 與 S3 Endpoint，以互動式情境模擬真實 VPC 流量路徑，深入理解子網路規劃與常見配置陷阱。",cover:"assets/img/blog/auto_agent_flow.png"},
+    {slug:"aws-fanout-archi",title:"AWS SNS + SQS Fan-Out 架構互動演示",date:"2026-03-28",tags:["aws","architecture","event-driven","sqs","sns"],excerpt:"以互動視覺化展示 SNS Fan-Out、Filtering、局部異常與 DLQ，幫助快速理解事件驅動架構的故障隔離與最終一致性。",cover:"assets/img/blog/auto_agent_flow.png"},
+    {slug:"a2a-mcp",title:"從影片到實戰：我怎麼理解 A2A 與 MCP 在 AI Agent 架構中的角色（第二版）",date:"2026-03-08",tags:["ai","agent","mcp","a2a","architecture"],excerpt:"從技術分享、產品設計與實務應用角度，深度拆解 A2A 與 MCP 的差異、關係與落地方式。",cover:"assets/img/blog/a2a_mcp.png"},
+    {slug:"hello-world",title:"從零打造個人部落格（純前端架構）",date:"2025-10-08",tags:["blog","web"],excerpt:"純 HTML + JS + GitHub Pages，輕巧可維護。",cover:"assets/img/blog/hello-world.png"},
+    {slug:"system-analysis",title:"系統分析師的思維與方法論",date:"2025-09-25",tags:["analysis","career"],excerpt:"需求、架構與交付之間的平衡術。",cover:"assets/img/blog/system-analysis.png"},
+    {slug:"network-attack",title:"網路攻擊視覺化分享",date:"2025-08-31",tags:["tutorials","security"],excerpt:"用動畫拆解 SQLi 與 XSS。",cover:"assets/img/blog/network-attack.png"},
+    {slug:"aws-serverless",title:"AWS 架構視覺化：Serverless",date:"2025-08-25",tags:["aws","architecture"],excerpt:"事件驅動與雲端原生的設計心法。",cover:"assets/img/blog/auto_agent_flow.png"},
+    {slug:"api",title:"API 設計與 OSI 的對位",date:"2025-08-15",tags:["api","networking"],excerpt:"從用例到契約，從層到責任。",cover:"assets/img/blog/auto_agent_flow.png"}
   ];
 
   async function loadPosts() {
