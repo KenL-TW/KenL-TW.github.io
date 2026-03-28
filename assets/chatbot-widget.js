@@ -573,47 +573,6 @@
     cursor: not-allowed;
   }
 
-  /* Follow-up suggestion buttons (inline in bubble) */
-  .dt-follow-ups{
-    margin-top: 8px;
-    padding-top: 7px;
-    border-top: 1px dashed var(--line);
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  .dt-follow-label{
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--muted);
-    letter-spacing: .04em;
-    margin-bottom: 1px;
-  }
-  .dt-follow-btn{
-    text-align: left;
-    border: 1px solid var(--line);
-    background: var(--chip);
-    color: var(--text);
-    border-radius: 8px;
-    padding: 5px 10px;
-    font-size: 11.5px;
-    line-height: 1.4;
-    cursor: pointer;
-    transition: background .12s ease, transform .1s ease, border-color .12s ease;
-    white-space: normal;
-    word-break: break-word;
-  }
-  .dt-follow-btn:hover{
-    background: var(--chipHover);
-    border-color: var(--btn);
-    transform: translateX(2px);
-  }
-  .dt-follow-btn::before{
-    content: '↩ ';
-    opacity: .55;
-    font-size: 10px;
-  }
-
   /* Loading skeleton */
   .dt-skeleton{
     background: linear-gradient(90deg, var(--chip) 25%, var(--chipHover) 50%, var(--chip) 75%);
@@ -1132,84 +1091,7 @@
     return { project_cards: cards.project_cards };
   }
 
-  function generateFollowUps(userText, answer) {
-    const q = ((userText || '') + ' ' + (answer || '')).toLowerCase();
-    const pool = [];
-
-    if (q.match(/vpc|subnet|nat|bastion|route.?table|igw|security.?group|alb|waf|private.?subnet|public.?subnet/)) {
-      pool.push(
-        '為什麼 Private Subnet 的 EC2 需要 NAT Gateway 才能連外？',
-        'WAF Web ACL 怎麼有效防範 SQL Injection？',
-        'Bastion Host 有哪些安全加固最佳實踐？',
-        'S3 Gateway Endpoint 和走 NAT 相比費用差多少？',
-        'VPC Peering 和 Transit Gateway 使用時機有什麼不同？'
-      );
-    }
-    if (q.match(/sns|sqs|fan.?out|dlq|dead.?letter|event.?driven|事件驅動/)) {
-      pool.push(
-        'DLQ 在哪個情境下最不可缺少？',
-        'SNS Message Filter 如何降低 SQS 的費用？',
-        'Fan-Out 架構局部失敗後如何保證最終一致性？',
-        '事件驅動架構和傳統同步 API 的取捨是什麼？'
-      );
-    }
-    if (q.match(/serverless|lambda|api.?gateway|dynamodb/)) {
-      pool.push(
-        'Lambda 冷啟動問題有哪些解法？',
-        'API Gateway + Lambda 和 EC2 + ALB 怎麼選？',
-        'DynamoDB 的 GSI 使用時機是什麼？'
-      );
-    }
-    if (q.match(/ai|agent|mcp|a2a|llm|大型語言|生成式/)) {
-      pool.push(
-        'A2A 和 MCP 在架構設計上最大的差異是什麼？',
-        'AI Agent 如何安全地整合到現有的企業系統？',
-        'MCP 的主要應用場景有哪些實際例子？'
-      );
-    }
-    if (q.match(/專案|project|portfolio|作品|demo/)) {
-      pool.push(
-        '這個專案遇到最大的技術挑戰是什麼？',
-        'Ken 最擅長哪一類型的架構設計？',
-        '有沒有相關的線上 Demo 可以直接試玩？'
-      );
-    }
-    if (q.match(/履歷|resume|工作|職涯|經歷|經驗/)) {
-      pool.push(
-        'Ken 有哪些 AWS 相關的認證？',
-        'Ken 過去的工作中有哪些主要成就？',
-        '如何聯絡 Ken 進一步討論合作？'
-      );
-    }
-    if (q.match(/aws|cloud|雲端|三層|three.?tier/)) {
-      pool.push(
-        'Ken 有哪些 AWS 互動架構演示可以參考？',
-        '三層架構和 Serverless 各自適合什麼場景？',
-        '雲端架構設計的 5 大核心原則是什麼？'
-      );
-    }
-    if (q.match(/security|安全|攻擊|xss|sqli|ddos|防護/)) {
-      pool.push(
-        '除了 WAF，還有哪些 AWS 原生安全服務可搭配？',
-        'Zero Trust 架構在 AWS VPC 怎麼落地？',
-        'IAM Role 和 Security Group 的職責邊界是什麼？'
-      );
-    }
-
-    const seen = new Set();
-    const result = [];
-    for (const item of pool) {
-      if (!seen.has(item) && result.length < 3) { seen.add(item); result.push(item); }
-    }
-    const defaults = ['Ken 最推薦我先看哪個專案？', 'Ken 有哪些 AWS 雲端架構演示？', '如何聯絡 Ken？'];
-    for (const d of defaults) {
-      if (result.length >= 3) break;
-      if (!seen.has(d)) { seen.add(d); result.push(d); }
-    }
-    return result;
-  }
-
-  function addMessage(role, text, citations, cards, followUps) {
+  function addMessage(role, text, citations, cards) {
     const row = document.createElement("div");
     row.className = "dt-msg " + (role === "user" ? "dt-user" : "dt-assistant");
 
@@ -1317,35 +1199,6 @@
       feedbackDiv.appendChild(helpfulBtn);
       feedbackDiv.appendChild(notHelpfulBtn);
       bubble.appendChild(feedbackDiv);
-    }
-
-    // Follow-up suggestion buttons (only for assistant messages)
-    if (role !== 'user' && Array.isArray(followUps) && followUps.length > 0) {
-      const followDiv = document.createElement('div');
-      followDiv.className = 'dt-follow-ups';
-
-      const label = document.createElement('div');
-      label.className = 'dt-follow-label';
-      label.textContent = '你可能想繼續問';
-      followDiv.appendChild(label);
-
-      followUps.slice(0, 3).forEach((q) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'dt-follow-btn';
-        btn.textContent = q;
-        btn.addEventListener('click', () => {
-          trackChatbotEvent('follow_up_clicked', {
-            follow_up_text: q.substring(0, 100)
-          });
-          // Remove the suggestion row after click
-          followDiv.remove();
-          sendText(q);
-        });
-        followDiv.appendChild(btn);
-      });
-
-      bubble.appendChild(followDiv);
     }
 
     row.appendChild(avatar);
@@ -1668,8 +1521,7 @@
       }
 
       hideTyping();
-      const followUps = generateFollowUps(userText, answer);
-      addMessage("assistant", answer, citations, cards, followUps);
+      addMessage("assistant", answer, citations, cards);
 
       if (suggestions.length) {
         renderDynamicChips(suggestions);
