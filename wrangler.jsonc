@@ -1,7 +1,11 @@
-﻿{
+{
   "name": "ken-personal-page",
   "compatibility_date": "2026-07-23",
+  "main": "./worker/index.ts",
   "assets": {
-    "directory": "."
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
+    "not_found_handling": "single-page-application"
   }
 }

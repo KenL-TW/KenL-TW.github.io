@@ -1,0 +1,492 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ConnectorMap from "../components/ConnectorMap";
+import { capabilities, labs, projects } from "../data/portfolio";
+
+const title =
+  "Ken Liao — Systems Analyst × Product Strategist × AWS Builder";
+const description =
+  "Ken Liao（廖子寬），以系統分析、產品策略、AWS 架構與 AI 自動化，把複雜需求轉成可落地、可維運的數位系統。";
+
+const evidence = [
+  {
+    index: "01",
+    title: "Systems Analysis",
+    text: "Mapping complexity to define problems worth solving."
+  },
+  {
+    index: "02",
+    title: "Product Delivery",
+    text: "From strategy to shipped systems with operational discipline."
+  },
+  {
+    index: "03",
+    title: "AWS Architecture",
+    text: "Secure, scalable, and cost-aware cloud system design."
+  },
+  {
+    index: "04",
+    title: "AI Automation",
+    text: "Automating workflows to remove friction and create leverage."
+  }
+];
+---
+
+<BaseLayout {title} {description}>
+  <header class="site-header" data-header>
+    <a class="brand" href="#top" aria-label="Ken Liao 首頁">KEN LIAO</a>
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="primary-nav"
+      data-menu-toggle
+    >
+      Menu
+    </button>
+    <nav id="primary-nav" class="primary-nav" aria-label="主要導覽" data-nav>
+      <a href="#systems">Systems</a>
+      <a href="#work">Work</a>
+      <a href="#experience">Experience</a>
+      <a href="#about">About</a>
+      <a href="#contact">Connect</a>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <section class="hero section-shell" id="top" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <h1 id="hero-title">
+          <span>KEN LIAO —</span>
+          THE <em>CONNECTOR</em>
+        </h1>
+        <p>
+          I connect business intent, product decisions, technology, delivery,
+          and growth into systems that work.
+        </p>
+      </div>
+
+      <div class="hero-system" id="systems">
+        <ConnectorMap client:load />
+      </div>
+    </section>
+
+    <section class="evidence section-shell" aria-labelledby="evidence-title">
+      <div class="section-marker">
+        <span>03</span>
+        <h2 id="evidence-title">Evidence</h2>
+      </div>
+      <div class="evidence-list">
+        {
+          evidence.map((item) => (
+            <article data-reveal>
+              <span>{item.index}</span>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="work section-shell" id="work" aria-labelledby="work-title">
+      <header class="section-heading" data-reveal>
+        <span class="display-number">04</span>
+        <div>
+          <h2 id="work-title">Selected Work</h2>
+          <p>Systems designed from ambiguity to measurable outcomes.</p>
+        </div>
+      </header>
+
+      <div class="project-list">
+        {
+          projects.map((project) => (
+            <article class="project-row" data-reveal>
+              <span class="project-index">{project.index}</span>
+              <div class="project-title">
+                <span>{project.category}</span>
+                <h3>{project.title}</h3>
+              </div>
+              <dl class="project-story">
+                <div>
+                  <dt>Problem</dt>
+                  <dd>{project.problem}</dd>
+                </div>
+                <div>
+                  <dt>Decision</dt>
+                  <dd>{project.decision}</dd>
+                </div>
+                <div>
+                  <dt>System</dt>
+                  <dd>{project.system}</dd>
+                </div>
+                <div>
+                  <dt>Outcome</dt>
+                  <dd>{project.outcome}</dd>
+                </div>
+              </dl>
+              <figure class="project-media">
+                <img
+                  src={project.image}
+                  alt={project.imageAlt}
+                  width="960"
+                  height="540"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+              <div class="project-action">
+                <span>{project.role}</span>
+                <a
+                  href={project.href}
+                  target={project.href.startsWith("http") ? "_blank" : undefined}
+                  rel={project.href.startsWith("http")
+                    ? "noopener noreferrer"
+                    : undefined}
+                >
+                  {project.linkLabel}
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M4 10h11M11 6l4 4-4 4" />
+                  </svg>
+                </a>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section
+      class="experience section-shell"
+      id="experience"
+      aria-labelledby="experience-title"
+    >
+      <header class="experience-heading" data-reveal>
+        <h2 id="experience-title">Experience</h2>
+        <p>
+          A professional path connecting systems, delivery, cloud, and
+          automation.
+        </p>
+      </header>
+
+      <ol class="timeline" data-reveal>
+        <li>
+          <time datetime="2023-12">2023—NOW</time>
+          <strong>eCloudvalley</strong>
+          <span>Digital Transformation Systems Analyst</span>
+        </li>
+        <li>
+          <time datetime="2021-11">2021—2023</time>
+          <strong>Acer</strong>
+          <span>Project Engineer</span>
+        </li>
+      </ol>
+    </section>
+
+    <section
+      class="capabilities section-shell"
+      id="capabilities"
+      aria-labelledby="capabilities-title"
+    >
+      <header class="compact-heading">
+        <span>Capability System</span>
+        <h2 id="capabilities-title">Methods connected to evidence.</h2>
+      </header>
+
+      <div class="capability-list">
+        {
+          capabilities.map((capability) => (
+            <article class="capability-row" data-reveal>
+              <div class="capability-name">
+                <strong>{capability.code}</strong>
+                <h3>{capability.title}</h3>
+              </div>
+              <div>
+                <span>Methods</span>
+                <ul>
+                  {capability.methods.map((method) => <li>{method}</li>)}
+                </ul>
+              </div>
+              <div class="capability-connection" aria-hidden="true">
+                <span />
+              </div>
+              <div>
+                <span>Evidence</span>
+                <ul>
+                  {capability.evidence.map((item) => <li>{item}</li>)}
+                </ul>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+
+      <div class="credentials" data-reveal>
+        <div>
+          <span>Certifications</span>
+          <p>AWS Solutions Architect – Associate</p>
+          <p>AWS AI Practitioner</p>
+          <p>PMP</p>
+          <p>TOEIC 935</p>
+        </div>
+        <div>
+          <span>Education</span>
+          <p>Feng Chia University</p>
+          <p>UC Berkeley Extension</p>
+          <p>Digital Marketing &amp; C# Program</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="labs section-shell" id="labs" aria-labelledby="labs-title">
+      <header class="section-heading" data-reveal>
+        <span class="display-number">05</span>
+        <div>
+          <h2 id="labs-title">Technical Labs</h2>
+          <p>Interactive explanations for architecture and system behavior.</p>
+        </div>
+      </header>
+      <div class="lab-list">
+        {
+          labs.map((lab, index) => (
+            <a href={lab.href} data-reveal>
+              <span>0{index + 1}</span>
+              <h3>{lab.title}</h3>
+              <p>{lab.description}</p>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M4 10h11M11 6l4 4-4 4" />
+              </svg>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section
+      class="beyond section-shell"
+      id="about"
+      aria-labelledby="beyond-title"
+    >
+      <div class="beyond-content">
+        <h2 id="beyond-title" data-reveal>Beyond the system</h2>
+        <div class="personal-grid">
+          <article data-reveal>
+            <figure>
+              <img
+                src="/assets/img/hero-bg.jpg"
+                alt="旅途中眺望山景"
+                width="822"
+                height="593"
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
+            <h3>Travel</h3>
+            <p>New places reset perspective and remind me that systems are always in context.</p>
+          </article>
+          <article data-reveal>
+            <figure>
+              <img
+                src="/assets/img/portfolio/tt club leader.jpg"
+                alt="桌球活動與教練經驗"
+                width="2364"
+                height="1773"
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
+            <h3>Table Tennis Coach</h3>
+            <p>Coaching sharpens communication, focus, timing, and fundamentals.</p>
+          </article>
+          <article data-reveal>
+            <figure>
+              <img
+                src="/assets/img/portfolio/UCB_Extension_Certification.jpg"
+                alt="持續學習與進修"
+                width="1163"
+                height="960"
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
+            <h3>Continuous Learning</h3>
+            <p>Curiosity compounds over time and keeps my work honest.</p>
+          </article>
+        </div>
+        <blockquote data-reveal>
+          Good systems begin with curiosity, empathy, and the patience to
+          understand what is really happening.
+        </blockquote>
+      </div>
+
+      <aside class="ask-preview" id="ask-ken" aria-labelledby="ask-title" data-reveal>
+        <header>
+          <h2 id="ask-title">Ask Ken</h2>
+          <span>AI-assisted portfolio guide</span>
+        </header>
+        <p>Explore my experience, projects, and working approach.</p>
+        <div class="ask-actions">
+          <button type="button" data-chat-prompt="請介紹 Ken 的經歷與核心能力">
+            Introduce Ken
+          </button>
+          <button type="button" data-chat-prompt="請依我的需求推薦一個最值得看的專案">
+            Recommend a project
+          </button>
+          <button type="button" data-chat-prompt="Ken 如何進行系統分析與方案設計？">
+            How does Ken approach systems?
+          </button>
+        </div>
+        <button class="ask-primary" type="button" data-chat-open>
+          Start asking
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M4 10h11M11 6l4 4-4 4" />
+          </svg>
+        </button>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="contact" id="contact">
+    <div>
+      <h2>Let’s build clarity.</h2>
+      <p>
+        Open to conversations about systems, products, cloud architecture, and
+        practical AI automation.
+      </p>
+    </div>
+    <nav aria-label="聯絡方式">
+      <a href="https://github.com/KenL-TW" target="_blank" rel="noopener noreferrer">
+        GitHub
+      </a>
+      <a href="mailto:kenliao.applicant@gmail.com">Email</a>
+      <a href="/blog/blog.html">Writing</a>
+    </nav>
+    <a class="contact-cta" href="mailto:kenliao.applicant@gmail.com">
+      Start a conversation
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M4 10h11M11 6l4 4-4 4" />
+      </svg>
+    </a>
+    <small>© {new Date().getFullYear()} Ken Liao</small>
+  </footer>
+
+  <script is:inline>
+    window.ChatbotConfig = {
+      CHAT_API_URL: "/api/chat",
+      BRAND_NAME: "Ask Ken",
+      SUBTITLE: "AI-assisted portfolio guide",
+      WELCOME_MESSAGE:
+        "你好，我是 Ask Ken。你可以用我快速了解 Ken 的經歷、專案與工作方法。",
+      GITHUB_REPO_URL: "https://github.com/KenL-TW/KenL-TW.github.io",
+      SOURCE_LINK_MODE: "raw",
+      GITHUB_BRANCH: "main",
+      GITHUB_PAGES_BASE:
+        "https://ken-personal-page.digitalaaronl.workers.dev",
+      KB_INDEX_URL: "/kb/index.json",
+      DEFAULT_MODE: "GUIDE",
+      ENABLE_MODE_TOGGLE: false,
+      SHOW_RECOMMENDATION_BLOCK: true,
+      TOP_ACTIONS: [
+        {
+          icon: "01",
+          title: "Introduce Ken",
+          desc: "Experience and capabilities",
+          payload: {
+            type: "text",
+            message: "請介紹 Ken 的經歷與核心能力"
+          }
+        },
+        {
+          icon: "02",
+          title: "Selected work",
+          desc: "Find a relevant project",
+          payload: {
+            type: "text",
+            message: "請依我的需求推薦一個最值得看的專案"
+          }
+        },
+        {
+          icon: "03",
+          title: "Working approach",
+          desc: "Systems and decisions",
+          payload: {
+            type: "text",
+            message: "Ken 如何進行系統分析與方案設計？"
+          }
+        }
+      ],
+      QUICK_CHIPS: [
+        "介紹 Ken",
+        "推薦一個專案",
+        "Ken 如何進行系統分析？"
+      ],
+      THEME: "light",
+      REQUEST_TIMEOUT_MS: 30000
+    };
+  </script>
+  <script is:inline defer src="/assets/conversation-logger.js"></script>
+  <script is:inline defer src="/assets/chatbot-widget.js"></script>
+  <script is:inline>
+    const menuToggle = document.querySelector("[data-menu-toggle]");
+    const nav = document.querySelector("[data-nav]");
+
+    menuToggle?.addEventListener("click", () => {
+      const nextState = menuToggle.getAttribute("aria-expanded") !== "true";
+      menuToggle.setAttribute("aria-expanded", String(nextState));
+      nav?.classList.toggle("is-open", nextState);
+    });
+
+    nav?.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        menuToggle?.setAttribute("aria-expanded", "false");
+        nav.classList.remove("is-open");
+      });
+    });
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    const revealElements = document.querySelectorAll("[data-reveal]");
+
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      revealElements.forEach((element) => element.classList.add("is-inview"));
+    } else {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("is-inview");
+            observer.unobserve(entry.target);
+          });
+        },
+        { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
+      );
+      revealElements.forEach((element) => observer.observe(element));
+    }
+
+    const callChatbot = (message) => {
+      let attempts = 0;
+      const openWhenReady = window.setInterval(() => {
+        attempts += 1;
+        if (window.DTZ_CHATBOT?.open) {
+          window.clearInterval(openWhenReady);
+          window.DTZ_CHATBOT.open();
+          if (message && window.DTZ_CHATBOT.sendText) {
+            window.DTZ_CHATBOT.sendText(message);
+          }
+        } else if (attempts > 40) {
+          window.clearInterval(openWhenReady);
+        }
+      }, 100);
+    };
+
+    document.querySelectorAll("[data-chat-open]").forEach((button) => {
+      button.addEventListener("click", () => callChatbot());
+    });
+    document.querySelectorAll("[data-chat-prompt]").forEach((button) => {
+      button.addEventListener("click", () =>
+        callChatbot(button.getAttribute("data-chat-prompt"))
+      );
+    });
+  </script>
+</BaseLayout>

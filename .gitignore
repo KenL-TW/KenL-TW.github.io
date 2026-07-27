@@ -6,3 +6,6 @@
 # Node runtime artifacts
 node_modules/
 *.log
+.astro/
+dist/
+.wrangler/
